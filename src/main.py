@@ -254,6 +254,10 @@ class App(customtkinter.CTk):
         print("sidebar_button click")
 
 
-if __name__ == "__main__":
+def main():
     app = App()
     app.mainloop()
+
+
+if __name__ == "__main__":
+    main()

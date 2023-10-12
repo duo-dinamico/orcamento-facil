@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "orcamento-facil"
+version = "0.1.0"
+description = "Programa de orçamentação pessoal."
+authors = ["DuoDinamico"]
+license = "GNU"
+readme = "README.md"
+
+
+[tool.poetry.dependencies]
+python = "^3.11"
+customtkinter = "^5.2.0"
+black = "^23.9.1"
+
+[tool.poe.tasks]
+start = "src/main.py"
+
+[tool.poe]
+poetry_command = ""
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+

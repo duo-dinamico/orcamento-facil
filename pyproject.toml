@@ -8,8 +8,10 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-customtkinter = "^5.2.0"
 black = "^23.9.1"
+
+[tool.black]
+line-length = 100
 
 [build-system]
 requires = ["poetry-core"]

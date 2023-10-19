@@ -73,36 +73,6 @@ files = [
 ]
 
 [[package]]
-name = "customtkinter"
-version = "5.2.0"
-description = "Create modern looking GUIs with Python"
-category = "main"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "customtkinter-5.2.0-py3-none-any.whl", hash = "sha256:f8b2db189959033539884d7faff99ebbb654c18097d761ed844180e32f0b5929"},
-    {file = "customtkinter-5.2.0.tar.gz", hash = "sha256:e93448a8d22121e20ec16e95960a8306e17cf7e0079766f5804b2e855e614937"},
-]
-
-[package.dependencies]
-darkdetect = "*"
-
-[[package]]
-name = "darkdetect"
-version = "0.8.0"
-description = "Detect OS Dark Mode from Python"
-category = "main"
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "darkdetect-0.8.0-py3-none-any.whl", hash = "sha256:a7509ccf517eaad92b31c214f593dbcf138ea8a43b2935406bbd565e15527a85"},
-    {file = "darkdetect-0.8.0.tar.gz", hash = "sha256:b5428e1170263eb5dea44c25dc3895edd75e6f52300986353cd63533fe7df8b1"},
-]
-
-[package.extras]
-macos-listener = ["pyobjc-framework-Cocoa"]
-
-[[package]]
 name = "mypy-extensions"
 version = "1.0.0"
 description = "Type system extensions for programs checked with the mypy type checker."
@@ -157,4 +127,4 @@ test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.4)", "pytest-co
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "54b4c6012f2cd38a214e0a1158ccc847f3fdaa01b8ece2ef5f94a777ea5beab9"
+content-hash = "c9b10e37dbfc69919caba4ba8e82efa3ff77c931338de6fc5d1e517465fcdedb"

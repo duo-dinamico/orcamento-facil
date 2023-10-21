@@ -22,7 +22,7 @@ class MainWindow(tk.Tk):
         )  # Put the windows in the center of the screen
 
         # creating a frame and assigning it to container
-        container = tk.Frame(self, height=WINDOW_HEIGHT, width=WINDOW_WIDTH)
+        container = ttk.Frame(self, height=WINDOW_HEIGHT, width=WINDOW_WIDTH)
         # specifying the region where the frame is packed in root
         container.pack(anchor="nw", fill="both", expand=True)
 

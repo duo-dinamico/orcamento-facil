@@ -4,6 +4,9 @@ from tkinter import ttk
 from modules.frame_pagina_inicial import PaginaInicial
 from modules.frame_categorias_mensais import CategoriasMensais
 
+from db.database import SessionLocal, engine
+from db.models import Base
+
 
 class MainWindow(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -50,5 +53,9 @@ class MainWindow(tk.Tk):
 
 
 if __name__ == "__main__":
+    # Start database
+    Base.metadata.create_all(engine)
+    db = SessionLocal()
+
     root = MainWindow()
     root.mainloop()

@@ -108,6 +108,8 @@ class StartingPage(ttk.Frame):
         self.accounts = []
         self.accounts_labels = []
         self.buttons = []
+        self.style = ttk.Style()
+        self.style.configure("Red.TButton", background="red4", relief="raised")
 
         # Here starts the frame listing and building
         frames_left = {}
@@ -146,6 +148,11 @@ class StartingPage(ttk.Frame):
         self.fields["password_entry"] = ttk.Entry(
             master=frames_left["informacao_pessoal"], show="*"
         )
+        self.fields["add_user_button"] = ttk.Button(
+            master=frames_left["informacao_pessoal"],
+            text="Add user",
+            command=lambda: self.add_user(),
+        )
         self.fields["adicionar_conta_button"] = ttk.Button(
             master=frames_left["adicionar_botoes"],
             text="Adicionar conta",
@@ -175,6 +182,9 @@ class StartingPage(ttk.Frame):
             command=lambda: controller.show_frame("MonthlyCategories"),
         ).grid(column=0, row=3, columnspan=2, pady=5, padx=5, sticky="ew")
 
+    def add_user(self):
+        pass
+
     def nome_trace(self, *args):
         if self.name.get() == "":
             self.fields["adicionar_conta_button"].config(state="disabled")
@@ -190,7 +200,10 @@ class StartingPage(ttk.Frame):
         self.accounts.append(account)
         self.popup.destroy()
         self.popup_open = False
-        self.place_accounts()
+        self.refresh_accounts()
+
+    def refresh_accounts(self):
+        pass
 
     def place_accounts(self):
         if len(self.accounts_labels) > 0:
@@ -220,7 +233,9 @@ class StartingPage(ttk.Frame):
             self.buttons.append(
                 ttk.Button(
                     master=self.frames_right["lista_contas"],
-                    text="Del",
+                    text="X",
+                    width=4,
+                    style="Red.TButton",
                     command=lambda: self.delete_account(index),
                 )
             )

@@ -2,52 +2,46 @@ import tkinter as tk
 from tkinter import ttk
 
 
-class PopUpWindow(tk.Toplevel):
+class AddAccountPopUp(tk.Toplevel):
     def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
         self.resizable(False, False)
         self.title("Add account")
+
         self.fields = []
         self.account_name = tk.StringVar()
         self.account_name.trace_add("write", self.activate_add_account)
         self.initial_balance = tk.StringVar()
         self.initial_balance.trace_add("write", self.activate_add_account)
-        self.currency = tk.StringVar()
-        self.currency.trace_add("write", self.activate_add_account)
-        self.style = ttk.Style()
-        self.style.configure("White.TEntry", fieldbackground="white")
-        self.style.configure("Red.TEntry", fieldbackground="red")
+        self.currencies = ["£", "€"]
 
         frame_popup = ttk.Frame(self)
         frame_popup.pack(anchor="nw", fill="both", expand=True)
 
         self.fields.append(
             ttk.Label(
-                master=frame_popup,
+                frame_popup,
                 text="Account name",
             )
         )
-        self.fields.append(ttk.Entry(master=frame_popup, textvariable=self.account_name))
+        self.fields.append(ttk.Entry(frame_popup, textvariable=self.account_name))
         self.fields.append(
             ttk.Label(
-                master=frame_popup,
+                frame_popup,
                 text="Initial balance",
             )
         )
-        self.fields.append(ttk.Entry(master=frame_popup, textvariable=self.initial_balance))
+        self.fields.append(ttk.Entry(frame_popup, textvariable=self.initial_balance))
         self.fields.append(
             ttk.Label(
-                master=frame_popup,
+                frame_popup,
                 text="Currency (€ or £)",
             )
         )
-        self.currency_entry = ttk.Entry(
-            master=frame_popup,
-            textvariable=self.currency,
-            style="White.TEntry",
-        )
-        self.fields.append(self.currency_entry)
+        self.currency_combobox = ttk.Combobox(frame_popup, state="readonly", values=self.currencies)
+        self.currency_combobox.current(0)
+        self.fields.append(self.currency_combobox)
 
         for field in self.fields:
             field.pack(anchor="w", padx=10, pady=5, fill="x")
@@ -73,60 +67,67 @@ class PopUpWindow(tk.Toplevel):
     def cancel_input(self):
         self.destroy()
 
-    def check_currency(self, *args):
-        accepted_values = ["euro", "pound", "€", "£"]
-        current_value = self.currency.get()
-        if current_value not in accepted_values:
-            self.currency_entry.config(style="Red.TEntry")
-        else:
-            self.currency_entry.config(style="White.TEntry")
-
     def activate_add_account(self, *args):
-        accepted_values = ["euro", "pound", "€", "£"]
-        currency = self.currency.get()
         account_name = self.account_name.get()
         initial_balance = self.initial_balance.get()
-        if currency != "" and currency not in accepted_values:
-            self.currency_entry.config(style="Red.TEntry")
-        elif currency != "" and account_name != "" and initial_balance != 0:
-            self.currency_entry.config(style="White.TEntry")
+        if account_name != "" and initial_balance != 0:
             self.add_account.config(state="enabled")
         else:
             self.add_account.config(state="disabled")
-            self.currency_entry.config(style="White.TEntry")
+
+
+class AddIncomePopUp(tk.Toplevel):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
+        self.resizable(False, False)
+        self.title("Add income source")
+
+        self.fields = []
+        self.income_source_name = tk.StringVar()
+        self.income_source_name.trace_add("write", self.activate_add_account)
+
+        frame_popup = ttk.Frame(self)
+        frame_popup.pack(anchor="nw", fill="both", expand=True)
+
+        self.fields.append(
+            ttk.Label(
+                frame_popup,
+                text="Income source name",
+            )
+        )
+        self.fields.append(ttk.Entry(frame_popup, textvariable=self.income_source_name))
 
 
 class StartingPage(ttk.Frame):
     def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
-        self.name = tk.StringVar()
-        self.fields = {}
+        self.fields = []
         self.popup_open = False
-        self.columnconfigure(0, weight=1)
+        self.columnconfigure(0, weight=2)
+        self.columnconfigure(1, weight=3)
         self.rowconfigure(0, weight=1)
         self.paddings = {"padx": 10, "pady": 5}
         self.accounts = []
-        self.accounts_labels = []
-        self.buttons = []
         self.style = ttk.Style()
         self.style.configure("Red.TButton", background="red4", relief="raised")
+        self.line_widgets = []
+        self.frames_left = {}
+        self.frames_right = {}
 
         # Here starts the frame listing and building
-        frames_left = {}
-        self.frames_right = {}
-        frames_left["informacao_pessoal"] = ttk.LabelFrame(
-            self, text="Informacao Pessoal", relief="ridge"
+        self.frames_left["personal_info"] = ttk.LabelFrame(
+            self, text="Personal info", relief="ridge"
         )
-        frames_left["adicionar_botoes"] = ttk.LabelFrame(
-            self, text="Informacao Adicional", relief="ridge"
+        self.frames_left["adding_details"] = ttk.LabelFrame(
+            self, text="Adding details", relief="ridge"
         )
-        self.frames_right["lista_contas"] = ttk.LabelFrame(
-            self, text="Lista de contas", relief="ridge"
+        self.frames_right["account_list"] = ttk.LabelFrame(
+            self, text="Account list", relief="ridge"
         )
-        for index, frame in enumerate(frames_left.values()):
-            frame.grid(**self.paddings, column=0, row=index, sticky="nsew")
+        for index, frame in enumerate(self.frames_left.values()):
+            frame.grid(**self.paddings, column=0, row=index, sticky="new")
             frame.rowconfigure(index, weight=1)
-            frame.columnconfigure(0, weight=1)
         for index, frame in enumerate(self.frames_right.values()):
             frame.grid(**self.paddings, column=1, row=index, sticky="new")
             frame.columnconfigure(0, weight=1)
@@ -134,45 +135,45 @@ class StartingPage(ttk.Frame):
             frame.columnconfigure(2, weight=1)
 
         # Here starts the field listing and building
-        self.name.trace_add("write", self.nome_trace)
-        self.fields["nome_label"] = ttk.Label(
-            master=frames_left["informacao_pessoal"],
-            text="Nome",
+        self.nome = tk.StringVar()
+        self.nome.trace_add("write", self.nome_trace)
+        self.fields.append(
+            ttk.Label(
+                self.frames_left["personal_info"],
+                text="Name",
+            )
         )
-        self.fields["nome_entry"] = ttk.Entry(
-            master=frames_left["informacao_pessoal"], textvariable=self.name
+        self.fields.append(ttk.Entry(self.frames_left["personal_info"], textvariable=self.nome))
+        self.fields.append(ttk.Label(self.frames_left["personal_info"], text="Password"))
+        self.fields.append(ttk.Entry(self.frames_left["personal_info"], show="*"))
+        self.fields.append(
+            ttk.Button(
+                self.frames_left["personal_info"],
+                text="Add user",
+                command=lambda: self.add_user(),
+            )
         )
-        self.fields["password_label"] = ttk.Label(
-            master=frames_left["informacao_pessoal"], text="Password"
-        )
-        self.fields["password_entry"] = ttk.Entry(
-            master=frames_left["informacao_pessoal"], show="*"
-        )
-        self.fields["add_user_button"] = ttk.Button(
-            master=frames_left["informacao_pessoal"],
-            text="Add user",
-            command=lambda: self.add_user(),
-        )
-        self.fields["adicionar_conta_button"] = ttk.Button(
-            master=frames_left["adicionar_botoes"],
-            text="Adicionar conta",
+        self.add_account_button = ttk.Button(
+            self.frames_left["adding_details"],
+            text="Add account",
             state="disabled",
-            command=self.open_popup,
+            command=lambda: self.open_popup(AddAccountPopUp),
         )
-        self.fields["adicionar_fonte_rendimento_button"] = ttk.Button(
-            master=frames_left["adicionar_botoes"],
-            text="Adicionar fonte de rendimento",
+        self.fields.append(self.add_account_button)
+        self.add_income_button = ttk.Button(
+            self.frames_left["adding_details"],
+            text="Add income source",
             state="disabled",
+            command=lambda: self.open_popup(AddIncomePopUp),
         )
-        for field in self.fields.values():
+        self.fields.append(self.add_income_button)
+        for field in self.fields:
             field.pack(**self.paddings, anchor="w", fill="x")
 
         self.titles = []
-        self.titles.append(ttk.Label(master=self.frames_right["lista_contas"], text="Account name"))
-        self.titles.append(
-            ttk.Label(master=self.frames_right["lista_contas"], text="Initial balance")
-        )
-        self.titles.append(ttk.Label(master=self.frames_right["lista_contas"], text="Delete"))
+        self.titles.append(ttk.Label(self.frames_right["account_list"], text="Account name"))
+        self.titles.append(ttk.Label(self.frames_right["account_list"], text="Initial balance"))
+        self.titles.append(ttk.Label(self.frames_right["account_list"], text="Delete"))
         for index, title in enumerate(self.titles):
             title.grid(**self.paddings, column=index, row=0, sticky="new")
 
@@ -182,18 +183,22 @@ class StartingPage(ttk.Frame):
             command=lambda: controller.show_frame("MonthlyCategories"),
         ).grid(column=0, row=3, columnspan=2, pady=5, padx=5, sticky="ew")
 
+        self.refresh_accounts()
+
     def add_user(self):
         pass
 
     def nome_trace(self, *args):
-        if self.name.get() == "":
-            self.fields["adicionar_conta_button"].config(state="disabled")
+        if self.nome.get() == "":
+            self.add_account_button.config(state="disabled")
+            self.add_income_button.config(state="disabled")
         else:
-            self.fields["adicionar_conta_button"].config(state="normal")
+            self.add_account_button.config(state="normal")
+            self.add_income_button.config(state="normal")
 
-    def open_popup(self):
+    def open_popup(self, popup):
         if not self.popup_open:
-            self.popup = PopUpWindow(self)
+            self.popup = popup(self)
             self.popup_open = True
 
     def add_account(self, account):
@@ -203,45 +208,30 @@ class StartingPage(ttk.Frame):
         self.refresh_accounts()
 
     def refresh_accounts(self):
-        pass
+        for widget in self.line_widgets:
+            widget.destroy()
 
-    def place_accounts(self):
-        if len(self.accounts_labels) > 0:
-            for label in self.accounts_labels:
-                label["account"].destroy()
-                label["initial_balance"].destroy()
-                self.accounts_labels = []
-            for button in self.buttons:
-                button.destroy()
-                self.buttons = []
-        for index, account in enumerate(self.accounts):
-            self.accounts_labels.append(
-                {
-                    "account": ttk.Label(
-                        master=self.frames_right["lista_contas"], text=account["account"]
-                    ),
-                    "initial_balance": ttk.Label(
-                        master=self.frames_right["lista_contas"], text=account["initial_balance"]
-                    ),
-                }
+        for i, item in enumerate(self.accounts):
+            account_label = ttk.Label(self.frames_right["account_list"], text=item["account"])
+            balance_label = ttk.Label(
+                self.frames_right["account_list"], text=item["initial_balance"]
             )
-            for label in self.accounts_labels:
-                label["account"].grid(**self.paddings, column=0, row=index + 1, sticky="new")
-                label["initial_balance"].grid(
-                    **self.paddings, column=1, row=index + 1, sticky="new"
-                )
-            self.buttons.append(
-                ttk.Button(
-                    master=self.frames_right["lista_contas"],
-                    text="X",
-                    width=4,
-                    style="Red.TButton",
-                    command=lambda: self.delete_account(index),
-                )
+            delete_button = ttk.Button(
+                self.frames_right["account_list"],
+                text="X",
+                width=4,
+                style="Red.TButton",
+                command=lambda i=i: self.delete_account(i),
             )
-            for button in self.buttons:
-                button.grid(**self.paddings, column=2, row=index + 1)
+
+            account_label.grid(**self.paddings, column=0, row=i + 1, sticky="new")
+            balance_label.grid(**self.paddings, column=1, row=i + 1, sticky="new")
+            delete_button.grid(**self.paddings, column=2, row=i + 1)
+
+            self.line_widgets.append(account_label)
+            self.line_widgets.append(balance_label)
+            self.line_widgets.append(delete_button)
 
     def delete_account(self, index):
-        self.accounts.pop(index)
-        self.place_accounts()
+        del self.accounts[index]
+        self.refresh_accounts()

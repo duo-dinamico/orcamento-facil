@@ -12,7 +12,7 @@ class Base(DeclarativeBase):
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(primary_key=True, default=int, autoincrement=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(unique=True)
     password: Mapped[str]
     accounts: Mapped["Account"] = relationship("Account", backref="accounts", uselist=False)
@@ -28,7 +28,7 @@ class AccountTypeEnum(str, Enum):
 class Account(Base):
     __tablename__ = "accounts"
 
-    id: Mapped[int] = mapped_column(primary_key=True, default=int, autoincrement=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", name="user"))
     name: Mapped[str] = mapped_column(unique=True)
     account_type: Mapped[AccountTypeEnum]

@@ -4,13 +4,17 @@ from tkinter import ttk
 from modules.frame_starting_page import StartingPage
 from modules.frame_monthly_categories import MonthlyCategories
 
-from db.database import SessionLocal, engine
-from db.models import Base
+from modules.db_database import SessionLocal, engine
+from modules.db_models import Base
 
 
 class MainWindow(tk.Tk):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, session, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
+
+        # Pass the db session
+        self.session = session
+
         # Constants
         window_width = 1200
         window_height = 800
@@ -47,7 +51,7 @@ class MainWindow(tk.Tk):
 
 if __name__ == "__main__":
     Base.metadata.create_all(engine)  # Start database
-    db = SessionLocal()
+    session = SessionLocal()
 
-    root = MainWindow()
+    root = MainWindow(session)
     root.mainloop()

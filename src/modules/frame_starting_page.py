@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 
+from modules.db_crud import create_user
+
 
 class AddAccountPopUp(tk.Toplevel):
     def __init__(self, parent):
@@ -102,6 +104,7 @@ class AddIncomePopUp(tk.Toplevel):
 class StartingPage(ttk.Frame):
     def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
+        self.controller = controller
         self.fields = []
         self.popup_open = False
         self.columnconfigure(0, weight=2)
@@ -136,6 +139,7 @@ class StartingPage(ttk.Frame):
 
         # Here starts the field listing and building
         self.nome = tk.StringVar()
+        self.password = tk.StringVar()
         self.nome.trace_add("write", self.nome_trace)
         self.fields.append(
             ttk.Label(
@@ -145,7 +149,9 @@ class StartingPage(ttk.Frame):
         )
         self.fields.append(ttk.Entry(self.frames_left["personal_info"], textvariable=self.nome))
         self.fields.append(ttk.Label(self.frames_left["personal_info"], text="Password"))
-        self.fields.append(ttk.Entry(self.frames_left["personal_info"], show="*"))
+        self.fields.append(
+            ttk.Entry(self.frames_left["personal_info"], show="*", textvariable=self.password)
+        )
         self.fields.append(
             ttk.Button(
                 self.frames_left["personal_info"],
@@ -186,7 +192,9 @@ class StartingPage(ttk.Frame):
         self.refresh_accounts()
 
     def add_user(self):
-        pass
+        print(self.nome.get())
+        print(self.password.get())
+        create_user(self.controller.session, self.nome.get(), self.password.get())
 
     def nome_trace(self, *args):
         if self.nome.get() == "":

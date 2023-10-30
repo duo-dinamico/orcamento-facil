@@ -43,7 +43,7 @@ class Account(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", name="user"))
     name: Mapped[str] = mapped_column(unique=True)
-    account_type: Mapped[AccountTypeEnum]
+    account_type: Mapped[AccountTypeEnum] = mapped_column(default="BANK")
     currency: Mapped[str] = mapped_column(default="EUR")
     initial_balance: Mapped[int] = mapped_column(default=0)  # In cents
     balance: Mapped[int] = mapped_column(default=0)  # In cents
@@ -51,6 +51,9 @@ class Account(Base):
     payment_day: Mapped[Optional[str]]  # Saved as a string, need conversion
     interest_rate: Mapped[Optional[float]]
     credit_method: Mapped[Optional[str]]
+
+    def __str__(self) -> str:
+        return f"ID: {self.id}, Name: {self.name}."
 
 
 class Income(Base):

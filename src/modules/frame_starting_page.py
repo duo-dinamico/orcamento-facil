@@ -1,13 +1,20 @@
 import tkinter as tk
 from tkinter import ttk
 
-from modules.db_crud import create_user, login_user
+from modules.db_crud import (
+    create_user,
+    login_user,
+    create_account,
+    read_user_accounts,
+    delete_account,
+)
 
 
 class AddAccountPopUp(tk.Toplevel):
-    def __init__(self, parent):
+    def __init__(self, parent, controller):
         super().__init__(parent)
         self.parent = parent
+        self.controller = controller
         self.resizable(False, False)
         self.title("Add account")
 
@@ -16,7 +23,7 @@ class AddAccountPopUp(tk.Toplevel):
         self.account_name.trace_add("write", self.activate_add_account)
         self.initial_balance = tk.StringVar()
         self.initial_balance.trace_add("write", self.activate_add_account)
-        self.currencies = ["£", "€"]
+        self.currencies = ["GBP", "EUR", "USD"]
 
         frame_popup = ttk.Frame(self)
         frame_popup.pack(anchor="nw", fill="both", expand=True)
@@ -61,6 +68,7 @@ class AddAccountPopUp(tk.Toplevel):
                 {
                     "account": self.account_name.get(),
                     "initial_balance": int(self.initial_balance.get()),
+                    "currency": self.currency_combobox.get(),
                 }
             ),
         )
@@ -220,6 +228,7 @@ class StartingPage(ttk.Frame):
             print(self.fields)
             self.fields[1].config(state="disabled")
             self.fields[3].config(state="disabled")
+            self.refresh_accounts()
 
     def login(self):
         state = login_user(self.controller.session, self.nome.get(), self.password.get())
@@ -230,6 +239,7 @@ class StartingPage(ttk.Frame):
             self.information.set(f"Logged in user: {state}")
             self.fields[1].config(state="disabled")
             self.fields[3].config(state="disabled")
+            self.refresh_accounts()
 
     def logout(self):
         self.controller.logged_in = None
@@ -247,10 +257,19 @@ class StartingPage(ttk.Frame):
 
     def open_popup(self, popup):
         if not self.popup_open:
-            self.popup = popup(self)
+            self.popup = popup(self, self.controller)
             self.popup_open = True
 
     def add_account(self, account):
+        created_id = create_account(
+            self.controller.session,
+            account["account"],
+            self.controller.logged_in,
+            account["initial_balance"],
+            "BANK",
+            account["currency"],
+        )
+        print(f"add_account: {account}")
         self.accounts.append(account)
         self.popup.destroy()
         self.popup_open = False
@@ -260,27 +279,31 @@ class StartingPage(ttk.Frame):
         for widget in self.line_widgets:
             widget.destroy()
 
-        for i, item in enumerate(self.accounts):
-            account_label = ttk.Label(self.frames_right["account_list"], text=item["account"])
-            balance_label = ttk.Label(
-                self.frames_right["account_list"], text=item["initial_balance"]
-            )
-            delete_button = ttk.Button(
-                self.frames_right["account_list"],
-                text="X",
-                width=4,
-                style="Red.TButton",
-                command=lambda i=i: self.delete_account(i),
-            )
+        # Get the list of accounts
+        account_list = read_user_accounts(self.controller.session, self.controller.logged_in)
 
-            account_label.grid(**self.paddings, column=0, row=i + 1, sticky="new")
-            balance_label.grid(**self.paddings, column=1, row=i + 1, sticky="new")
-            delete_button.grid(**self.paddings, column=2, row=i + 1)
+        if account_list != None:
+            for i, item in enumerate(account_list):
+                account_label = ttk.Label(self.frames_right["account_list"], text=item.name)
+                balance_label = ttk.Label(
+                    self.frames_right["account_list"], text=item.initial_balance
+                )
+                delete_button = ttk.Button(
+                    self.frames_right["account_list"],
+                    text=item.id,
+                    width=4,
+                    style="Red.TButton",
+                    command=lambda item=item: self.delete_account(item.id),
+                )
 
-            self.line_widgets.append(account_label)
-            self.line_widgets.append(balance_label)
-            self.line_widgets.append(delete_button)
+                account_label.grid(**self.paddings, column=0, row=i + 1, sticky="new")
+                balance_label.grid(**self.paddings, column=1, row=i + 1, sticky="new")
+                delete_button.grid(**self.paddings, column=2, row=i + 1)
 
-    def delete_account(self, index):
-        del self.accounts[index]
+                self.line_widgets.append(account_label)
+                self.line_widgets.append(balance_label)
+                self.line_widgets.append(delete_button)
+
+    def delete_account(self, account_id):
+        delete_account(self.controller.session, account_id, self.controller.logged_in)
         self.refresh_accounts()

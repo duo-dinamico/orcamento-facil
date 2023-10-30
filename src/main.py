@@ -14,6 +14,7 @@ class MainWindow(tk.Tk):
 
         # Pass the db session
         self.session = session
+        self.logged_in = logged_in
 
         # Constants
         window_width = 1200
@@ -54,5 +55,5 @@ if __name__ == "__main__":
     session = SessionLocal()
     logged_in = None
 
-    root = MainWindow(session, logged_in)
+    root = MainWindow(session, logged_in=None)
     root.mainloop()

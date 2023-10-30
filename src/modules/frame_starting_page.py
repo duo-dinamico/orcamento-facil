@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
-from modules.db_crud import create_user
+from modules.db_crud import create_user, login_user
 
 
 class AddAccountPopUp(tk.Toplevel):
@@ -140,6 +140,8 @@ class StartingPage(ttk.Frame):
         # Here starts the field listing and building
         self.nome = tk.StringVar()
         self.password = tk.StringVar()
+        self.information = tk.StringVar()
+        self.information.set("Information.")
         self.nome.trace_add("write", self.nome_trace)
         self.fields.append(
             ttk.Label(
@@ -158,6 +160,23 @@ class StartingPage(ttk.Frame):
                 text="Add user",
                 command=lambda: self.add_user(),
             )
+        )
+        self.fields.append(
+            ttk.Button(
+                self.frames_left["personal_info"],
+                text="Login",
+                command=lambda: self.login(),
+            )
+        )
+        self.fields.append(
+            ttk.Button(
+                self.frames_left["personal_info"],
+                text="Logout",
+                command=lambda: self.logout(),
+            )
+        )
+        self.fields.append(
+            ttk.Label(self.frames_left["personal_info"], textvariable=self.information)
         )
         self.add_account_button = ttk.Button(
             self.frames_left["adding_details"],
@@ -192,9 +211,31 @@ class StartingPage(ttk.Frame):
         self.refresh_accounts()
 
     def add_user(self):
-        print(self.nome.get())
-        print(self.password.get())
-        create_user(self.controller.session, self.nome.get(), self.password.get())
+        state = create_user(self.controller.session, self.nome.get(), self.password.get())
+        if state == None:
+            self.information.set("User already exists.")
+        else:
+            self.controller.logged_in = state
+            self.information.set(f"Added user: {state}")
+            print(self.fields)
+            self.fields[1].config(state="disabled")
+            self.fields[3].config(state="disabled")
+
+    def login(self):
+        state = login_user(self.controller.session, self.nome.get(), self.password.get())
+        if state == None:
+            self.information.set("Wrong username or password.")
+        else:
+            self.controller.logged_in = state
+            self.information.set(f"Logged in user: {state}")
+            self.fields[1].config(state="disabled")
+            self.fields[3].config(state="disabled")
+
+    def logout(self):
+        self.controller.logged_in = None
+        self.information.set(f"Logged in user: {self.controller.logged_in}")
+        self.fields[1].config(state="enable")
+        self.fields[3].config(state="enable")
 
     def nome_trace(self, *args):
         if self.nome.get() == "":

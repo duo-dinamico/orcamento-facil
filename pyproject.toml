@@ -10,6 +10,7 @@ readme = "README.md"
 python = "^3.11"
 black = "^23.9.1"
 sqlalchemy = "^2.0.22"
+passlib = "^1.7.4"
 
 [tool.black]
 line-length = 100

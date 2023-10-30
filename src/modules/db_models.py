@@ -18,6 +18,9 @@ class User(Base):
     password: Mapped[str]
     accounts: Mapped["Account"] = relationship("Account", backref="accounts", uselist=False)
 
+    def __str__(self) -> str:
+        return f"ID: {self.id}, Name: {self.username}."
+
 
 # Define an enum type for account types
 class AccountTypeEnum(str, Enum):

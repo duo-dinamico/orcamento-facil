@@ -9,7 +9,7 @@ from modules.db_models import Base
 
 
 class MainWindow(tk.Tk):
-    def __init__(self, session, *args, **kwargs):
+    def __init__(self, session, logged_in, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
 
         # Pass the db session
@@ -52,6 +52,7 @@ class MainWindow(tk.Tk):
 if __name__ == "__main__":
     Base.metadata.create_all(engine)  # Start database
     session = SessionLocal()
+    logged_in = None
 
-    root = MainWindow(session)
+    root = MainWindow(session, logged_in)
     root.mainloop()

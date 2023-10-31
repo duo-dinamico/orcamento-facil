@@ -41,7 +41,7 @@ def read_user_by_id(db: SessionLocal, id: int) -> User:
     return user
 
 
-def create_user(db: SessionLocal, username: str, user_password: str) -> User:
+def create_user(db: SessionLocal, username: str, user_password: str) -> User.id:
     """Create a new user in the database, and return the his id.
 
     Args:
@@ -187,10 +187,11 @@ def delete_account(db: SessionLocal, account_id: int, user_id: int) -> bool:
     Args:
         db: database session.
         account_id: id of the account to delete.
+        user_id: id of the loggeg in user.
 
     Returns:
-        True: if deleted
-        False: if not deleted
+        True: if deleted.
+        False: if not deleted.
     """
 
     # Get the account checking the id's of the account and user

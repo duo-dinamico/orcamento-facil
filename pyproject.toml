@@ -12,8 +12,14 @@ black = "^23.9.1"
 sqlalchemy = "^2.0.22"
 passlib = "^1.7.4"
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+
 [tool.black]
 line-length = 100
+
+[tool.pytest.ini_options]
+pythonpath = "src"
 
 [build-system]
 requires = ["poetry-core"]

@@ -3,8 +3,9 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from ..modules.db_models import Base
-
+from ..modules.db_models import Base, User
+from ..modules.db_crud import create_user
+from ..modules.utils import get_hashed_password
 
 engine = create_engine("sqlite:///test.db")
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -21,3 +22,9 @@ def db_session():
         Base.metadata.drop_all(engine)
         # session.rollback()
         # session.close()
+
+
+@pytest.fixture()
+def valid_user(db_session):
+    db_session.add(User(username="validUser", password=get_hashed_password("ValidPassword1")))
+    db_session.commit()

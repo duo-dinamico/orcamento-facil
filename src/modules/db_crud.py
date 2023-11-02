@@ -5,6 +5,11 @@ from modules.db_models import User, Account, AccountTypeEnum
 from modules.utils import get_hashed_password, verify_password
 
 
+#
+# User
+#
+
+
 def read_user_by_name(db: SessionLocal, username: str) -> User:
     """Return a user object that has the given username.
 
@@ -73,7 +78,7 @@ def create_user(db: SessionLocal, username: str, user_password: str) -> User.id:
     return db_user.id
 
 
-def login_user(db: SessionLocal, username: str, user_password: str) -> User:
+def login_user(db: SessionLocal, username: str, user_password: str) -> User.id:
     """Return the id of the user, if the password is correct.
 
     Args:
@@ -95,7 +100,12 @@ def login_user(db: SessionLocal, username: str, user_password: str) -> User:
         return user.id
 
 
-def read_account(db: SessionLocal, account_id: str) -> Account:
+#
+# Account
+#
+
+
+def read_account_by_id(db: SessionLocal, account_id: str) -> Account:
     """Return an account object that has the given id.
 
     Args:
@@ -107,19 +117,38 @@ def read_account(db: SessionLocal, account_id: str) -> Account:
         None: if the account don't exist.
     """
     account = db.scalars(select(Account).where(Account.id == account_id)).first()
-    print(f"read_account: {account}")
+    print(f"read_account_by_id: {account}")
     if not account:
         return None
     return account
+
+
+def read_account_by_name(db: SessionLocal, account_name: str) -> int:
+    """Return an account id that has the given name.
+
+    Args:
+        db: database session.
+        account_name: the account name.
+
+    Returns:
+        account id: if the account exist.
+        None: if the account don't exist.
+    """
+    print(f"read_account_by_name: {account_name}")
+    account = db.scalars(select(Account).where(Account.name == account_name)).first()
+    print(f"read_account_by_name: {account}")
+    if not account:
+        return None
+    return account.id
 
 
 def create_account(
     db: SessionLocal,
     account_name: str,
     user_id: int,
-    initial_balance: int,
-    account_type: AccountTypeEnum,
-    currency: str,
+    initial_balance: int = 0,
+    account_type: AccountTypeEnum = "BANK",
+    currency: str = "EUR",
 ) -> Account.id:
     """Create a new account in the database, for a given user and return the new account id.
 
@@ -134,17 +163,17 @@ def create_account(
     """
 
     # Check if the user id is valid
-    user = read_user_by_id(db, user_id)
+    user = read_user_by_id(db, id=user_id)
     if not user:
         return None
 
     # Check if the account name already exist
-    account = read_account(db, account_name)
-    print(f"create_account: account {account}")
+    account = read_account_by_name(db, account_name)
+    print(f"create_account: account {account} -> {account_name}")
     if account:
-        print(f"Account already exist: {account_name}, {account.id}")
+        print(f"Account already exist: {account_name}, {account}")
         return None
-
+    print(f"create_account: {user_id} {account_name} {account_type} {currency} {initial_balance}")
     # Add account to the database
     db_account = Account(
         user_id=user_id,

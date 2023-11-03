@@ -2,7 +2,7 @@ from sqlalchemy import select
 
 from modules.db_database import SessionLocal
 from modules.db_models import User, Account, AccountTypeEnum
-from modules.utils import get_hashed_password, verify_password
+from modules.utils.hash import get_hashed_password, verify_password
 
 
 #

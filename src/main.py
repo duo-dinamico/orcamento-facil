@@ -6,11 +6,14 @@ from modules.frame_monthly_categories import MonthlyCategories
 
 from modules.db_database import SessionLocal, engine
 from modules.db_models import Base
+from modules.utils.logging import logger
 
 
 class MainWindow(tk.Tk):
     def __init__(self, session, logged_in, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
+
+        logger.info("---Start of the API.---")
 
         # Pass the db session
         self.session = session

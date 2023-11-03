@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 from ..modules.db_models import Base, User, Account
 from ..modules.db_crud import create_user
-from ..modules.utils import get_hashed_password
+from ..modules.utils.hash import get_hashed_password
 
 engine = create_engine("sqlite:///test.db")
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

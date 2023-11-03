@@ -3,6 +3,7 @@ from sqlalchemy import select
 from modules.db_database import SessionLocal
 from modules.db_models import User, Account, AccountTypeEnum
 from modules.utils.hash import get_hashed_password, verify_password
+from modules.utils.logging import logger
 
 
 #
@@ -22,7 +23,7 @@ def read_user_by_name(db: SessionLocal, username: str) -> User:
         None: if the username don't exist.
     """
     user = db.scalars(select(User).where(User.username == username)).first()
-    print(f"read_user_by_name: {user}")
+    logger.info(f"read_user_by_name: {user}")
     if not user:
         return None
     return user
@@ -40,7 +41,7 @@ def read_user_by_id(db: SessionLocal, id: int) -> User:
         None: if the id don't exist.
     """
     user = db.scalars(select(User).where(User.id == id)).first()
-    print(f"read_user_by_id: {user}")
+    logger.info(f"read_user_by_id: {user}")
     if not user:
         return None
     return user
@@ -61,9 +62,8 @@ def create_user(db: SessionLocal, username: str, user_password: str) -> User.id:
 
     # Check if the username already exist
     user = read_user_by_name(db, username)
-    print(f"create user: user {user}")
+    logger.info(f"create user: user {user}")
     if user:
-        print(f"User already exist: {username}, {user.id}")
         return None
 
     # Crypt the password
@@ -74,7 +74,7 @@ def create_user(db: SessionLocal, username: str, user_password: str) -> User.id:
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    print(f"create_user: {db_user.id}")
+    logger.info(f"create_user: {db_user.id}")
     return db_user.id
 
 
@@ -91,7 +91,7 @@ def login_user(db: SessionLocal, username: str, user_password: str) -> User.id:
 
     """
     user = read_user_by_name(db, username)
-    print(f"login_user: user {user}")
+    logger.info(f"login_user: user {user}")
 
     if user == None or not verify_password(user_password, user.password):
         return None
@@ -117,7 +117,7 @@ def read_account_by_id(db: SessionLocal, account_id: str) -> Account:
         None: if the account don't exist.
     """
     account = db.scalars(select(Account).where(Account.id == account_id)).first()
-    print(f"read_account_by_id: {account}")
+    logger.info(f"read_account_by_id: {account}")
     if not account:
         return None
     return account
@@ -134,9 +134,8 @@ def read_account_by_name(db: SessionLocal, account_name: str) -> int:
         account id: if the account exist.
         None: if the account don't exist.
     """
-    print(f"read_account_by_name: {account_name}")
     account = db.scalars(select(Account).where(Account.name == account_name)).first()
-    print(f"read_account_by_name: {account}")
+    logger.info(f"read_account_by_name: {account}")
     if not account:
         return None
     return account.id
@@ -165,15 +164,23 @@ def create_account(
     # Check if the user id is valid
     user = read_user_by_id(db, id=user_id)
     if not user:
+        logger.info(f"User don't exist: {user_id}.")
         return None
 
     # Check if the account name already exist
     account = read_account_by_name(db, account_name)
-    print(f"create_account: account {account} -> {account_name}")
     if account:
-        print(f"Account already exist: {account_name}, {account}")
+        logger.info(f"Account already exist: {account_name}.")
         return None
-    print(f"create_account: {user_id} {account_name} {account_type} {currency} {initial_balance}")
+    logger.info(
+        f"create_account: {user_id} {account_name} {account_type} {currency} {initial_balance}"
+    )
+
+    # Check if type is valid
+    if account_type not in AccountTypeEnum.__members__:
+        logger.info(f"Account type don't exist: {account_type}.")
+        return None
+
     # Add account to the database
     db_account = Account(
         user_id=user_id,
@@ -205,9 +212,10 @@ def read_user_accounts(db: SessionLocal, user_id: int) -> list:
     if not user:
         return None
 
-    # get the list of accounts
-    account_list = db.scalars(select(Account).where(Account.user_id == user_id)).all()
-    return account_list
+    # get the list of accounts id's
+    account_id_list = db.scalars(select(Account.id).where(Account.user_id == user_id)).all()
+    logger.info(f"List of accounts: {account_id_list}")
+    return account_id_list
 
 
 def delete_account(db: SessionLocal, account_id: int, user_id: int) -> bool:

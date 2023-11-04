@@ -8,6 +8,7 @@ from modules.db_crud import (
     read_user_accounts,
     delete_account,
 )
+from modules.utils.logging import logger
 
 from .popups.add_income import AddIncomePopUp
 from .popups.add_account import AddAccountPopUp
@@ -230,6 +231,7 @@ class StartingPage(ttk.Frame):
 
         # Get the list of accounts
         account_list = read_user_accounts(self.controller.session, self.controller.logged_in)
+        logger.info(f"refresh_accounts: {account_list}")
 
         if account_list != None:
             for i, item in enumerate(account_list):

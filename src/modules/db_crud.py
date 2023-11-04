@@ -213,9 +213,9 @@ def read_user_accounts(db: SessionLocal, user_id: int) -> list:
         return None
 
     # get the list of accounts id's
-    account_id_list = db.scalars(select(Account.id).where(Account.user_id == user_id)).all()
-    logger.info(f"List of accounts: {account_id_list}")
-    return account_id_list
+    accounts_list = db.scalars(select(Account).where(Account.user_id == user_id)).all()
+    logger.info(f"List of accounts: {accounts_list}")
+    return accounts_list
 
 
 def delete_account(db: SessionLocal, account_id: int, user_id: int) -> bool:

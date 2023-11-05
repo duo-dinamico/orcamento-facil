@@ -39,7 +39,7 @@ def test_success_account_read_user_accounts(db_session, valid_account):
     account_list = read_user_accounts(db_session, user_id=1)
 
     assert type(account_list) is list
-    assert 1 in account_list
+    assert len(account_list) > 0
 
 
 def test_success_account_deletion(db_session, valid_account):

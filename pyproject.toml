@@ -20,6 +20,7 @@ line-length = 100
 
 [tool.pytest.ini_options]
 pythonpath = "src"
+addopts = "-v"
 
 [build-system]
 requires = ["poetry-core"]

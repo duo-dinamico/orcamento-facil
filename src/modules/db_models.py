@@ -80,7 +80,7 @@ class Transaction(Base):
     description: Mapped[Optional[str]]
 
 
-class SubCategories(Base):
+class SubCategory(Base):
     __tablename__ = "subcategories"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -91,7 +91,7 @@ class SubCategories(Base):
     include: Mapped[bool] = mapped_column(default=True)
 
 
-class Categories(Base):
+class Category(Base):
     __tablename__ = "categories"
 
     id: Mapped[int] = mapped_column(primary_key=True)

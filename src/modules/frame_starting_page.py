@@ -148,11 +148,13 @@ class StartingPage(ttk.Frame):
         for index, title in enumerate(self.titles_credit_cards):
             title.grid(**self.paddings, column=index, row=0, sticky="n")
 
-        ttk.Button(
+        self.next_button = ttk.Button(
             self,
-            text="Seguinte",
+            text="Next",
+            state="disabled",
             command=lambda: controller.show_frame("MonthlyCategories"),
-        ).grid(column=0, row=3, columnspan=2, pady=5, padx=5, sticky="ew")
+        )
+        self.next_button.grid(column=0, row=3, columnspan=2, pady=5, padx=5, sticky="ew")
 
         self.refresh_accounts()
         self.refresh_incomes()
@@ -213,6 +215,12 @@ class StartingPage(ttk.Frame):
         self.accounts.append(account)
         self.popup.destroy()
         self.refresh_accounts()
+
+    def check_required(self):
+        if len(self.accounts) > 0 and len(self.incomes) > 0:
+            self.next_button.config(state="normal")
+        else:
+            self.next_button.config(state="disabled")
 
     def add_income(self, income):
         self.incomes.append(income)

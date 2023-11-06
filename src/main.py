@@ -5,8 +5,8 @@ from modules.frame_starting_page import StartingPage
 from modules.frame_monthly_categories import MonthlyCategories
 from modules.frame_accounts_summary import AccountsSummary
 
-from modules.db_database import SessionLocal, engine
-from modules.db_models import Base
+from modules.db.db_database import SessionLocal, engine
+from modules.db.db_models import Base
 from modules.utils.logging import logger
 
 

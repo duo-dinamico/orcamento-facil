@@ -1,10 +1,10 @@
 from sqlalchemy import select
 from datetime import datetime
 
-from modules.utils.logging import logger
+from ..utils.logging import logger
 
-from modules.db_database import SessionLocal
-from modules.db_models import Transaction
+from .db_database import SessionLocal
+from .db_models import Transaction
 
 
 def create_transaction(

@@ -1,10 +1,10 @@
 from sqlalchemy import select
 from datetime import datetime
 
-from modules.utils.logging import logger
+from ..utils.logging import logger
 
-from ..db_database import SessionLocal
-from ..db_models import Category
+from .db_database import SessionLocal
+from .db_models import Category
 
 
 def read_category_by_name(db: SessionLocal, name: str) -> int:

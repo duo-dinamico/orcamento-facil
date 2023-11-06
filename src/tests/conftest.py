@@ -3,7 +3,7 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from ..modules.db_models import Base, User, Account
+from ..modules.db_models import Base, User, Account, Category
 from ..modules.db_crud import create_user
 from ..modules.utils.hash import get_hashed_password
 
@@ -33,4 +33,10 @@ def valid_user(db_session):
 @pytest.fixture()
 def valid_account(db_session, valid_user):
     db_session.add(Account(user_id=1, name="validAccount"))
+    db_session.commit()
+
+
+@pytest.fixture()
+def valid_category(db_session):
+    db_session.add(Category(name="validCategory"))
     db_session.commit()

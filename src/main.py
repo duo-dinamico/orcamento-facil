@@ -3,6 +3,7 @@ from tkinter import ttk
 
 from modules.frame_starting_page import StartingPage
 from modules.frame_monthly_categories import MonthlyCategories
+from modules.frame_accounts_summary import AccountsSummary
 
 from modules.db_database import SessionLocal, engine
 from modules.db_models import Base
@@ -41,7 +42,11 @@ class MainWindow(tk.Tk):
         container.columnconfigure(0, weight=1)
 
         self.frames = {}  # We will now create a dictionary of frames
-        for F in (StartingPage, MonthlyCategories):  # add the components to the dictionary.
+        for F in (
+            StartingPage,
+            MonthlyCategories,
+            AccountsSummary,
+        ):  # add the components to the dictionary.
             frame = F(container, self)
             self.frames[F.__name__] = frame
             frame.grid(row=0, column=0, sticky="nsew")

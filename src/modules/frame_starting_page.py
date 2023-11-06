@@ -216,9 +216,10 @@ class StartingPage(ttk.Frame):
         self.accounts.append(account)
         self.popup.destroy()
         self.refresh_accounts()
+        self.check_required()
 
     def check_required(self):
-        if len(self.accounts) > 0 and len(self.incomes) > 0:
+        if len(self.line_widgets) > 0 and len(self.line_widgets_incomes) > 0:
             self.next_button.config(state="normal")
         else:
             self.next_button.config(state="disabled")
@@ -227,6 +228,7 @@ class StartingPage(ttk.Frame):
         self.incomes.append(income)
         self.popup.destroy()
         self.refresh_incomes()
+        self.check_required()
 
     def add_credit_card(self, credit_card):
         self.credit_cards.append(credit_card)

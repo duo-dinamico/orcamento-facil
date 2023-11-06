@@ -13,7 +13,7 @@ class AddIncomePopUp(tk.Toplevel):
         self.fields = []
         self.income_source_name = tk.StringVar()
         self.income_source_name.trace_add("write", self.activate_add_income)
-        self.predicted_income = tk.StringVar()
+        self.predicted_income = tk.StringVar(value="0")
         self.predicted_income.trace_add("write", self.activate_add_income)
         self.income_date_day = tk.StringVar(value="Day")
         self.income_date_month = tk.StringVar(value="Month")
@@ -99,8 +99,8 @@ class AddIncomePopUp(tk.Toplevel):
 
     def activate_add_income(self, *args):
         income_name = self.income_source_name.get()
-        predicted_income = int(self.predicted_income.get())
-        if income_name != "" and predicted_income != 0:
+        predicted_income = self.predicted_income.get()
+        if income_name != "" and int(predicted_income) != 0:
             self.add_income.config(state="enabled")
         else:
             self.add_income.config(state="disabled")

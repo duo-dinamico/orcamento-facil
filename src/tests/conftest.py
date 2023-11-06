@@ -4,7 +4,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from ..modules.db_models import Base, User, Account, Category
-from ..modules.db_crud import create_user
 from ..modules.utils.hash import get_hashed_password
 
 engine = create_engine("sqlite:///test.db")

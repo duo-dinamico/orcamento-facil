@@ -1,11 +1,14 @@
 import pytest
 
 from .conftest import db_session, valid_user, valid_account
-from ..modules.db_crud import (
+from ..modules.db.db_crud_user import (
+    read_user_accounts,
+)
+
+from ..modules.db.db_crud_account import (
     read_account_by_name,
     read_account_by_id,
     create_account,
-    read_user_accounts,
     delete_account,
 )
 

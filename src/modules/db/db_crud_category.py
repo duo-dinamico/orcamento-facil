@@ -3,8 +3,8 @@ from datetime import datetime
 
 from modules.utils.logging import logger
 
-from modules.db_database import SessionLocal
-from modules.db_models import Category
+from ..db_database import SessionLocal
+from ..db_models import Category
 
 
 def read_category_by_name(db: SessionLocal, name: str) -> int:
@@ -23,6 +23,23 @@ def read_category_by_name(db: SessionLocal, name: str) -> int:
     if not category:
         return None
     return category.id
+
+
+def read_category_list(db: SessionLocal) -> list:
+    """Return a list of all categories.
+
+    Args:
+        db: database session.
+
+    Returns:
+        category_list: list of all categories, if there is at least one category.
+        None: if there is no category.
+    """
+    category_list = db.scalars(select(Category)).all()
+    logger.info(f"read_category_by_name: {category_list}")
+    if len(category_list) == 0:
+        return None
+    return category_list
 
 
 def create_category(db: SessionLocal, name: str) -> int:

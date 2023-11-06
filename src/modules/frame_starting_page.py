@@ -1,13 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 
-from modules.db_crud import (
-    create_user,
-    login_user,
-    create_account,
-    read_user_accounts,
-    delete_account,
-)
+from .db.db_crud_user import create_user, login_user, read_user_accounts
+from .db.db_crud_account import create_account, delete_account
 from .utils.logging import logger
 
 from .popups.add_income import AddIncomePopUp
@@ -211,7 +206,7 @@ class StartingPage(ttk.Frame):
             "BANK",
             account["currency"],
         )
-        print(f"add_account: {account}")
+        logger.info(f"add_account: {account}")
         self.accounts.append(account)
         self.popup.destroy()
         self.refresh_accounts()

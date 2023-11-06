@@ -8,7 +8,7 @@ from modules.db_crud import (
     read_user_accounts,
     delete_account,
 )
-from modules.utils.logging import logger
+from .utils.logging import logger
 
 from .popups.add_income import AddIncomePopUp
 from .popups.add_account import AddAccountPopUp
@@ -65,8 +65,7 @@ class StartingPage(ttk.Frame):
         # Here starts the field listing and building
         self.nome = tk.StringVar()
         self.password = tk.StringVar()
-        self.information = tk.StringVar()
-        self.information.set("Information.")
+        self.information = tk.StringVar(value="Information.")
         self.nome.trace_add("write", self.name_trace)
         self.add_account_button = ttk.Button(
             self.frames_left["adding_details"],

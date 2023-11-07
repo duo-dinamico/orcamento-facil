@@ -88,7 +88,7 @@ class SubCategory(Base):
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id", name="category"))
     name: Mapped[str] = mapped_column(unique=True)
     recurrent: Mapped[bool] = mapped_column(default=False)
-    recurrency: Mapped[RecurrencyEnum]
+    recurrency: Mapped[Optional[RecurrencyEnum]]
     include: Mapped[bool] = mapped_column(default=True)
 
 

@@ -25,6 +25,24 @@ def read_category_by_name(db: SessionLocal, name: str) -> int:
     return category.id
 
 
+def read_category_by_id(db: SessionLocal, category_id: int) -> Category:
+    """Return a category that has the given category id.
+
+    Args:
+        db: database session.
+        category_id: the category id.
+
+    Returns:
+        category: category object, if the category exist.
+        None: if the category don't exist.
+    """
+    category = db.scalars(select(Category).where(Category.id == category_id)).first()
+    logger.info(f"read_category_by_id: {category}")
+    if not category:
+        return None
+    return category
+
+
 def read_category_list(db: SessionLocal) -> list:
     """Return a list of all categories.
 

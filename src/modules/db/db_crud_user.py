@@ -3,7 +3,7 @@ from sqlalchemy import select
 from ..utils.hash import get_hashed_password, verify_password
 from ..utils.logging import logger
 from .db_database import SessionLocal
-from .db_models import Account, AccountTypeEnum, User
+from .db_models import Account, User
 
 
 def read_user_by_name(db: SessionLocal, username: str) -> User:
@@ -17,6 +17,7 @@ def read_user_by_name(db: SessionLocal, username: str) -> User:
         user: if the user exist.
         None: if the username don't exist.
     """
+
     user = db.scalars(select(User).where(User.username == username)).first()
     logger.info(f"read_user_by_name: {user}")
     if not user:
@@ -35,6 +36,7 @@ def read_user_by_id(db: SessionLocal, id: int) -> User:
         user: if the user id exist.
         None: if the id don't exist.
     """
+
     user = db.scalars(select(User).where(User.id == id)).first()
     logger.info(f"read_user_by_id: {user}")
     if not user:
@@ -42,8 +44,8 @@ def read_user_by_id(db: SessionLocal, id: int) -> User:
     return user
 
 
-def create_user(db: SessionLocal, username: str, user_password: str) -> User.id:
-    """Create a new user in the database, and return the his id.
+def create_user(db: SessionLocal, username: str, user_password: str) -> int:
+    """Create a new user in the database, and return the id.
 
     Args:
         db: database session.
@@ -57,8 +59,8 @@ def create_user(db: SessionLocal, username: str, user_password: str) -> User.id:
 
     # Check if the username already exist
     user = read_user_by_name(db, username)
-    logger.info(f"create user: user {user}")
     if user:
+        logger.info(f"username already exist: {user}")
         return None
 
     # Crypt the password
@@ -69,11 +71,11 @@ def create_user(db: SessionLocal, username: str, user_password: str) -> User.id:
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    logger.info(f"create_user: {db_user.id}")
+    logger.info(f"created user: {db_user.id}")
     return db_user.id
 
 
-def login_user(db: SessionLocal, username: str, user_password: str) -> User.id:
+def login_user(db: SessionLocal, username: str, user_password: str) -> int:
     """Return the id of the user, if the password is correct.
 
     Args:
@@ -83,8 +85,8 @@ def login_user(db: SessionLocal, username: str, user_password: str) -> User.id:
 
     Returns:
         Returns the id of the user that is logging in.
-
     """
+
     user = read_user_by_name(db, username)
     logger.info(f"login_user: user {user}")
 
@@ -93,11 +95,6 @@ def login_user(db: SessionLocal, username: str, user_password: str) -> User.id:
 
     else:
         return user.id
-
-
-#
-# Account
-#
 
 
 def read_user_accounts(db: SessionLocal, user_id: int) -> list:
@@ -115,6 +112,7 @@ def read_user_accounts(db: SessionLocal, user_id: int) -> list:
     # Check if the user id is valid
     user = read_user_by_id(db, user_id)
     if not user:
+        logger.info(f"invalid user id: {user}")
         return None
 
     # get the list of accounts id's

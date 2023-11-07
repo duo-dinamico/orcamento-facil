@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from sqlalchemy import select
 
 from ..utils.logging import logger
@@ -26,7 +24,7 @@ def read_category_by_name(db: SessionLocal, name: str) -> int:
 
 
 def read_category_by_id(db: SessionLocal, category_id: int) -> Category:
-    """Return a category that has the given category id.
+    """Return a category object that has the given category id.
 
     Args:
         db: database session.
@@ -54,7 +52,7 @@ def read_category_list(db: SessionLocal) -> list:
         None: if there is no category.
     """
     category_list = db.scalars(select(Category)).all()
-    logger.info(f"read_category_by_name: {category_list}")
+    logger.info(f"read_category_list: {category_list}")
     if len(category_list) == 0:
         return None
     return category_list

@@ -1,10 +1,9 @@
 from sqlalchemy import select
 
-from ..utils.hash import get_hashed_password, verify_password
 from ..utils.logging import logger
 from .db_crud_user import read_user_by_id
 from .db_database import SessionLocal
-from .db_models import Account, AccountTypeEnum, User
+from .db_models import Account, AccountTypeEnum
 
 
 def read_account_by_id(db: SessionLocal, account_id: str) -> Account:
@@ -33,7 +32,7 @@ def read_account_by_name(db: SessionLocal, account_name: str) -> int:
         account_name: the account name.
 
     Returns:
-        account id: if the account exist.
+        account_id: if the account exist.
         None: if the account don't exist.
     """
     account = db.scalars(select(Account).where(Account.name == account_name)).first()
@@ -50,16 +49,19 @@ def create_account(
     initial_balance: int = 0,
     account_type: AccountTypeEnum = "BANK",
     currency: str = "EUR",
-) -> Account.id:
+) -> int:
     """Create a new account in the database, for a given user and return the new account id.
 
     Args:
         db: database session.
         account_name: the name of the account, that must be unique.
         user_id: user id that own the account.
+        initial_balance: the initial balance of the account, it's zero by default
+        account_type: the type of the account, it's BANK by default
+        currency: the currency of the account, it's EUR by default
 
     Returns:
-        account id: if a new account was created
+        account_id: if a new account was created
         None: if the user_id is not valid or if the account name already exists
     """
 
@@ -74,14 +76,15 @@ def create_account(
     if account:
         logger.info(f"Account already exist: {account_name}.")
         return None
-    logger.info(
-        f"create_account: {user_id} {account_name} {account_type} {currency} {initial_balance}"
-    )
 
     # Check if type is valid
     if account_type not in AccountTypeEnum.__members__:
         logger.info(f"Account type don't exist: {account_type}.")
         return None
+
+    logger.info(
+        f"create_account: {user_id} {account_name} {account_type} {currency} {initial_balance}"
+    )
 
     # Add account to the database
     db_account = Account(
@@ -119,7 +122,7 @@ def delete_account(db: SessionLocal, account_id: int, user_id: int) -> bool:
 
     else:
         # Delete the account
-        delete_result = db.delete(account)
+        db.delete(account)
         db.commit()
 
         return True

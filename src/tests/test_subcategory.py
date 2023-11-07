@@ -5,7 +5,7 @@ from ..modules.db.db_crud_subcategory import (
     read_subcategory_by_name,
     read_subcategory_list_by_category_id,
 )
-from .conftest import db_session, valid_category
+from .conftest import db_session, valid_category, second_valid_category
 
 #
 # DEFAULT BEHAVIOUR
@@ -51,6 +51,14 @@ def test_error_read_subcategory_list_dont_exist(db_session, valid_category):
 
 
 def test_error_read_subcategory_list_by_category_id_category_invalid(db_session, valid_subcategory):
+    category_list = read_subcategory_list_by_category_id(db_session, category_id=2)
+
+    assert category_list == None
+
+
+def test_error_read_subcategory_list_wrong_category(
+    db_session, valid_subcategory, second_valid_category
+):
     category_list = read_subcategory_list_by_category_id(db_session, category_id=2)
 
     assert category_list == None

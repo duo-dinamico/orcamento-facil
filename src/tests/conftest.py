@@ -41,6 +41,12 @@ def valid_category(db_session):
 
 
 @pytest.fixture()
+def second_valid_category(db_session):
+    db_session.add(Category(name="secondvalidCategory"))
+    db_session.commit()
+
+
+@pytest.fixture()
 def valid_subcategory(db_session, valid_category):
     db_session.add(SubCategory(category_id=1, name="validSubCategory"))
     db_session.commit()

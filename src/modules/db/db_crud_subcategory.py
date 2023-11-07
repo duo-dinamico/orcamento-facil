@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from sqlalchemy import select
 
 from ..utils.logging import logger
@@ -9,7 +7,7 @@ from .db_models import SubCategory, RecurrencyEnum
 
 
 def read_subcategory_by_name(db: SessionLocal, name: str) -> int:
-    """Return a subcategory id that has the given name.
+    """Return a subcategory id that has the given subcategory name.
 
     Args:
         db: database session.
@@ -20,21 +18,21 @@ def read_subcategory_by_name(db: SessionLocal, name: str) -> int:
         None: if the subcategory don't exist.
     """
     subcategory = db.scalars(select(SubCategory).where(SubCategory.name == name)).first()
-    logger.info(f"read_category_by_name: {subcategory}")
+    logger.info(f"read_subcategory_by_name: {subcategory}")
     if not subcategory:
         return None
     return subcategory.id
 
 
-def read_subcategory_list_by_category_id(db: SessionLocal, category_id) -> list:
-    """Return a list of all subcategories from a category id.
+def read_subcategory_list_by_category_id(db: SessionLocal, category_id: int) -> list:
+    """Return a list of all subcategories from a given category id.
 
     Args:
         db: database session.
         category_id: category id from where we get the subcategories list
 
     Returns:
-        subcategory_list: list of all categories for a given category id, if there is at least one subcategory.
+        subcategory_list: list of all subcategories for a given category id, if there is at least one subcategory.
         None: if there is no subcategory, or category_id.
     """
 
@@ -44,7 +42,9 @@ def read_subcategory_list_by_category_id(db: SessionLocal, category_id) -> list:
         logger.info(f"category_id don't exist: {category}.")
         return None
 
-    subcategory_list = db.scalars(select(SubCategory)).all()
+    subcategory_list = db.scalars(
+        select(SubCategory).where(SubCategory.category_id == category_id)
+    ).all()
     logger.info(f"subcategory list: {subcategory_list}")
     if len(subcategory_list) == 0:
         return None

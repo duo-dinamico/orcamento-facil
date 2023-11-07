@@ -1,8 +1,8 @@
-from sqlalchemy import select
 from datetime import datetime
 
-from ..utils.logging import logger
+from sqlalchemy import select
 
+from ..utils.logging import logger
 from .db_database import SessionLocal
 from .db_models import Category
 

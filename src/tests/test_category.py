@@ -1,7 +1,7 @@
 import pytest
 
-from .conftest import db_session, valid_category
 from ..modules.db.db_crud_category import create_category, read_category_by_name, read_category_list
+from .conftest import db_session, valid_category
 
 #
 # DEFAULT BEHAVIOUR

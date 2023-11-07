@@ -1,14 +1,9 @@
 from sqlalchemy import select
 
-from .db_database import SessionLocal
-from .db_models import User, Account, AccountTypeEnum
 from ..utils.hash import get_hashed_password, verify_password
 from ..utils.logging import logger
-
-
-#
-# User
-#
+from .db_database import SessionLocal
+from .db_models import Account, AccountTypeEnum, User
 
 
 def read_user_by_name(db: SessionLocal, username: str) -> User:

@@ -1,9 +1,8 @@
 import pytest
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from ..modules.db.db_models import Base, User, Account, Category
+from ..modules.db.db_models import Account, Base, Category, User
 from ..modules.utils.hash import get_hashed_password
 
 engine = create_engine("sqlite:///test.db")

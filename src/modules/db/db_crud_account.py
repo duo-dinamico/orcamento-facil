@@ -1,10 +1,10 @@
 from sqlalchemy import select
 
-from .db_database import SessionLocal
-from .db_models import User, Account, AccountTypeEnum
 from ..utils.hash import get_hashed_password, verify_password
 from ..utils.logging import logger
 from .db_crud_user import read_user_by_id
+from .db_database import SessionLocal
+from .db_models import Account, AccountTypeEnum, User
 
 
 def read_account_by_id(db: SessionLocal, account_id: str) -> Account:

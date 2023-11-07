@@ -1,9 +1,10 @@
-from enum import Enum
 from datetime import datetime
+from enum import Enum
+from typing import Optional
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from typing import Optional
+
 from ..utils.logging import logger
 
 

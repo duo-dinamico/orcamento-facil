@@ -26,7 +26,7 @@ addopts = "-v"
 [tool.isort]
 line_length = 100
 profile = "black"
-known_first_party = ["src"]
+src_paths = ["src"]
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,67 +1,54 @@
-import tkinter as tk
-from tkinter import ttk
+# from modules.db_database import SessionLocal, engine
+# from modules.db_models import Base
+# from modules.utils.logging import logger
 
-from modules.frame_starting_page import StartingPage
-from modules.frame_monthly_categories import MonthlyCategories
-from modules.frame_accounts_summary import AccountsSummary
-
-from modules.db_database import SessionLocal, engine
-from modules.db_models import Base
-from modules.utils.logging import logger
+from view import RootView
+from presenter import Presenter
+from model import Model
 
 
-class MainWindow(tk.Tk):
-    def __init__(self, session, logged_in, *args, **kwargs):
-        tk.Tk.__init__(self, *args, **kwargs)
+def main() -> None:
+    model = Model()
+    view = RootView()
+    presenter = Presenter(model, view)
+    presenter.run()
 
-        logger.info("---Start of the API.---")
+    # def __init__(self) -> None:
+    #     super().__init__()
 
-        # Pass the db session
-        self.session = session
-        self.logged_in = logged_in
+    # logger.info("---Start of the API.---")
 
-        # Constants
-        window_width = 1200
-        window_height = 800
+    # Pass the db session
+    # self.session = session
+    # self.logged_in = logged_in
 
-        self.wm_title("Ez Budget")
+    # configuring the location of the container using grid
+    # container.rowconfigure(0, weight=1)
+    # container.columnconfigure(0, weight=1)
 
-        self.resizable(False, False)  # Prevent resizing
-        x_center = self.winfo_screenwidth() / 2 - window_width / 2
-        y_center = self.winfo_screenheight() / 2 - window_height / 2
-        self.wm_geometry(
-            f"{window_width}x{window_height}+{int(x_center)}+{int(y_center)}"
-        )  # Put the windows in the center of the screen
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(0, weight=1)
+    # self.frames = {}  # We will now create a dictionary of frames
+    # for F in (
+    #     StartingPage,
+    #     MonthlyCategories,
+    #     AccountsSummary,
+    #     RegisterLogin,
+    # ):  # add the components to the dictionary.
+    #     frame = F(container, self)
+    #     self.frames[F.__name__] = frame
+    #     frame.grid(row=0, column=0, sticky="nsew")
 
-        container = ttk.Frame(self)  # creating a frame and assigning it to container
-        container.grid(column=0, row=0, sticky="nsew")
-        # configuring the location of the container using grid
-        container.rowconfigure(0, weight=1)
-        container.columnconfigure(0, weight=1)
+    # self.show_frame("RegisterLogin")  # Using a method to switch frames
 
-        self.frames = {}  # We will now create a dictionary of frames
-        for F in (
-            StartingPage,
-            MonthlyCategories,
-            AccountsSummary,
-        ):  # add the components to the dictionary.
-            frame = F(container, self)
-            self.frames[F.__name__] = frame
-            frame.grid(row=0, column=0, sticky="nsew")
-
-        self.show_frame("StartingPage")  # Using a method to switch frames
-
-    def show_frame(self, cont):
-        frame = self.frames[cont]
-        frame.tkraise()
+    # def show_frame(self, cont):
+    #     frame = self.frames[cont]
+    #     frame.tkraise()
 
 
 if __name__ == "__main__":
-    Base.metadata.create_all(engine)  # Start database
-    session = SessionLocal()
-    logged_in = None
+    main()
+    # Base.metadata.create_all(engine)  # Start database
+    # session = SessionLocal()
+    # logged_in = None
 
-    root = MainWindow(session, logged_in=None)
-    root.mainloop()
+    # root = MainWindow(session, logged_in=None)
+    # root.mainloop()

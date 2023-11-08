@@ -56,3 +56,9 @@ def valid_subcategory(db_session, valid_category):
 def valid_income(db_session, valid_account):
     db_session.add(Income(account_id=1, name="validIncome"))
     db_session.commit()
+
+
+@pytest.fixture()
+def valid_income_second(db_session, valid_account):
+    db_session.add(Income(account_id=1, name="validIncomeSecond"))
+    db_session.commit()

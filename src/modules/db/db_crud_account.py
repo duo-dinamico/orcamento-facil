@@ -3,7 +3,7 @@ from sqlalchemy import select
 from ..utils.logging import logger
 from .db_crud_user import read_user_by_id
 from .db_database import SessionLocal
-from .db_models import Account, AccountTypeEnum
+from .db_models import Account, AccountTypeEnum, Income
 
 
 def read_account_by_id(db: SessionLocal, account_id: str) -> Account:
@@ -126,3 +126,27 @@ def delete_account(db: SessionLocal, account_id: int, user_id: int) -> bool:
         db.commit()
 
         return True
+
+
+def read_account_incomes(db: SessionLocal, account_id: int) -> list:
+    """Return a list of account incomes.
+
+    Args:
+        db: database session.
+        account_id: user id owner of the accounts.
+
+    Returns:
+        income_list: list of the account incomes
+        None: if the account_id is not valid
+    """
+
+    # Check if the account_id is valid
+    account = read_account_by_id(db, account_id)
+    if not account:
+        logger.info(f"invalid account id: {account}")
+        return None
+
+    # get the list of income
+    income_list = db.scalars(select(Income).where(Income.account_id == account_id)).all()
+    logger.info(f"List of accounts: {income_list}")
+    return income_list

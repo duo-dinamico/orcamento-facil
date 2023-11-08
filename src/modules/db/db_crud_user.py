@@ -3,7 +3,7 @@ from sqlalchemy import select
 from ..utils.hash import get_hashed_password, verify_password
 from ..utils.logging import logger
 from .db_database import SessionLocal
-from .db_models import Account, User
+from .db_models import Account, Income, User
 
 
 def read_user_by_name(db: SessionLocal, username: str) -> User:
@@ -119,3 +119,40 @@ def read_user_accounts(db: SessionLocal, user_id: int) -> list:
     accounts_list = db.scalars(select(Account).where(Account.user_id == user_id)).all()
     logger.info(f"List of accounts: {accounts_list}")
     return accounts_list
+
+
+def read_user_incomes(db: SessionLocal, user_id: int) -> list:
+    """Return a list of incomes, from a given user.
+
+    Args:
+        db: database session.
+        user_id: user id owner of the accounts.
+
+    Returns:
+        income_list: list of the user incomes
+        None: if the user_id is not valid
+    """
+
+    # Check if the user_id is valid
+    account = read_user_by_id(db, user_id)
+    if not account:
+        logger.info(f"invalid user id: {account}")
+        return None
+
+    # get the list of accounts of the user
+    account_list = read_user_accounts(db, user_id=user_id)
+    logger.info(f"read_user_incomes, list of accounts: {account_list}")
+
+    income_list = []
+
+    for acc in account_list:
+        logger.info(f"read_user_incomes, single account: {acc}")
+        account_income_list = db.scalars(
+            select(Income).where(Income.account_id == acc.user_id)
+        ).all()
+        income_list = income_list + account_income_list
+        logger.info(f"read_user_incomes, joinned list: {income_list}")
+
+    # get the list of income
+    logger.info(f"List of incomes: {income_list}")
+    return income_list

@@ -5,6 +5,7 @@ from ..modules.db.db_crud_account import (
     delete_account,
     read_account_by_id,
     read_account_by_name,
+    read_account_incomes,
 )
 from ..modules.db.db_crud_user import read_user_accounts
 from .conftest import db_session, valid_account, valid_user
@@ -34,17 +35,17 @@ def test_success_account_creation(db_session, valid_user):
     assert account_id is 1
 
 
-def test_success_account_read_user_accounts(db_session, valid_account):
-    account_list = read_user_accounts(db_session, user_id=1)
-
-    assert type(account_list) is list
-    assert len(account_list) > 0
-
-
 def test_success_account_deletion(db_session, valid_account):
     result = delete_account(db_session, account_id=1, user_id=1)
 
     assert result is True
+
+
+def test_success_account_incomes_list(db_session, valid_income):
+    income_list = read_account_incomes(db_session, account_id=1)
+
+    assert type(income_list) is list
+    assert len(income_list) > 0
 
 
 #
@@ -84,12 +85,6 @@ def test_error_account_creation_invalid_type(db_session, valid_user):
     assert account_id is None
 
 
-def test_error_account_read_user_accounts_invalid_user(db_session):
-    account_list = read_user_accounts(db_session, user_id=1)
-
-    assert account_list is None
-
-
 def test_error_acccount_delete_wrong_account_id(db_session, valid_account):
     result = delete_account(db_session, account_id=2, user_id=1)
 
@@ -100,3 +95,9 @@ def test_error_acccount_delete_wrong_user_id(db_session, valid_account):
     result = delete_account(db_session, account_id=1, user_id=2)
 
     assert result is False
+
+
+def test_error_account_income_list_invalid_account(db_session):
+    income_list = read_account_incomes(db_session, account_id=1)
+
+    assert income_list is None

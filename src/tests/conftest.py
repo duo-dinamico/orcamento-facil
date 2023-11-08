@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from ..modules.db.db_models import Account, Base, Category, SubCategory, User
+from ..modules.db.db_models import Account, Base, Category, Income, SubCategory, User
 from ..modules.utils.hash import get_hashed_password
 
 engine = create_engine("sqlite:///test.db")
@@ -49,4 +49,10 @@ def second_valid_category(db_session):
 @pytest.fixture()
 def valid_subcategory(db_session, valid_category):
     db_session.add(SubCategory(category_id=1, name="validSubCategory"))
+    db_session.commit()
+
+
+@pytest.fixture()
+def valid_income(db_session, valid_account):
+    db_session.add(Income(account_id=1, name="validIncome"))
     db_session.commit()

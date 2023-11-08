@@ -5,7 +5,7 @@ from ..modules.db.db_crud_subcategory import (
     read_subcategory_by_name,
     read_subcategory_list_by_category_id,
 )
-from .conftest import db_session, valid_category, second_valid_category
+from .conftest import db_session, second_valid_category, valid_category
 
 #
 # DEFAULT BEHAVIOUR

@@ -39,6 +39,22 @@ class RecurrencyEnum(str, Enum):
     YEAR = "Yearly"
 
 
+# Define an enum type for months
+class MonthEnum(int, Enum):
+    JANUARY = 1
+    FEBRUARY = 2
+    MARCH = 3
+    APRIL = 4
+    MAY = 5
+    JUNE = 6
+    JULY = 7
+    AUGUST = 8
+    SEPTEMBER = 9
+    OCTOBER = 10
+    NOVEMBER = 11
+    DECEMBER = 12
+
+
 class Account(Base):
     __tablename__ = "accounts"
 
@@ -66,8 +82,14 @@ class Income(Base):
     name: Mapped[str] = mapped_column(unique=True)
     expected_income_value: Mapped[int] = mapped_column(default=0)  # In cents
     real_income_value: Mapped[int] = mapped_column(default=0)  # In cents
-    income_day: Mapped[Optional[str]]  # Saved as a string, need conversion
-    recurrency: Mapped[RecurrencyEnum]
+    income_day: Mapped[Optional[str]] = mapped_column(
+        default="1"
+    )  # Saved as a string, need conversion
+    income_month: Mapped[Optional[MonthEnum]] = mapped_column(default=MonthEnum.JANUARY)
+    recurrency: Mapped[Optional[RecurrencyEnum]] = mapped_column(default=RecurrencyEnum.ONE)
+
+    def __str__(self) -> str:
+        return f"ID: {self.id}, Name: {self.name}, Account ID: {self.account_id}."
 
 
 class Transaction(Base):

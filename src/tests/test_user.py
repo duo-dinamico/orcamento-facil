@@ -54,7 +54,7 @@ def test_success_user_incomes_list(db_session, valid_income, valid_income_second
     income_list = read_user_incomes(db_session, user_id=1)
 
     assert type(income_list) is list
-    assert len(income_list) > 0
+    assert len(income_list) == 2
 
 
 #

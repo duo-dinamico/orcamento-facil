@@ -142,16 +142,21 @@ def read_user_incomes(db: SessionLocal, user_id: int) -> list:
     # get the list of accounts of the user
     account_list = read_user_accounts(db, user_id=user_id)
     logger.info(f"read_user_incomes, list of accounts: {account_list}")
+    account_list_id = []
+    for acc in account_list:
+        account_list_id.append(acc.id)
+    logger.info(f"read_user_incomes, list of accounts id: {account_list_id}")
+
+    # Get the list of all incomes
+    income_list_all = db.scalars(select(Income)).all()
+    logger.info(f"read_user_incomes, list of all incomes: {income_list_all}")
 
     income_list = []
 
-    for acc in account_list:
-        logger.info(f"read_user_incomes, single account: {acc}")
-        account_income_list = db.scalars(
-            select(Income).where(Income.account_id == acc.user_id)
-        ).all()
-        income_list = income_list + account_income_list
-        logger.info(f"read_user_incomes, joinned list: {income_list}")
+    for inc in income_list_all:
+        logger.info(f"read_user_incomes, single income: {inc}")
+        if inc.account_id in account_list_id:
+            income_list.append(inc)
 
     # get the list of income
     logger.info(f"List of incomes: {income_list}")

@@ -1,8 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
 
-from .db.db_crud_user import create_user, login_user, read_user_accounts
-from .db.db_crud_account import create_account, delete_account
+from .db.db_crud_user import create_user, login_user, read_user_accounts, read_user_incomes
+from .db.db_crud_account import create_account, delete_account, read_account_incomes
+from .db.db_crud_income import create_income
 from .utils.logging import logger
 
 from .popups.add_income import AddIncomePopUp
@@ -166,6 +167,7 @@ class StartingPage(ttk.Frame):
             self.fields[1].config(state="disabled")
             self.fields[3].config(state="disabled")
             self.refresh_accounts()
+            self.refresh_incomes()
 
     def login(self):
         state = login_user(self.controller.session, self.nome.get(), self.password.get())
@@ -177,6 +179,7 @@ class StartingPage(ttk.Frame):
             self.fields[1].config(state="disabled")
             self.fields[3].config(state="disabled")
             self.refresh_accounts()
+            self.refresh_incomes()
 
     def logout(self):
         self.controller.logged_in = None
@@ -210,6 +213,7 @@ class StartingPage(ttk.Frame):
         self.accounts.append(account)
         self.popup.destroy()
         self.refresh_accounts()
+        self.refresh_incomes()
         self.check_required()
 
     def check_required(self):
@@ -219,6 +223,17 @@ class StartingPage(ttk.Frame):
             self.next_button.config(state="disabled")
 
     def add_income(self, income):
+        created_income = create_income(
+            self.controller.session,
+            income["account_id"],
+            income["name"],
+            income["expected_income_value"],
+            income["real_income_value"],
+            income["income_day"],
+            income["income_month"],
+            income["recurrency"],
+        )
+        logger.info(f"add_income: {created_income}")
         self.incomes.append(income)
         self.popup.destroy()
         self.refresh_incomes()
@@ -258,28 +273,34 @@ class StartingPage(ttk.Frame):
                 self.line_widgets.extend([account_label, balance_label, delete_button])
 
     def refresh_incomes(self):
+        logger.info(f"refresh_incomes")
         for widget in self.line_widgets_incomes:
             widget.destroy()
 
-        for i, item in enumerate(self.incomes):
-            income_name_label = ttk.Label(self.frames_right["income_list"], text=item["income"])
-            predicted_income_label = ttk.Label(
-                self.frames_right["income_list"], text=item["predicted_income"]
-            )
-            delete_button = ttk.Button(
-                self.frames_right["income_list"],
-                width=4,
-                style="Red.TButton",
-                command=lambda i=i: self.delete_income(i),
-            )
+        # Get the list of incomes
+        income_list = read_user_incomes(self.controller.session, self.controller.logged_in)
+        logger.info(f"refresh_incomes list: {income_list}")
 
-            income_name_label.grid(**self.paddings, column=0, row=i + 1, sticky="new")
-            predicted_income_label.grid(**self.paddings, column=1, row=i + 1, sticky="new")
-            delete_button.grid(**self.paddings, column=2, row=i + 1)
+        if income_list != None:
+            for i, item in enumerate(income_list):
+                income_name_label = ttk.Label(self.frames_right["income_list"], text=item.name)
+                predicted_income_label = ttk.Label(
+                    self.frames_right["income_list"], text=item.expected_income_value
+                )
+                delete_button = ttk.Button(
+                    self.frames_right["income_list"],
+                    width=4,
+                    style="Red.TButton",
+                    command=lambda i=i: self.delete_income(i),
+                )
 
-            self.line_widgets_incomes.extend(
-                [income_name_label, predicted_income_label, delete_button]
-            )
+                income_name_label.grid(**self.paddings, column=0, row=i + 1, sticky="new")
+                predicted_income_label.grid(**self.paddings, column=1, row=i + 1, sticky="new")
+                delete_button.grid(**self.paddings, column=2, row=i + 1)
+
+                self.line_widgets_incomes.extend(
+                    [income_name_label, predicted_income_label, delete_button]
+                )
 
     def refresh_credit_cards(self):
         for widget in self.line_widgets_credit_cards:
@@ -310,6 +331,7 @@ class StartingPage(ttk.Frame):
     def delete_account(self, account_id):
         delete_account(self.controller.session, account_id, self.controller.logged_in)
         self.refresh_accounts()
+        self.refresh_incomes()
 
     def delete_income(self, income_id):
         del self.incomes[income_id]

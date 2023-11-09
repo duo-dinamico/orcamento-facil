@@ -13,6 +13,7 @@ class AddIncomePopUp(tk.Toplevel):
         self.fields = []
         self.income_source_name = tk.StringVar()
         self.income_source_name.trace_add("write", self.activate_add_income)
+        self.income_source_account_id = tk.StringVar()
         self.predicted_income = tk.StringVar(value="0")
         self.predicted_income.trace_add("write", self.activate_add_income)
         self.income_date_day = tk.StringVar(value="Day")
@@ -27,6 +28,8 @@ class AddIncomePopUp(tk.Toplevel):
             [
                 ttk.Label(frame_popup, text="Income source name"),
                 ttk.Entry(frame_popup, textvariable=self.income_source_name),
+                ttk.Label(frame_popup, text="Account"),
+                ttk.Entry(frame_popup, textvariable=self.income_source_account_id),
                 ttk.Label(frame_popup, text="Predicted income"),
                 ttk.Entry(frame_popup, textvariable=self.predicted_income),
                 ttk.Label(frame_popup, text="Income date"),
@@ -87,8 +90,13 @@ class AddIncomePopUp(tk.Toplevel):
             state="disabled",
             command=lambda: self.parent.add_income(
                 {
-                    "income": self.income_source_name.get(),
-                    "predicted_income": int(self.predicted_income.get()),
+                    "account_id": int(self.income_source_account_id.get()),
+                    "name": self.income_source_name.get(),
+                    "expected_income_value": int(self.predicted_income.get()),
+                    "real_income_value": 0,
+                    "income_day": self.income_date_day.get(),
+                    "income_month": 1,
+                    "recurrency": "ONE",
                 }
             ),
         )

@@ -31,4 +31,4 @@ class RegisterLogin(tk.Toplevel):
         self.button_register_popup.bind("<Button-1>", presenter.handle_register_user)
         self.button_login_popup = ttk.Button(self, text="Login")
         self.button_login_popup.grid(row=5, column=1, padx=10, pady=5)
-        self.button_login_popup.bind("<Button-1>", parent.show_starting_view)
+        self.button_login_popup.bind("<Button-1>", presenter.handle_login_user)

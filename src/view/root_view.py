@@ -13,6 +13,9 @@ class Presenter(Protocol):
     def handle_register_user(self, event=None):
         ...
 
+    def run(self) -> None:
+        ...
+
 
 class RootView(tk.Tk):
     def __init__(self) -> None:
@@ -34,15 +37,21 @@ class RootView(tk.Tk):
 
         self.show_register_login_popup()
 
-    def user_created(self):
-        self.current_popup.error_message.set("User has been created")
+    def error_message_set(self, message: str) -> None:
+        self.current_popup.error_message.set(message)
 
-    def show_register_login_popup(self):
+    def get_username_and_password(self) -> {str, str}:
+        return {
+            "username": self.current_popup.username_popup.get(),
+            "password": self.current_popup.password_popup.get(),
+        }
+
+    def show_register_login_popup(self) -> None:
         if self.current_popup:
             self.current_popup.destroy()
         self.current_popup = self.register_login_popup
 
-    def show_starting_view(self, event=None):
+    def show_starting_view(self, event=None) -> None:
         if self.current_popup:
             self.current_popup.destroy()
         self.current_frame = self.starting_view

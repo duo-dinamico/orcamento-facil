@@ -1,14 +1,13 @@
 import pytest
 
-from .conftest import db_session, valid_user, valid_account
-from ..modules.db_crud import (
-    read_account_by_name,
-    read_account_by_id,
+from ..modules.db.db_crud_account import (
     create_account,
-    read_user_accounts,
     delete_account,
+    read_account_by_id,
+    read_account_by_name,
 )
-
+from ..modules.db.db_crud_user import read_user_accounts
+from .conftest import db_session, valid_account, valid_user
 
 #
 # DEFAULT BEHAVIOUR

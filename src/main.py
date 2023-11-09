@@ -5,6 +5,9 @@
 from view import RootView
 from presenter import Presenter
 from model import Model
+from modules.db.db_database import SessionLocal, engine
+from modules.db.db_models import Base
+from modules.utils.logging import logger
 
 
 def main() -> None:

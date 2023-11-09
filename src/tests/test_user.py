@@ -1,7 +1,7 @@
 import pytest
 
+from ..modules.db.db_crud_user import create_user, login_user, read_user_by_id, read_user_by_name
 from .conftest import db_session, valid_user
-from ..modules.db_crud import create_user, read_user_by_name, read_user_by_id, login_user
 
 #
 # DEFAULT BEHAVIOUR

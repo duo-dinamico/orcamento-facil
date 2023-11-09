@@ -1,5 +1,4 @@
 import tkinter as tk
-from tkinter import ttk
 from typing import Protocol
 
 from . import RegisterLogin
@@ -27,9 +26,6 @@ class RootView(tk.Tk):
         self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}+{int(x_center)}+{int(y_center)}")
 
     def init_ui(self, presenter: Presenter) -> None:
-        self.frame = ttk.Frame(self)
-        self.frame.grid(column=0, row=0, sticky="nsew")
-
         self.register_login_popup = RegisterLogin(self, presenter)
         self.starting_view = StartingView(self)
 
@@ -50,10 +46,4 @@ class RootView(tk.Tk):
         if self.current_popup:
             self.current_popup.destroy()
         self.current_frame = self.starting_view
-        self.current_frame.grid(column=0, row=0, sticky="nsew")
-
-    def show_temp_view(self, event=None):
-        if self.current_popup:
-            self.current_popup.destroy()
-        self.current_frame = StartingPage(self.frame, self)
-        self.current_frame.grid(column=0, row=0, sticky="nsew")
+        self.current_frame.pack(expand=True, fill="both")

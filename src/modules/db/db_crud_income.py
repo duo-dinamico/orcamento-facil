@@ -7,11 +7,7 @@ from .db_models import Income, MonthEnum, RecurrencyEnum
 from .db_crud_account import read_account_by_id
 
 
-def read_income_by_name(
-    db: SessionLocal,
-    account_id: int,
-    name: str,
-) -> int:
+def read_income_by_name(db: SessionLocal, name: str) -> int:
     """Return an income id that has the given name.
 
     Args:
@@ -63,7 +59,7 @@ def create_income(
         return None
 
     # Check if the income name already exist
-    income = read_income_by_name(db, account_id=account_id, name=name)
+    income = read_income_by_name(db, name=name)
     if income:
         logger.info(f"Income name already exist: {name}.")
         return None

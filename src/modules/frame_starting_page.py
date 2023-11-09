@@ -3,7 +3,7 @@ from tkinter import ttk
 
 from .db.db_crud_user import create_user, login_user, read_user_accounts, read_user_incomes
 from .db.db_crud_account import create_account, delete_account, read_account_incomes
-from .db.db_crud_income import create_income
+from .db.db_crud_income import create_income, delete_income
 from .utils.logging import logger
 
 from .popups.add_income import AddIncomePopUp
@@ -291,7 +291,7 @@ class StartingPage(ttk.Frame):
                     self.frames_right["income_list"],
                     width=4,
                     style="Red.TButton",
-                    command=lambda i=i: self.delete_income(i),
+                    command=lambda item=item: self.delete_income(item.id),
                 )
 
                 income_name_label.grid(**self.paddings, column=0, row=i + 1, sticky="new")
@@ -334,7 +334,8 @@ class StartingPage(ttk.Frame):
         self.refresh_incomes()
 
     def delete_income(self, income_id):
-        del self.incomes[income_id]
+        delete_income(self.controller.session, income_id)
+        self.refresh_accounts()
         self.refresh_incomes()
 
     def delete_credit_card(self, card_id):

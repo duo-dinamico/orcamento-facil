@@ -80,3 +80,28 @@ def create_income(
     db.commit()
     db.refresh(db_income)
     return db_income.id
+
+
+def delete_income(db: SessionLocal, income_id: int) -> bool:
+    """Delete an income in the database.
+
+    Args:
+        db: database session.
+        income_id: id of the income to delete.
+
+    Returns:
+        True: if deleted.
+        False: if not deleted.
+    """
+
+    # Check if income exist
+    income = db.scalars(select(Income).where(Income.id == income_id)).first()
+    if not income:
+        logger.info(f"income_id don't exist: {income}")
+        return False
+
+    # Delete the income
+    db.delete(income)
+    db.commit()
+    logger.info(f"deleted income: {income_id}")
+    return True

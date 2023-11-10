@@ -1,6 +1,6 @@
 import pytest
 
-from ..modules.db.db_crud_income import create_income, read_income_by_name
+from ..modules.db.db_crud_income import create_income, delete_income, read_income_by_name
 from .conftest import valid_account
 
 #
@@ -19,6 +19,12 @@ def test_success_income_creation(db_session, valid_account):
 
     assert type(income_id) is int
     assert income_id == 1
+
+
+def test_success_income_delete(db_session, valid_income):
+    result = delete_income(db_session, income_id=1)
+
+    assert result is True
 
 
 #
@@ -43,3 +49,9 @@ def test_error_income_creation_invalid_name(db_session, valid_income):
     income_id = create_income(db_session, account_id=1, name="validIncome")
 
     assert income_id is None
+
+
+def test_error_income_delete_invalid_income(db_session):
+    result = delete_income(db_session, income_id=1)
+
+    assert result is False

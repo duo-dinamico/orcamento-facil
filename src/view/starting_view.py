@@ -1,7 +1,7 @@
 from tkinter import ttk
 
 
-def column_component(parent, text_label_frame, text_button_frame):
+def column_component(parent, text_label_frame: str, text_button_frame: str, handler):
     frame = ttk.Frame(master=parent)
 
     label_frame = ttk.LabelFrame(master=frame, text=text_label_frame, relief="ridge")
@@ -20,24 +20,32 @@ def column_component(parent, text_label_frame, text_button_frame):
 
     add_button = ttk.Button(master=frame, text=text_button_frame)
     add_button.pack(fill="x", anchor="s", pady=(15, 0))
+    add_button.bind("<Button-1>", handler)
 
     return frame
 
 
 class StartingView(ttk.Frame):
-    def __init__(self, parent) -> None:
+    def __init__(self, parent, presenter) -> None:
         super().__init__(master=parent)
+        self.parent = parent
 
         # grid layout
         self.rowconfigure(0, weight=12)
         self.rowconfigure(1, weight=1)
         self.columnconfigure((0, 1, 2), weight=1)
 
-        self.accounts = column_component(self, "Accounts list", "Add account")
+        self.accounts = column_component(
+            self, "Accounts list", "Add account", self.parent.show_add_account_popup
+        )
         self.accounts.grid(row=0, column=0, sticky="nsew", padx=(10, 0), pady=(10, 0))
-        self.incomes = column_component(self, "Income list", "Add income")
+        self.incomes = column_component(
+            self, "Income list", "Add income", presenter.handle_add_account
+        )
         self.incomes.grid(row=0, column=1, sticky="nsew", padx=(10, 10), pady=(10, 0))
-        self.credit_cards = column_component(self, "Credit cards", "Add credit card")
+        self.credit_cards = column_component(
+            self, "Credit cards", "Add credit card", presenter.handle_add_account
+        )
         self.credit_cards.grid(row=0, column=2, sticky="nsew", padx=(0, 10), pady=(10, 0))
 
         self.next_button = ttk.Button(master=self, text="Next")

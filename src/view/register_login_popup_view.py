@@ -7,7 +7,6 @@ class RegisterLogin(tk.Toplevel):
         super().__init__(master=parent)
 
         self.parent = parent
-        self.grab_set()
         self.transient(parent)
         self.resizable(False, False)
         self.title("Register or Login")

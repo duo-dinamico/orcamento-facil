@@ -12,13 +12,22 @@ class View(Protocol):
     def error_message_set(self, message: str) -> None:
         ...
 
-    def show_register_login_popup(self):
+    def show_register_login_popup(self, presenter):
         ...
 
     def show_starting_view(self, event=None):
         ...
 
-    def get_username_and_password(self) -> {str, str}:
+    def get_user_data(self) -> {str, str}:
+        ...
+
+    def get_account_data(self) -> {str, str}:
+        ...
+
+    def show_add_account_popup(self, event=None) -> None:
+        ...
+
+    def destroy_current_popup(self) -> None:
         ...
 
 
@@ -28,7 +37,7 @@ class Presenter:
         self.view = view
 
     def handle_register_user(self, event=None) -> None:
-        user_data = self.view.get_username_and_password()
+        user_data = self.view.get_user_data()
         check_user_exists = self.model.read_user_by_name(user_data["username"])
 
         if check_user_exists:
@@ -36,24 +45,52 @@ class Presenter:
         else:
             hashed_password = get_hashed_password(user_data["password"])
             try:
-                self.model.add_user(username=user_data["username"], password=hashed_password)
+                user = self.model.add_user(username=user_data["username"], password=hashed_password)
+                self.model.user = user
                 self.view.show_starting_view()
             except:
                 self.view.error_message_set("Was not able to create user")
 
     def handle_login_user(self, event=None) -> None:
-        user_data = self.view.get_username_and_password()
+        user_data = self.view.get_user_data()
         user = self.model.read_user_by_name(user_data["username"])
 
         if user:
             check_password = verify_password(user_data["password"], user.password)
             if check_password:
                 # TODO
-                self.view.error_message_set("Move to account summary")
+                self.model.user = user
+                self.view.error_message_set(user)
             else:
                 self.view.error_message_set("Wrong username or password")
         else:
             self.view.error_message_set("User not found")
+
+    def handle_add_account(self, event=None):
+        account_data = self.view.get_account_data()
+        check_account_exists = self.model.read_account_by_name(account_data["account_name"])
+
+        if check_account_exists:
+            self.view.error_message_set("Account already exists")
+        else:
+            try:
+                account = self.model.add_account(
+                    account_name=account_data["account_name"],
+                    user_id=self.model.user.id,
+                    initial_balance=account_data["initial_balance"],
+                    account_type="BANK",
+                    currency=account_data["currency"],
+                )
+                print(account)
+                # TODO refresh account list
+                self.refresh_account_list()
+                self.view.destroy_current_popup()
+            except:
+                self.view.error_message_set("Was not able to create account")
+
+    def refresh_account_list(self) -> None:
+        accounts_list = self.model.read_accounts_by_user(self.model.user.id)
+        print(accounts_list)
 
     def run(self) -> None:
         self.view.init_ui(self)

@@ -19,7 +19,7 @@ class User(Base):
     accounts: Mapped["Account"] = relationship("Account", backref="accounts", uselist=False)
 
     def __str__(self) -> str:
-        return f"ID: {self.id}, Name: {self.username}."
+        return f"ID: {self.id}, Name: {self.username}"
 
 
 # Define an enum type for account types
@@ -69,7 +69,7 @@ class Account(Base):
     credit_method: Mapped[Optional[str]]
 
     def __str__(self) -> str:
-        return f"ID: {self.id}, Name: {self.name}."
+        return f"ID: {self.id}, Name: {self.name}"
 
 
 class Income(Base):
@@ -87,7 +87,7 @@ class Income(Base):
     recurrency: Mapped[Optional[RecurrencyEnum]] = mapped_column(default=RecurrencyEnum.ONE)
 
     def __str__(self) -> str:
-        return f"ID: {self.id}, Name: {self.name}, Account ID: {self.account_id}."
+        return f"ID: {self.id}, Name: {self.name}, Account ID: {self.account_id}"
 
 
 class Transaction(Base):

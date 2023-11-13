@@ -2,8 +2,31 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from .model.model import Model
-from .utils import get_hashed_password, verify_password
+from utils import get_hashed_password, verify_password
+
+
+class Model(Protocol):
+    def add_user(self, username: str, password: str = ""):
+        ...
+
+    def read_user_by_name(self, username: str):
+        ...
+
+    def add_account(
+        self,
+        account_name: str,
+        user_id: int,
+        account_type: str,
+        initial_balance: int = 0,
+        currency: str = "EUR",
+    ):
+        ...
+
+    def read_account_by_name(self, account_name: str):
+        ...
+
+    def read_accounts_by_user(self, user_id: int):
+        ...
 
 
 class View(Protocol):

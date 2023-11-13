@@ -1,8 +1,9 @@
+from datetime import datetime
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from ..modules.db.db_models import Account, Base, Category, Income, SubCategory, User
+from ..modules.db.db_models import Account, Base, Category, Income, SubCategory, Transaction, User
 from ..modules.utils.hash import get_hashed_password
 
 engine = create_engine("sqlite:///test.db")
@@ -61,4 +62,18 @@ def valid_income(db_session, valid_account):
 @pytest.fixture()
 def valid_income_second(db_session, valid_account):
     db_session.add(Income(account_id=1, name="validIncomeSecond"))
+    db_session.commit()
+
+
+@pytest.fixture()
+def valid_transaction(db_session, valid_account, valid_subcategory):
+    db_session.add(
+        Transaction(
+            account_id=1,
+            subcategory_id=1,
+            date=datetime(2022, 12, 12),
+            value=100,
+            description="validTransaction",
+        )
+    )
     db_session.commit()

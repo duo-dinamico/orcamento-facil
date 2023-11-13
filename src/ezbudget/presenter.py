@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from model import model
-from utils import get_hashed_password, verify_password
+from .model.model import Model
+from .utils import get_hashed_password, verify_password
 
 
 class View(Protocol):
@@ -33,9 +33,9 @@ class View(Protocol):
 
 
 class Presenter:
-    def __init__(self, main_model: model.Model, main_view: View) -> None:
-        self.model = main_model
-        self.view = main_view
+    def __init__(self, model: Model, view: View) -> None:
+        self.model = model
+        self.view = view
 
     def handle_register_user(self, event=None) -> None:
         del event  # not used in this function

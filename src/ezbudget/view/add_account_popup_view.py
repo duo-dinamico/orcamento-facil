@@ -10,19 +10,19 @@ class AddAccountPopUp(tk.Toplevel):
         self.resizable(False, False)
         self.title("Add account")
 
-        account_name = tk.StringVar()
-        initial_balance = tk.StringVar()
+        self.account_name = tk.StringVar()
+        self.initial_balance = tk.StringVar()
         self.error_message = tk.StringVar(value="")
         currencies = ["GBP", "EUR", "USD"]
 
         label_account_name = ttk.Label(self, text="Account name")
         label_account_name.pack(anchor="w", padx=10, pady=5, fill="x")
-        entry_account_name = ttk.Entry(self, textvariable=account_name)
+        entry_account_name = ttk.Entry(self, textvariable=self.account_name)
         entry_account_name.pack(anchor="w", padx=10, pady=5, fill="x")
 
         label_initial_balance = ttk.Label(self, text="Initial balance")
         label_initial_balance.pack(anchor="w", padx=10, pady=5, fill="x")
-        entry_initial_balance = ttk.Entry(self, textvariable=initial_balance)
+        entry_initial_balance = ttk.Entry(self, textvariable=self.initial_balance)
         entry_initial_balance.pack(anchor="w", padx=10, pady=5, fill="x")
 
         label_currency = ttk.Label(self, text="Currency")

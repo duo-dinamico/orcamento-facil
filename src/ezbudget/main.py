@@ -1,14 +1,14 @@
-from model import model
-from view import register_login_popup_view
+from presenter import Presenter
 
-from . import presenter
+from .model import Model
+from .view import RootView
 
 
 def main() -> None:
-    main_model = model.Model()
-    main_view = register_login_popup_view.RootView()
-    main_presenter = presenter.Presenter(main_model, main_view)
-    main_presenter.run()
+    model = Model()
+    view = RootView()
+    presenter = Presenter(model, view)
+    presenter.run()
 
 
 if __name__ == "__main__":

@@ -82,9 +82,7 @@ def create_account(
         logger.info(f"Account type don't exist: {account_type}.")
         return None
 
-    logger.info(
-        f"create_account: {user_id} {account_name} {account_type} {currency} {initial_balance}"
-    )
+    logger.info(f"create_account: {user_id} {account_name} {account_type} {currency} {initial_balance}")
 
     # Add account to the database
     db_account = Account(
@@ -114,9 +112,7 @@ def delete_account(db: SessionLocal, account_id: int, user_id: int) -> bool:
     """
 
     # Get the account checking the id's of the account and user
-    account = db.scalars(
-        select(Account).where(Account.id == account_id, Account.user_id == user_id)
-    ).first()
+    account = db.scalars(select(Account).where(Account.id == account_id, Account.user_id == user_id)).first()
     if not account:
         return False
 

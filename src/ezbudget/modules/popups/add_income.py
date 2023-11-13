@@ -69,9 +69,7 @@ class AddIncomePopUp(tk.Toplevel):
             expand=True,
             fill="both",
         )
-        self.frequency_combobox = ttk.Combobox(
-            self.frequency_frame, state="readonly", values=self.income_frequency
-        )
+        self.frequency_combobox = ttk.Combobox(self.frequency_frame, state="readonly", values=self.income_frequency)
         self.frequency_combobox.current(1)
         self.frequency_combobox.pack(
             side="left",

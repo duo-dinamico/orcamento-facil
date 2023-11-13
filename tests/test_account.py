@@ -78,9 +78,7 @@ def test_error_account_creation_invalid_name(db_session, valid_account):
 
 
 def test_error_account_creation_invalid_type(db_session, valid_user):
-    account_id = create_account(
-        db_session, user_id=1, account_name="validAccount", account_type="STUPID"
-    )
+    account_id = create_account(db_session, user_id=1, account_name="validAccount", account_type="STUPID")
 
     assert account_id is None
 

@@ -80,9 +80,7 @@ class Income(Base):
     name: Mapped[str] = mapped_column(unique=True)
     expected_income_value: Mapped[int] = mapped_column(default=0)  # In cents
     real_income_value: Mapped[int] = mapped_column(default=0)  # In cents
-    income_day: Mapped[Optional[str]] = mapped_column(
-        default="1"
-    )  # Saved as a string, need conversion
+    income_day: Mapped[Optional[str]] = mapped_column(default="1")  # Saved as a string, need conversion
     income_month: Mapped[Optional[MonthEnum]] = mapped_column(default=MonthEnum.JANUARY)
     recurrency: Mapped[Optional[RecurrencyEnum]] = mapped_column(default=RecurrencyEnum.ONE)
 

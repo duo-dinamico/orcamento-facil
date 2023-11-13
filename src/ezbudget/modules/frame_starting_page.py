@@ -1,14 +1,13 @@
 import tkinter as tk
 from tkinter import ttk
 
-from .db.db_crud_user import create_user, login_user, read_user_accounts, read_user_incomes
 from .db.db_crud_account import create_account, delete_account, read_account_incomes
 from .db.db_crud_income import create_income, delete_income
-from .utils.logging import logger
-
-from .popups.add_income import AddIncomePopUp
+from .db.db_crud_user import create_user, login_user, read_user_accounts, read_user_incomes
 from .popups.add_account import AddAccountPopUp
 from .popups.add_credit_card import AddCreditCardPopUp
+from .popups.add_income import AddIncomePopUp
+from .utils.logging import logger
 
 
 class StartingPage(ttk.Frame):
@@ -39,19 +38,11 @@ class StartingPage(ttk.Frame):
         self.style.configure("Red.TButton", background="red4", relief="raised")
 
         # Here starts the frame listing and building
-        self.frames_left["personal_info"] = ttk.LabelFrame(
-            self, text="Personal info", relief="ridge"
-        )
-        self.frames_left["adding_details"] = ttk.LabelFrame(
-            self, text="Adding details", relief="ridge"
-        )
-        self.frames_right["account_list"] = ttk.LabelFrame(
-            self, text="Account list", relief="ridge"
-        )
+        self.frames_left["personal_info"] = ttk.LabelFrame(self, text="Personal info", relief="ridge")
+        self.frames_left["adding_details"] = ttk.LabelFrame(self, text="Adding details", relief="ridge")
+        self.frames_right["account_list"] = ttk.LabelFrame(self, text="Account list", relief="ridge")
         self.frames_right["income_list"] = ttk.LabelFrame(self, text="Income list", relief="ridge")
-        self.frames_right["credit_cards"] = ttk.LabelFrame(
-            self, text="Credit cards list", relief="ridge"
-        )
+        self.frames_right["credit_cards"] = ttk.LabelFrame(self, text="Credit cards list", relief="ridge")
 
         for index, frame in enumerate(self.frames_left.values()):
             frame.grid(**self.paddings, column=0, row=index, sticky="nsew")
@@ -255,9 +246,7 @@ class StartingPage(ttk.Frame):
         if account_list != None:
             for i, item in enumerate(account_list):
                 account_label = ttk.Label(self.frames_right["account_list"], text=item.name)
-                balance_label = ttk.Label(
-                    self.frames_right["account_list"], text=item.initial_balance
-                )
+                balance_label = ttk.Label(self.frames_right["account_list"], text=item.initial_balance)
                 delete_button = ttk.Button(
                     self.frames_right["account_list"],
                     text=item.id,
@@ -284,9 +273,7 @@ class StartingPage(ttk.Frame):
         if income_list != None:
             for i, item in enumerate(income_list):
                 income_name_label = ttk.Label(self.frames_right["income_list"], text=item.name)
-                predicted_income_label = ttk.Label(
-                    self.frames_right["income_list"], text=item.expected_income_value
-                )
+                predicted_income_label = ttk.Label(self.frames_right["income_list"], text=item.expected_income_value)
                 delete_button = ttk.Button(
                     self.frames_right["income_list"],
                     width=4,
@@ -298,21 +285,15 @@ class StartingPage(ttk.Frame):
                 predicted_income_label.grid(**self.paddings, column=1, row=i + 1, sticky="new")
                 delete_button.grid(**self.paddings, column=2, row=i + 1)
 
-                self.line_widgets_incomes.extend(
-                    [income_name_label, predicted_income_label, delete_button]
-                )
+                self.line_widgets_incomes.extend([income_name_label, predicted_income_label, delete_button])
 
     def refresh_credit_cards(self):
         for widget in self.line_widgets_credit_cards:
             widget.destroy()
 
         for i, item in enumerate(self.credit_cards):
-            credit_card_label = ttk.Label(
-                self.frames_right["credit_cards"], text=item["credit_card"]
-            )
-            starting_balance_label = ttk.Label(
-                self.frames_right["credit_cards"], text=item["starting_balance"]
-            )
+            credit_card_label = ttk.Label(self.frames_right["credit_cards"], text=item["credit_card"])
+            starting_balance_label = ttk.Label(self.frames_right["credit_cards"], text=item["starting_balance"])
             delete_button = ttk.Button(
                 self.frames_right["credit_cards"],
                 width=4,
@@ -324,9 +305,7 @@ class StartingPage(ttk.Frame):
             starting_balance_label.grid(**self.paddings, column=1, row=i + 1, sticky="new")
             delete_button.grid(**self.paddings, column=2, row=i + 1)
 
-            self.line_widgets_credit_cards.extend(
-                [credit_card_label, starting_balance_label, delete_button]
-            )
+            self.line_widgets_credit_cards.extend([credit_card_label, starting_balance_label, delete_button])
 
     def delete_account(self, account_id):
         delete_account(self.controller.session, account_id, self.controller.logged_in)

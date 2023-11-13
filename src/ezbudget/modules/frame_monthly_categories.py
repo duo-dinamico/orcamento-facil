@@ -1,6 +1,5 @@
 from tkinter import ttk
 
-
 categories = {
     "Housing": [{"Mortgage": True}, {"Rent": False}, {"Council Tax": True}],
     "Utilities": [{}],

@@ -3,7 +3,7 @@ from sqlalchemy import select
 from ..utils.logging import logger
 from .db_crud_category import read_category_by_id
 from .db_database import SessionLocal
-from .db_models import SubCategory, RecurrencyEnum
+from .db_models import RecurrencyEnum, SubCategory
 
 
 def read_subcategory_by_name(db: SessionLocal, name: str) -> int:
@@ -42,9 +42,7 @@ def read_subcategory_list_by_category_id(db: SessionLocal, category_id: int) -> 
         logger.info(f"category_id don't exist: {category}.")
         return None
 
-    subcategory_list = db.scalars(
-        select(SubCategory).where(SubCategory.category_id == category_id)
-    ).all()
+    subcategory_list = db.scalars(select(SubCategory).where(SubCategory.category_id == category_id)).all()
     logger.info(f"subcategory list: {subcategory_list}")
     if len(subcategory_list) == 0:
         return None

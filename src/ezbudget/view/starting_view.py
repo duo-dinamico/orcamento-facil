@@ -10,13 +10,9 @@ def column_component(parent, text_label_frame: str, text_button_frame: str, hand
     label_title_name = ttk.Label(label_frame, text="Name", anchor="center")
     label_title_name.pack(side="left", expand=True, fill="x", anchor="n", padx=(5, 0), pady=(5, 5))
     label_title_balance = ttk.Label(label_frame, text="Balance", anchor="center")
-    label_title_balance.pack(
-        side="left", expand=True, fill="x", anchor="n", padx=(5, 5), pady=(5, 5)
-    )
+    label_title_balance.pack(side="left", expand=True, fill="x", anchor="n", padx=(5, 5), pady=(5, 5))
     label_title_delete = ttk.Label(label_frame, text="Delete", anchor="center")
-    label_title_delete.pack(
-        side="left", expand=True, fill="x", anchor="n", padx=(0, 5), pady=(5, 5)
-    )
+    label_title_delete.pack(side="left", expand=True, fill="x", anchor="n", padx=(0, 5), pady=(5, 5))
 
     add_button = ttk.Button(master=frame, text=text_button_frame)
     add_button.pack(fill="x", anchor="s", pady=(15, 0))
@@ -35,17 +31,11 @@ class StartingView(ttk.Frame):
         self.rowconfigure(1, weight=1)
         self.columnconfigure((0, 1, 2), weight=1)
 
-        self.accounts = column_component(
-            self, "Accounts list", "Add account", self.parent.show_add_account_popup
-        )
+        self.accounts = column_component(self, "Accounts list", "Add account", self.parent.show_add_account_popup)
         self.accounts.grid(row=0, column=0, sticky="nsew", padx=(10, 0), pady=(10, 0))
-        self.incomes = column_component(
-            self, "Income list", "Add income", presenter.handle_add_account
-        )
+        self.incomes = column_component(self, "Income list", "Add income", presenter.handle_add_account)
         self.incomes.grid(row=0, column=1, sticky="nsew", padx=(10, 10), pady=(10, 0))
-        self.credit_cards = column_component(
-            self, "Credit cards", "Add credit card", presenter.handle_add_account
-        )
+        self.credit_cards = column_component(self, "Credit cards", "Add credit card", presenter.handle_add_account)
         self.credit_cards.grid(row=0, column=2, sticky="nsew", padx=(0, 10), pady=(10, 0))
 
         self.next_button = ttk.Button(master=self, text="Next")

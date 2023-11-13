@@ -1,0 +1,32 @@
+fail_fast: true
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-added-large-files
+      # - id: no-commit-to-branch
+      #   args: [--branch, develop, --branch, main]
+  - repo: https://github.com/ambv/black
+    rev: 23.11.0
+    hooks:
+      - id: black
+        language_version: python3.11
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+  # - repo: https://github.com/pycqa/pylint
+  #   rev: v3.0.1
+  #   hooks:
+  #     - id: pylint
+  #       args: [--errors-only]
+  # - repo: local
+  #   hooks:
+  #     - id: system
+  #       name: Code Style Checks
+  #       entry: make check
+  #       pass_filenames: false
+  #       language: system

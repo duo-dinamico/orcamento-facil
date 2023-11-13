@@ -3,5 +3,7 @@
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
   "editor.formatOnSave": true,
-  "python.defaultInterpreterPath": "./.venv"
+  "python.defaultInterpreterPath": "./.venv",
+  "python.analysis.typeCheckingMode": "off",
+  "python.analysis.autoImportCompletions": false
 }

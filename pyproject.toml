@@ -5,6 +5,7 @@ description = "Programa de orçamentação pessoal."
 authors = ["DuoDinamico"]
 license = "GNU"
 readme = "README.md"
+packages = [ { include = "ezbudget", from = "src" } ]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -15,17 +16,28 @@ passlib = "^1.7.4"
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
 isort = "^5.12.0"
+pylint = "^3.0.2"
+pre-commit = "^3.5.0"
 
 [tool.black]
-line-length = 100
+line-length = 132
+target-version = ['py311']
+include = '(src\/scripts\/.*$|\.pyi?$)'
+exclude = '''
+/(
+    \.git
+  | __pycache__
+  | \.venv
+)/
+'''
 
 [tool.pytest.ini_options]
 pythonpath = "src"
 addopts = "-v"
 
 [tool.isort]
-line_length = 100
 profile = "black"
+line_length = 132
 src_paths = ["src"]
 
 [build-system]

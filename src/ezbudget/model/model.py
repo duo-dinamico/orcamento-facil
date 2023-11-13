@@ -1,18 +1,16 @@
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
-from enum import Enum
-
-from .base_models import Base, User, AccountTypeEnum, Account
+from .base_models import Account, AccountTypeEnum, Base, User
 
 
 class Model:
     def __init__(self) -> None:
         engine = create_engine("sqlite:///of.db")
-        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
         Base.metadata.create_all(engine)
-        self.session = SessionLocal()
+        self.session = session_local()
 
         self.user = None
 
@@ -104,7 +102,5 @@ class Model:
             account_list: list of the user accounts
             None: if the user_id is not valid
         """
-        accounts_list = self.session.scalars(
-            select(Account).where(Account.user_id == user_id)
-        ).all()
+        accounts_list = self.session.scalars(select(Account).where(Account.user_id == user_id)).all()
         return accounts_list

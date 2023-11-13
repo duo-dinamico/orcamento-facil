@@ -1,10 +1,9 @@
 from sqlalchemy import select
 
 from ..utils.logging import logger
-
+from .db_crud_account import read_account_by_id
 from .db_database import SessionLocal
 from .db_models import Income, MonthEnum, RecurrencyEnum
-from .db_crud_account import read_account_by_id
 
 
 def read_income_by_name(db: SessionLocal, name: str) -> int:

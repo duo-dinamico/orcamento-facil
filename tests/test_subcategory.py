@@ -1,10 +1,6 @@
 import pytest
 
-from ..modules.db.db_crud_subcategory import (
-    create_subcategory,
-    read_subcategory_by_name,
-    read_subcategory_list_by_category_id,
-)
+from ..modules.db.db_crud_subcategory import create_subcategory, read_subcategory_by_name, read_subcategory_list_by_category_id
 from .conftest import db_session, second_valid_category, valid_category
 
 #
@@ -56,9 +52,7 @@ def test_error_read_subcategory_list_by_category_id_category_invalid(db_session,
     assert category_list == None
 
 
-def test_error_read_subcategory_list_wrong_category(
-    db_session, valid_subcategory, second_valid_category
-):
+def test_error_read_subcategory_list_wrong_category(db_session, valid_subcategory, second_valid_category):
     category_list = read_subcategory_list_by_category_id(db_session, category_id=2)
 
     assert category_list == None
@@ -77,16 +71,12 @@ def test_error_subcategory_creation_name_exist(db_session, valid_subcategory):
 
 
 def test_error_subcategory_creation_recurrent_not_bool(db_session, valid_category):
-    subcategory_id = create_subcategory(
-        db_session, category_id=1, name="validSubCategory", recurrent="x"
-    )
+    subcategory_id = create_subcategory(db_session, category_id=1, name="validSubCategory", recurrent="x")
 
     assert subcategory_id == None
 
 
 def test_error_subcategory_creation_recurrency_invalid(db_session, valid_category):
-    subcategory_id = create_subcategory(
-        db_session, category_id=1, name="validSubCategory", recurrency="sometime"
-    )
+    subcategory_id = create_subcategory(db_session, category_id=1, name="validSubCategory", recurrency="sometime")
 
     assert subcategory_id == None

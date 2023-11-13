@@ -1,9 +1,7 @@
 import tkinter as tk
 from typing import Protocol
 
-from . import RegisterLogin
-from .starting_view import StartingView
-from .add_account_popup_view import AddAccountPopUp
+from . import add_account_popup_view, register_login_popup_view, starting_view
 
 TITLE = "Ez Budget"
 WINDOW_WIDTH = 1200
@@ -29,6 +27,11 @@ class RootView(tk.Tk):
         super().__init__()
         self.title(TITLE)
         self.resizable(False, False)
+        self.presenter = None
+        self.starting_view = None
+
+        self.current_frame = None
+        self.current_popup = None
 
         # Put the windows in the center of the screen
         x_center = self.winfo_screenwidth() / 2 - WINDOW_WIDTH / 2
@@ -37,10 +40,7 @@ class RootView(tk.Tk):
 
     def init_ui(self, presenter: Presenter) -> None:
         self.presenter = presenter
-        self.starting_view = StartingView(self, presenter)
-
-        self.current_frame = None
-        self.current_popup = None
+        self.starting_view = starting_view.StartingView(self, presenter)
 
         self.show_register_login_popup(presenter)
 
@@ -63,18 +63,20 @@ class RootView(tk.Tk):
     def show_register_login_popup(self, presenter) -> None:
         if self.current_popup:
             self.current_popup.destroy()
-        self.current_popup = RegisterLogin(self, presenter)
+        self.current_popup = register_login_popup_view.RegisterLogin(self, presenter)
 
     def show_starting_view(self, event=None) -> None:
+        del event  # not used in this function
         if self.current_popup:
             self.current_popup.destroy()
         self.current_frame = self.starting_view
         self.current_frame.pack(expand=True, fill="both")
 
     def show_add_account_popup(self, event=None) -> None:
+        del event  # not used in this function
         if self.current_popup:
             self.current_popup.destroy()
-        self.current_popup = AddAccountPopUp(self.current_frame, self.presenter)
+        self.current_popup = add_account_popup_view.AddAccountPopUp(self.current_frame, self.presenter)
 
     def destroy_current_popup(self) -> None:
         self.current_popup.destroy()

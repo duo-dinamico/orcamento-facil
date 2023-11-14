@@ -6,6 +6,9 @@ authors = ["DuoDinamico"]
 license = "GNU"
 readme = "README.md"
 packages = [ { include = "ezbudget", from = "src" } ]
+include = [{ path = "tests", format = "sdist" }]
+
+# if needed to run pyling: poetry run pylint --rcfile=.pylintrc **/*.py
 
 [tool.poetry.dependencies]
 python = "^3.11"

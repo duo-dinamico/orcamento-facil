@@ -18,11 +18,14 @@ repos:
     rev: 5.12.0
     hooks:
       - id: isort
-  - repo: https://github.com/pycqa/pylint
-    rev: v3.0.1
+  - repo: local
     hooks:
       - id: pylint
-        args: [--errors-only]
+        name: pylint
+        entry: poetry run pylint
+        language: system
+        types: [python]
+        args: ["--rcfile=.pylintrc"]
   # - repo: local
   #   hooks:
   #     - id: system

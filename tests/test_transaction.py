@@ -1,9 +1,6 @@
 from datetime import datetime
 
-import pytest
-
-from ..modules.db.db_crud_transaction import create_transaction, read_transaction_by_id
-from .conftest import db_session, valid_account, valid_transaction, valid_user
+from ezbudget.modules.db.db_crud_transaction import create_transaction, read_transaction_by_id
 
 #
 # DEFAULT BEHAVIOUR
@@ -11,13 +8,16 @@ from .conftest import db_session, valid_account, valid_transaction, valid_user
 
 
 def test_success_transaction_read_by_id(db_session, valid_transaction):
+    _ = valid_transaction
     transaction = read_transaction_by_id(db_session, 1)
 
-    assert transaction.id is 1
+    assert transaction.id == 1
     assert transaction.description == "validTransaction"
 
 
 def test_success_transaction_created(db_session, valid_account, valid_subcategory):
+    _ = valid_account
+    _ = valid_subcategory
     transaction = create_transaction(
         db_session,
         account_id=1,
@@ -27,7 +27,7 @@ def test_success_transaction_created(db_session, valid_account, valid_subcategor
         description="Desc",
     )
 
-    assert transaction is 1
+    assert transaction == 1
 
 
 #
@@ -36,12 +36,14 @@ def test_success_transaction_created(db_session, valid_account, valid_subcategor
 
 
 def test_error_transaction_read_by_id(db_session, valid_subcategory):
+    _ = valid_subcategory
     transaction = read_transaction_by_id(db_session, 5)
 
     assert transaction is None
 
 
 def test_error_transaction_created(db_session, valid_subcategory):
+    _ = valid_subcategory
     transaction = create_transaction(
         db_session,
         account_id=1,

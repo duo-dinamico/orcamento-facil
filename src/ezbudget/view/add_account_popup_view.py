@@ -27,9 +27,9 @@ class AddAccountPopUp(tk.Toplevel):
 
         label_currency = ttk.Label(self, text="Currency")
         label_currency.pack(anchor="w", padx=10, pady=5, fill="x")
-        currency_combobox = ttk.Combobox(self, state="readonly", values=currencies)
-        currency_combobox.current(0)
-        currency_combobox.pack(anchor="w", padx=10, pady=5, fill="x")
+        self.currency_combobox = ttk.Combobox(self, state="readonly", values=currencies)
+        self.currency_combobox.current(0)
+        self.currency_combobox.pack(anchor="w", padx=10, pady=5, fill="x")
 
         label_error_popup = ttk.Label(self, textvariable=self.error_message)
         label_error_popup.pack(anchor="w", padx=10, pady=5, fill="x")

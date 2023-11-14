@@ -86,9 +86,10 @@ class Presenter:
         if user:
             check_password = verify_password(user_data["password"], user.password)
             if check_password:
-                # TODO
                 self.model.user = user
                 self.view.error_message_set(user)
+                # TODO this is supposed to change to the main view
+                self.view.show_starting_view()
             else:
                 self.view.error_message_set("Wrong username or password")
         else:

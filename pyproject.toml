@@ -5,7 +5,7 @@ description = "Programa de orçamentação pessoal."
 authors = ["DuoDinamico"]
 license = "GNU"
 readme = "README.md"
-packages = [ { include = "ezbudget", from = "src" } ]
+packages = [{ include = "ezbudget", from = "src" }]
 include = [{ path = "tests", format = "sdist" }]
 
 # if needed to run pyling: poetry run pylint --rcfile=.pylintrc **/*.py
@@ -25,13 +25,13 @@ taskipy = "^1.12.0"
 mypy = "^1.7.0"
 
 [tool.taskipy.tasks]
-test = {cmd = "pytest", help = 'run pytest on all files'}
-lint_all = {cmd = "pylint --rcfile=.pylintrc **/*.py", help = 'run pylint in all files including non changed ones'}
-sort = {cmd = "isort -vc .", help = 'run isort in all files including non changed ones'}
+test = { cmd = "pytest", help = 'run pytest on all files' }
+lint_all = { cmd = "pylint --rcfile=.pylintrc **/*.py", help = 'run pylint in all files including non changed ones' }
+sort = { cmd = "isort -vc .", help = 'run isort in all files.' }
 
 
 [tool.black]
-line-length = 132
+line-length = 120
 target-version = ['py311']
 include = '(src\/scripts\/.*$|\.pyi?$)'
 exclude = '''
@@ -48,7 +48,7 @@ addopts = "-v"
 
 [tool.isort]
 profile = "black"
-line_length = 132
+line_length = 120
 src_paths = ["src"]
 
 [build-system]

@@ -31,7 +31,7 @@ sort = {cmd = "isort -vc .", help = 'run isort in all files including non change
 
 
 [tool.black]
-line-length = 132
+line-length = 120
 target-version = ['py311']
 include = '(src\/scripts\/.*$|\.pyi?$)'
 exclude = '''
@@ -48,7 +48,7 @@ addopts = "-v"
 
 [tool.isort]
 profile = "black"
-line_length = 132
+line_length = 120
 src_paths = ["src"]
 
 [build-system]

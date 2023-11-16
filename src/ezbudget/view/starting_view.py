@@ -1,45 +1,84 @@
 from tkinter import ttk
 
 
-def column_component(parent, text_label_frame: str, text_button_frame: str, handler):
-    frame = ttk.Frame(master=parent)
-
-    label_frame = ttk.LabelFrame(master=frame, text=text_label_frame, relief="ridge")
+def column_title_component(parent, text_label_frame: str, text_button_frame: str, handler):
+    label_frame = ttk.LabelFrame(master=parent, text=text_label_frame, relief="ridge")
     label_frame.pack(expand=True, fill="both")
+    label_frame.columnconfigure((0, 1, 2), weight=8)
+    label_frame.columnconfigure(3, weight=1)
 
     label_title_name = ttk.Label(label_frame, text="Name", anchor="center")
-    label_title_name.pack(side="left", expand=True, fill="x", anchor="n", padx=(5, 0), pady=(5, 5))
+    label_title_name.grid(row=0, column=0, sticky="new", padx=(5, 0), pady=(5, 5))
     label_title_balance = ttk.Label(label_frame, text="Balance", anchor="center")
-    label_title_balance.pack(side="left", expand=True, fill="x", anchor="n", padx=(5, 5), pady=(5, 5))
+    label_title_balance.grid(row=0, column=1, sticky="new", padx=(5, 5), pady=(5, 5))
     label_title_delete = ttk.Label(label_frame, text="Delete", anchor="center")
-    label_title_delete.pack(side="left", expand=True, fill="x", anchor="n", padx=(0, 5), pady=(5, 5))
+    label_title_delete.grid(row=0, column=2, sticky="new", padx=(0, 5), pady=(5, 5))
 
-    add_button = ttk.Button(master=frame, text=text_button_frame)
+    add_button = ttk.Button(master=parent, text=text_button_frame)
     add_button.pack(fill="x", anchor="s", pady=(15, 0))
     add_button.bind("<Button-1>", handler)
 
-    return frame
+    return label_frame
 
 
 class StartingView(ttk.Frame):
     def __init__(self, parent, presenter) -> None:
         super().__init__(master=parent)
         self.parent = parent
+        self.presenter = presenter
 
         # grid layout
         self.rowconfigure(0, weight=12)
         self.rowconfigure(1, weight=1)
         self.columnconfigure((0, 1, 2), weight=1)
 
-        self.accounts = column_component(self, "Accounts list", "Add account", self.parent.show_add_account_popup)
-        self.accounts.grid(row=0, column=0, sticky="nsew", padx=(10, 0), pady=(10, 0))
-        self.incomes = column_component(self, "Income list", "Add income", presenter.handle_add_account)
-        self.incomes.grid(row=0, column=1, sticky="nsew", padx=(10, 10), pady=(10, 0))
-        self.credit_cards = column_component(self, "Credit cards", "Add credit card", presenter.handle_add_account)
-        self.credit_cards.grid(row=0, column=2, sticky="nsew", padx=(0, 10), pady=(10, 0))
+        self.accounts_widgets = []
+
+        self.accounts_frame = ttk.Frame(master=self)
+        self.accounts_frame.grid(row=0, column=0, sticky="nsew", padx=(10, 0), pady=(10, 0))
+        self.accounts = column_title_component(
+            self.accounts_frame, "Accounts list", "Add account", self.parent.show_add_account_popup
+        )
+
+        self.incomes_frame = ttk.Frame(master=self)
+        self.incomes_frame.grid(row=0, column=1, sticky="nsew", padx=(10, 10), pady=(10, 0))
+        self.incomes = column_title_component(
+            self.incomes_frame, "Income list", "Add income", self.presenter.handle_add_account
+        )
+
+        self.credit_cards_frame = ttk.Frame(master=self)
+        self.credit_cards_frame.grid(row=0, column=2, sticky="nsew", padx=(0, 10), pady=(10, 0))
+        self.credit_cards = column_title_component(
+            self.credit_cards_frame, "Credit cards", "Add credit card", self.presenter.handle_add_account
+        )
 
         self.next_button = ttk.Button(master=self, text="Next")
         self.next_button.grid(row=1, column=0, columnspan=3, sticky="ew", padx=(10, 10))
+
+    def refresh_accounts(self):
+        self.presenter.refresh_account_list()
+
+    def refresh_accounts_widgets(self, account_list: list):
+        for widget in self.accounts_widgets:
+            widget.destroy()
+        for i, item in enumerate(account_list):
+            account_label = ttk.Label(self.accounts, text=item.name)
+            balance_label = ttk.Label(self.accounts, text=item.initial_balance)
+            delete_button = ttk.Button(
+                self.accounts,
+                text=item.id,
+                width=4,
+                # command=lambda item=item: self.delete_account(item.id),
+            )
+
+            account_label.grid(column=0, row=i + 1, sticky="new", padx=(10, 0), pady=(10, 0))
+            balance_label.grid(column=1, row=i + 1, sticky="new", padx=(10, 0), pady=(10, 0))
+            delete_button.grid(column=2, row=i + 1, sticky="new", padx=(10, 0), pady=(10, 0))
+
+            self.accounts_widgets.extend([account_label, balance_label, delete_button])
+
+        scroll = ttk.Scrollbar(master=self.accounts, orient="vertical")
+        scroll.grid(column=3, row=0, rowspan=len(self.accounts_widgets), sticky="nse")
 
         # variables
         # self.paddings = {"padx": 10, "pady": 5}

@@ -70,6 +70,7 @@ class RootView(tk.Tk):
         if self.current_popup:
             self.current_popup.destroy()
         self.current_frame = self.starting_view
+        self.current_frame.refresh_accounts()
         self.current_frame.pack(expand=True, fill="both")
 
     def show_add_account_popup(self, event=None) -> None:

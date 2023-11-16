@@ -1,10 +1,12 @@
 {
   "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter"
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    }
   },
-  "editor.formatOnSave": true,
   "python.defaultInterpreterPath": "./.venv",
-  "python.analysis.typeCheckingMode": "off",
-  "python.analysis.autoImportCompletions": false,
-  "editor.rulers": [120]
+  "editor.rulers": [120],
+  "isort.args": ["--profile", "black"]
 }

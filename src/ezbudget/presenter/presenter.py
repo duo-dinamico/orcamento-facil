@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from utils import get_hashed_password, verify_password
+from ezbudget.utils import get_hashed_password, verify_password
 
 
 class Model(Protocol):
@@ -104,18 +104,13 @@ class Presenter:
         if check_account_exists:
             self.view.error_message_set("Account already exists")
         else:
-            try:
-                account = self.model.add_account(
-                    account_name=account_data["account_name"],
-                    user_id=self.model.user.id,
-                    initial_balance=account_data["initial_balance"],
-                    account_type="BANK",
-                    currency=account_data["currency"],
-                )
-            except Exception as error:  # pylint: disable=broad-exception-caught
-                self.view.error_message_set("Was not able to create account")
-                # TODO replace this with the log
-                print(error)
+            account = self.model.add_account(
+                account_name=account_data["account_name"],
+                user_id=self.model.user.id,
+                initial_balance=account_data["initial_balance"],
+                account_type="BANK",
+                currency=account_data["currency"],
+            )
 
         if account:
             # TODO refresh account list
@@ -124,7 +119,7 @@ class Presenter:
 
     def refresh_account_list(self) -> None:
         accounts_list = self.model.read_accounts_by_user(self.model.user.id)
-        print(accounts_list)
+        self.view.current_frame.refresh_accounts_widgets(accounts_list)
 
     def run(self) -> None:
         self.view.init_ui(self)

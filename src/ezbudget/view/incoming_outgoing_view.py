@@ -1,84 +1,101 @@
 from tkinter import ttk
 
 
-def column_title_component(parent, text_label_frame: str, text_button_frame: str, handler):
-    label_frame = ttk.LabelFrame(master=parent, text=text_label_frame, relief="ridge")
-    label_frame.pack(expand=True, fill="both")
-    label_frame.columnconfigure((0, 1, 2), weight=8)
-    label_frame.columnconfigure(3, weight=1)
-
-    label_title_name = ttk.Label(label_frame, text="Name", anchor="center")
-    label_title_name.grid(row=0, column=0, sticky="new", padx=(5, 0), pady=(5, 5))
-    label_title_balance = ttk.Label(label_frame, text="Balance", anchor="center")
-    label_title_balance.grid(row=0, column=1, sticky="new", padx=(5, 5), pady=(5, 5))
-    label_title_delete = ttk.Label(label_frame, text="Delete", anchor="center")
-    label_title_delete.grid(row=0, column=2, sticky="new", padx=(0, 5), pady=(5, 5))
-
-    add_button = ttk.Button(master=parent, text=text_button_frame)
-    add_button.pack(fill="x", anchor="s", pady=(15, 0))
-    add_button.bind("<Button-1>", handler)
-
-    return label_frame
-
-
-class StartingView(ttk.Frame):
+class IncomingOutgoing(ttk.Frame):
     def __init__(self, parent, presenter) -> None:
         super().__init__(master=parent)
         self.parent = parent
         self.presenter = presenter
 
+        style = ttk.Style()
+        # style.configure("Treeview.Heading", font=(None, 14), rowheight=int(14 * 2.5))
+        style.configure("Treeview", font=(None, 11), rowheight=int(11 * 3))
+
+        self.accounts_tree: ttk.Treeview | None = None
+        self.add_account_button: ttk.Button | None = None
+        self.edit_account_button: ttk.Button | None = None
+        self.delete_account_button: ttk.Button | None = None
+        self.incomes_tree: ttk.Treeview | None = None
+        self.add_income_button: ttk.Button | None = None
+        self.edit_income_button: ttk.Button | None = None
+        self.delete_income_button: ttk.Button | None = None
+        self.credit_cards_tree: ttk.Treeview | None = None
+        self.add_credit_card_button: ttk.Button | None = None
+        self.edit_credit_card_button: ttk.Button | None = None
+        self.delete_credit_card_button: ttk.Button | None = None
+
         # grid layout
-        self.rowconfigure(0, weight=12)
+        self.rowconfigure(0, weight=100)
         self.rowconfigure(1, weight=1)
         self.columnconfigure((0, 1, 2), weight=1)
 
-        self.accounts_widgets = []
+        self.create_tree_widget("Account List", 0)
+        self.create_tree_widget("Income List", 1)
+        self.create_tree_widget("Credit Cards", 2)
 
-        self.accounts_frame = ttk.Frame(master=self)
-        self.accounts_frame.grid(row=0, column=0, sticky="nsew", padx=(10, 0), pady=(10, 0))
-        self.accounts = column_title_component(
-            self.accounts_frame, "Accounts list", "Add account", self.parent.show_add_account_popup
-        )
-
-        self.incomes_frame = ttk.Frame(master=self)
-        self.incomes_frame.grid(row=0, column=1, sticky="nsew", padx=(10, 10), pady=(10, 0))
-        self.incomes = column_title_component(
-            self.incomes_frame, "Income list", "Add income", self.presenter.handle_add_account
-        )
-
-        self.credit_cards_frame = ttk.Frame(master=self)
-        self.credit_cards_frame.grid(row=0, column=2, sticky="nsew", padx=(0, 10), pady=(10, 0))
-        self.credit_cards = column_title_component(
-            self.credit_cards_frame, "Credit cards", "Add credit card", self.presenter.handle_add_account
-        )
+        self.accounts_tree.bind("<<TreeviewSelect>>", self.account_selected)
+        self.add_account_button.bind("<Button-1>", self.parent.show_add_account_popup)
 
         self.next_button = ttk.Button(master=self, text="Next")
-        self.next_button.grid(row=1, column=0, columnspan=3, sticky="ew", padx=(10, 10))
+        self.next_button.grid(row=1, column=0, columnspan=3, sticky="sew", padx=(10, 10), pady=(0, 10))
+
+    def create_tree_widget(self, title: str, column: int):
+        frame = ttk.Frame(self)
+        frame.grid(row=0, column=column, sticky="nsew", padx=(10, 10), pady=(10, 0))
+        title_label = ttk.Label(frame, text=title, anchor="center")
+        title_label.pack(fill="x", pady=(5, 5))
+
+        columns = ("name", "balance")
+        tree = ttk.Treeview(frame, columns=columns, show="headings", selectmode="browse", style="Treeview")
+
+        # define headings
+        tree.heading("name", text="Name")
+        tree.heading("balance", text="Balance")
+
+        tree.pack(fill="both", expand=True)
+
+        add_button = ttk.Button(frame, text="Add")
+        add_button.pack(fill="x", pady=(5, 5))
+        edit_button = ttk.Button(frame, text="Edit", state="disabled")
+        edit_button.pack(fill="x", pady=(5, 5))
+        delete_button = ttk.Button(frame, text="Delete", state="disabled")
+        delete_button.pack(fill="x", pady=(5, 5))
+
+        match column:
+            case 0:
+                setattr(self, "accounts_tree", tree)
+                setattr(self, "add_account_button", add_button)
+                setattr(self, "edit_account_button", edit_button)
+                setattr(self, "delete_account_button", delete_button)
+            case 1:
+                setattr(self, "incomes_tree", tree)
+                setattr(self, "add_income_button", add_button)
+                setattr(self, "edit_income_button", edit_button)
+                setattr(self, "delete_income_button", delete_button)
+            case 2:
+                setattr(self, "credit_cards_tree", tree)
+                setattr(self, "add_credit_card_button", add_button)
+                setattr(self, "edit_credit_card_button", edit_button)
+                setattr(self, "delete_credit_card_button", delete_button)
+
+    def account_selected(self, event):
+        del event  # not used in this function
+        self.edit_account_button.config(state="enabled")
+        self.delete_account_button.config(state="enabled")
+        return self.accounts_tree.selection()
 
     def refresh_accounts(self):
-        self.presenter.refresh_account_list()
+        account_list = self.presenter.refresh_account_list()
+        for item in account_list:
+            self.accounts_tree.insert(parent="", index="end", iid=item.id, values=(item.name, item.initial_balance))
 
-    def refresh_accounts_widgets(self, account_list: list):
-        for widget in self.accounts_widgets:
-            widget.destroy()
-        for i, item in enumerate(account_list):
-            account_label = ttk.Label(self.accounts, text=item.name)
-            balance_label = ttk.Label(self.accounts, text=item.initial_balance)
-            delete_button = ttk.Button(
-                self.accounts,
-                text=item.id,
-                width=4,
-                # command=lambda item=item: self.delete_account(item.id),
-            )
-
-            account_label.grid(column=0, row=i + 1, sticky="new", padx=(10, 0), pady=(10, 0))
-            balance_label.grid(column=1, row=i + 1, sticky="new", padx=(10, 0), pady=(10, 0))
-            delete_button.grid(column=2, row=i + 1, sticky="new", padx=(10, 0), pady=(10, 0))
-
-            self.accounts_widgets.extend([account_label, balance_label, delete_button])
-
-        scroll = ttk.Scrollbar(master=self.accounts, orient="vertical")
-        scroll.grid(column=3, row=0, rowspan=len(self.accounts_widgets), sticky="nse")
+    def add_account(self, account):
+        self.accounts_tree.insert(
+            parent="",
+            index="end",
+            iid=account.id,
+            values=(account.name, account.initial_balance),
+        )
 
         # variables
         # self.paddings = {"padx": 10, "pady": 5}

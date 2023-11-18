@@ -28,18 +28,21 @@ class Model(Protocol):
     def read_accounts_by_user(self, user_id: int):
         ...
 
-
-class View(Protocol):
-    def init_ui(self, presenter: Presenter) -> None:
+    def read_account_by_id(self, account_id: str):
         ...
 
-    def error_message_set(self, message: str) -> None:
+
+class View(Protocol):
+    def init_ui(self, presenter: Presenter):
+        ...
+
+    def error_message_set(self, message: str):
         ...
 
     def show_register_login_popup(self, presenter):
         ...
 
-    def show_starting_view(self, event=None):
+    def show_starting_view(self, event):
         ...
 
     def get_user_data(self) -> {str, str}:
@@ -48,10 +51,13 @@ class View(Protocol):
     def get_account_data(self) -> {str, str}:
         ...
 
-    def show_add_account_popup(self, event=None) -> None:
+    def show_add_account_popup(self, event):
         ...
 
-    def destroy_current_popup(self) -> None:
+    def destroy_current_popup(self):
+        ...
+
+    def account_selected(self, event):
         ...
 
 
@@ -87,7 +93,6 @@ class Presenter:
             check_password = verify_password(user_data["password"], user.password)
             if check_password:
                 self.model.user = user
-                self.view.error_message_set(user)
                 # TODO this is supposed to change to the main view
                 self.view.show_starting_view()
             else:
@@ -113,13 +118,11 @@ class Presenter:
             )
 
         if account:
-            # TODO refresh account list
-            self.refresh_account_list()
+            self.view.current_frame.add_account(account)
             self.view.destroy_current_popup()
 
     def refresh_account_list(self) -> None:
-        accounts_list = self.model.read_accounts_by_user(self.model.user.id)
-        self.view.current_frame.refresh_accounts_widgets(accounts_list)
+        return self.model.read_accounts_by_user(self.model.user.id)
 
     def run(self) -> None:
         self.view.init_ui(self)

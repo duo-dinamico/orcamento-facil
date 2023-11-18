@@ -1,7 +1,7 @@
 import tkinter as tk
 from typing import Protocol
 
-from . import add_account_popup_view, register_login_popup_view, starting_view
+from . import add_account_popup_view, incoming_outgoing_view, register_login_popup_view
 
 TITLE = "Ez Budget"
 WINDOW_WIDTH = 1200
@@ -40,7 +40,7 @@ class RootView(tk.Tk):
 
     def init_ui(self, presenter: Presenter) -> None:
         self.presenter = presenter
-        self.starting_view = starting_view.StartingView(self, presenter)
+        self.starting_view = incoming_outgoing_view.IncomingOutgoing(self, presenter)
 
         self.show_register_login_popup(presenter)
 

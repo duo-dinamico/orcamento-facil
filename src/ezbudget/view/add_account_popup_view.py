@@ -18,6 +18,8 @@ class AddAccountPopUp(tk.Toplevel):
         label_account_name = ttk.Label(self, text="Account name")
         label_account_name.pack(anchor="w", padx=10, pady=5, fill="x")
         entry_account_name = ttk.Entry(self, textvariable=self.account_name)
+        # TODO need to get the focus on account name entry somehow
+        # entry_account_name.focus_set()
         entry_account_name.pack(anchor="w", padx=10, pady=5, fill="x")
 
         label_initial_balance = ttk.Label(self, text="Initial balance")
@@ -39,6 +41,8 @@ class AddAccountPopUp(tk.Toplevel):
         button_add_account = ttk.Button(self, text="Add account")
         button_add_account.pack(side="right", padx=10, pady=5)
         button_add_account.bind("<Button-1>", presenter.handle_add_account)
+        # TODO this should enable us to confirm when we press enter
+        # self.bind("<Return>", presenter.handle_add_account)
 
     def cancel_input(self):
         self.destroy()

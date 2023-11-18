@@ -104,3 +104,16 @@ class Model:
         """
         accounts_list = self.session.scalars(select(Account).where(Account.user_id == user_id)).all()
         return accounts_list
+
+    def read_account_by_id(self, account_id: str) -> Account | None:
+        """Return an account object that has the given id.
+
+        Args:
+            account_id: the account id.
+
+        Returns:
+            Account: if the account exist.
+            None: if the account doesn't exist.
+        """
+        account = self.session.scalars(select(Account).where(Account.id == account_id)).first()
+        return account

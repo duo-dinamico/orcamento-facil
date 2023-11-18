@@ -7,6 +7,8 @@
     }
   },
   "python.defaultInterpreterPath": "./.venv",
+  "python.languageServer": "Pylance",
   "editor.rulers": [120],
-  "isort.args": ["--profile", "black"]
+  "isort.args": ["--profile", "black"],
+  "python.analysis.autoImportCompletions": true
 }

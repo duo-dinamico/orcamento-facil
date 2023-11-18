@@ -35,6 +35,7 @@ class IncomingOutgoing(ttk.Frame):
 
         self.accounts_tree.bind("<<TreeviewSelect>>", self.account_selected)
         self.add_account_button.bind("<Button-1>", self.parent.show_add_account_popup)
+        self.add_income_button.bind("<Button-1>", self.parent.show_add_income_popup)
 
         self.next_button = ttk.Button(master=self, text="Next")
         self.next_button.grid(row=1, column=0, columnspan=3, sticky="sew", padx=(10, 10), pady=(0, 10))

@@ -13,7 +13,7 @@ class AddAccountPopUp(tk.Toplevel):
         self.account_name = tk.StringVar()
         self.initial_balance = tk.StringVar()
         self.error_message = tk.StringVar(value="")
-        currencies = ["GBP", "EUR", "USD"]
+        currencies = presenter.get_currency()
 
         label_account_name = ttk.Label(self, text="Account name")
         label_account_name.pack(anchor="w", padx=10, pady=5, fill="x")

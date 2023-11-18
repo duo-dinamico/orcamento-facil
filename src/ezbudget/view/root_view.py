@@ -1,7 +1,7 @@
 import tkinter as tk
 from typing import Protocol
 
-from . import add_account_popup_view, incoming_outgoing_view, register_login_popup_view
+from . import add_account_popup_view, add_income_popup_view, incoming_outgoing_view, register_login_popup_view
 
 TITLE = "Ez Budget"
 WINDOW_WIDTH = 1200
@@ -79,6 +79,12 @@ class RootView(tk.Tk):
         if self.current_popup:
             self.current_popup.destroy()
         self.current_popup = add_account_popup_view.AddAccountPopUp(self.current_frame, self.presenter)
+
+    def show_add_income_popup(self, event=None) -> None:
+        del event  # not used in this function
+        if self.current_popup:
+            self.current_popup.destroy()
+        self.current_popup = add_income_popup_view.AddIncomePopUp(self.current_frame, self.presenter)
 
     def destroy_current_popup(self) -> None:
         self.current_popup.destroy()

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
+from ezbudget.model import CurrencyEnum, MonthEnum, RecurrenceEnum
 from ezbudget.utils import get_hashed_password, verify_password
 
 
@@ -121,8 +122,24 @@ class Presenter:
             self.view.current_frame.add_account(account)
             self.view.destroy_current_popup()
 
+    def handle_add_income(self, event=None):
+        del event  # not used in this function
+        ...
+
     def refresh_account_list(self) -> None:
         return self.model.read_accounts_by_user(self.model.user.id)
+
+    def get_currency(self):
+        return list(CurrencyEnum.__members__.keys())
+
+    def get_recurrence(self):
+        return [recurrence.value for recurrence in RecurrenceEnum]
+
+    def get_target_accounts(self):
+        return [account.name for account in self.model.read_accounts_by_user(self.model.user.id)]
+
+    def get_month(self):
+        return list(MonthEnum.__members__.keys())
 
     def run(self) -> None:
         self.view.init_ui(self)

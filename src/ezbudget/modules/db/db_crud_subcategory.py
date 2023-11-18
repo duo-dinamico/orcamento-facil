@@ -80,8 +80,8 @@ def create_subcategory(
         return None
 
     # Check if boolean
-    if type(recurrent) != bool or type(include) != bool:
-        logger.info(f"recurrent and include must be booleans.")
+    if not isinstance(recurrent, bool) or not isinstance(include, bool):
+        logger.info("recurrent and include must be booleans.")
         return None
 
     # Check if recurrency is valid

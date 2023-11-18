@@ -90,7 +90,7 @@ def login_user(db: SessionLocal, username: str, user_password: str) -> int:
     user = read_user_by_name(db, username)
     logger.info(f"login_user: user {user}")
 
-    if user == None or not verify_password(user_password, user.password):
+    if user is None or not verify_password(user_password, user.password):
         return None
 
     else:

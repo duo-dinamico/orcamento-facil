@@ -34,9 +34,10 @@ class RootView(tk.Tk):
         self.current_popup = None
 
         # Put the windows in the center of the screen
-        x_center = self.winfo_screenwidth() / 2 - WINDOW_WIDTH / 2
-        y_center = self.winfo_screenheight() / 2 - WINDOW_HEIGHT / 2
-        self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}+{int(x_center)}+{int(y_center)}")
+        # x_center = self.winfo_screenwidth() / 2 - WINDOW_WIDTH / 2
+        # y_center = self.winfo_screenheight() / 2 - WINDOW_HEIGHT / 2
+        # self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}+{int(x_center)}+{int(y_center)}")
+        self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
 
     def init_ui(self, presenter: Presenter) -> None:
         self.presenter = presenter

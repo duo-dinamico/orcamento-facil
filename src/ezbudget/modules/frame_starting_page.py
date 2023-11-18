@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
-from .db.db_crud_account import create_account, delete_account, read_account_incomes
+from .db.db_crud_account import delete_account
 from .db.db_crud_income import create_income, delete_income
 from .db.db_crud_user import create_user, login_user, read_user_accounts, read_user_incomes
 from .popups.add_account import AddAccountPopUp
@@ -149,7 +149,7 @@ class StartingPage(ttk.Frame):
 
     def add_user(self):
         state = create_user(self.controller.session, self.nome.get(), self.password.get())
-        if state == None:
+        if state is None:
             self.information.set("User already exists.")
         else:
             self.controller.logged_in = state
@@ -162,7 +162,7 @@ class StartingPage(ttk.Frame):
 
     def login(self):
         state = login_user(self.controller.session, self.nome.get(), self.password.get())
-        if state == None:
+        if state is None:
             self.information.set("Wrong username or password.")
         else:
             self.controller.logged_in = state
@@ -192,14 +192,14 @@ class StartingPage(ttk.Frame):
         self.popup = popup(self)
 
     def add_account(self, account):
-        created_id = create_account(
-            self.controller.session,
-            account["account"],
-            self.controller.logged_in,
-            account["initial_balance"],
-            "BANK",
-            account["currency"],
-        )
+        # created_id = create_account(
+        #     self.controller.session,
+        #     account["account"],
+        #     self.controller.logged_in,
+        #     account["initial_balance"],
+        #     "BANK",
+        #     account["currency"],
+        # )
         logger.info(f"add_account: {account}")
         self.accounts.append(account)
         self.popup.destroy()
@@ -243,7 +243,7 @@ class StartingPage(ttk.Frame):
         account_list = read_user_accounts(self.controller.session, self.controller.logged_in)
         logger.info(f"refresh_accounts: {account_list}")
 
-        if account_list != None:
+        if account_list is not None:
             for i, item in enumerate(account_list):
                 account_label = ttk.Label(self.frames_right["account_list"], text=item.name)
                 balance_label = ttk.Label(self.frames_right["account_list"], text=item.initial_balance)
@@ -262,7 +262,7 @@ class StartingPage(ttk.Frame):
                 self.line_widgets.extend([account_label, balance_label, delete_button])
 
     def refresh_incomes(self):
-        logger.info(f"refresh_incomes")
+        logger.info("refresh_incomes")
         for widget in self.line_widgets_incomes:
             widget.destroy()
 
@@ -270,7 +270,7 @@ class StartingPage(ttk.Frame):
         income_list = read_user_incomes(self.controller.session, self.controller.logged_in)
         logger.info(f"refresh_incomes list: {income_list}")
 
-        if income_list != None:
+        if income_list is not None:
             for i, item in enumerate(income_list):
                 income_name_label = ttk.Label(self.frames_right["income_list"], text=item.name)
                 predicted_income_label = ttk.Label(self.frames_right["income_list"], text=item.expected_income_value)

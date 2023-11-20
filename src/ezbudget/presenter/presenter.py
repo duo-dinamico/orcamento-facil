@@ -23,6 +23,19 @@ class Model(Protocol):
     ):
         ...
 
+    def add_income(
+        self,
+        user_id: int,
+        account_id: int,
+        name: str,
+        expected_income_value: int,
+        real_income_value: int,
+        income_day: str,
+        income_month,
+        recurrence,
+    ):
+        ...
+
     def read_account_by_name(self, account_name: str):
         ...
 
@@ -32,24 +45,30 @@ class Model(Protocol):
     def read_account_by_id(self, account_id: str):
         ...
 
+    def read_incomes_by_name(self, user_id: int):
+        ...
+
 
 class View(Protocol):
     def init_ui(self, presenter: Presenter):
         ...
 
-    def error_message_set(self, message: str):
+    def error_message_set(self, target: str, message: str):
         ...
 
-    def show_register_login_popup(self, presenter):
+    def show_register_login(self, presenter):
         ...
 
-    def show_starting_view(self, event):
+    def show_incomig_outgoing(self, event):
         ...
 
     def get_user_data(self) -> {str, str}:
         ...
 
     def get_account_data(self) -> {str, str}:
+        ...
+
+    def get_income_data(self):
         ...
 
     def show_add_account_popup(self, event):
@@ -73,15 +92,15 @@ class Presenter:
         check_user_exists = self.model.read_user_by_name(user_data["username"])
 
         if check_user_exists:
-            self.view.error_message_set("User already exists")
+            self.view.error_message_set("frame", "User already exists")
         else:
             hashed_password = get_hashed_password(user_data["password"])
             try:
                 user = self.model.add_user(username=user_data["username"], password=hashed_password)
                 self.model.user = user
-                self.view.show_starting_view()
+                self.view.show_incomig_outgoing()
             except Exception as error:  # pylint: disable=broad-exception-caught
-                self.view.error_message_set("Was not able to create user")
+                self.view.error_message_set("frame", "Was not able to create user")
                 # TODO replace this with the log
                 print(error)
 
@@ -95,20 +114,19 @@ class Presenter:
             if check_password:
                 self.model.user = user
                 # TODO this is supposed to change to the main view
-                self.view.show_starting_view()
+                self.view.show_incomig_outgoing()
             else:
-                self.view.error_message_set("Wrong username or password")
+                self.view.error_message_set("frame", "Wrong username or password")
         else:
-            self.view.error_message_set("User not found")
+            self.view.error_message_set("frame", "User not found")
 
     def handle_add_account(self, event=None):
         del event  # not used in this function
         account_data = self.view.get_account_data()
         check_account_exists = self.model.read_account_by_name(account_data["account_name"])
 
-        account = None
         if check_account_exists:
-            self.view.error_message_set("Account already exists")
+            self.view.error_message_set("top", "Account already exists")
         else:
             account = self.model.add_account(
                 account_name=account_data["account_name"],
@@ -124,10 +142,30 @@ class Presenter:
 
     def handle_add_income(self, event=None):
         del event  # not used in this function
-        ...
+        income_data = self.view.get_income_data()
+        check_income_exists = self.model.read_incomes_by_name(income_data["name"])
+
+        if check_income_exists:
+            self.view.error_message_set("top", "Income source already exists")
+        else:
+            account = self.model.read_account_by_name(income_data["account_name"])
+            income_data["account_id"] = account.id
+            del income_data["account_name"]
+            income_data["user_id"] = self.model.user.id
+            for recurrence in RecurrenceEnum:
+                if recurrence.value == income_data["recurrence"]:
+                    income_data["recurrence"] = recurrence.name
+            income = self.model.add_income(**income_data)
+
+        if income:
+            self.view.current_frame.add_income(income)
+            self.view.destroy_current_popup()
 
     def refresh_account_list(self) -> None:
         return self.model.read_accounts_by_user(self.model.user.id)
+
+    def refresh_income_list(self) -> None:
+        return self.model.read_incomes_by_name(self.model.user.id)
 
     def get_currency(self):
         return list(CurrencyEnum.__members__.keys())

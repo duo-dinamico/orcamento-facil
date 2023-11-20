@@ -82,6 +82,7 @@ class Income(Base):
     __tablename__ = "incomes"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", name="user"))
     account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id", name="account"))
     name: Mapped[str] = mapped_column(unique=True)
     expected_income_value: Mapped[int] = mapped_column(default=0)  # In cents

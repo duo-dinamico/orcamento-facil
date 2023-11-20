@@ -1,7 +1,7 @@
 import tkinter as tk
 from typing import Protocol
 
-from . import add_account_popup_view, add_income_popup_view, incoming_outgoing_view, register_login_popup_view
+from ezbudget.view import AddAccountPopUp, AddIncomePopUp, IncomingOutgoing, RegisterLogin
 
 TITLE = "Ez Budget"
 WINDOW_WIDTH = 1200
@@ -28,7 +28,6 @@ class RootView(tk.Tk):
         self.title(TITLE)
         self.resizable(False, False)
         self.presenter = None
-        self.starting_view = None
 
         self.current_frame = None
         self.current_popup = None
@@ -41,17 +40,19 @@ class RootView(tk.Tk):
 
     def init_ui(self, presenter: Presenter) -> None:
         self.presenter = presenter
-        self.starting_view = incoming_outgoing_view.IncomingOutgoing(self, presenter)
 
-        self.show_register_login_popup(presenter)
+        self.show_register_login(presenter)
 
-    def error_message_set(self, message: str) -> None:
-        self.current_popup.error_message.set(message)
+    def error_message_set(self, target: str, message: str) -> None:
+        if target == "frame":
+            self.current_frame.error_message.set(message)
+        else:
+            self.current_popup.error_message.set(message)
 
     def get_user_data(self) -> {str, str}:
         return {
-            "username": self.current_popup.username_popup.get(),
-            "password": self.current_popup.password_popup.get(),
+            "username": self.current_frame.username.get(),
+            "password": self.current_frame.password.get(),
         }
 
     def get_account_data(self) -> {str, str, str}:
@@ -61,30 +62,41 @@ class RootView(tk.Tk):
             "currency": self.current_popup.currency_combobox.get(),
         }
 
-    def show_register_login_popup(self, presenter) -> None:
-        if self.current_popup:
-            self.current_popup.destroy()
-        self.current_popup = register_login_popup_view.RegisterLogin(self, presenter)
+    def get_income_data(self) -> {str, str, str}:
+        return {
+            "name": self.current_popup.income_name.get(),
+            "account_name": self.current_popup.combobox_target_account.get(),
+            "expected_income_value": self.current_popup.expected_income.get(),
+            "real_income_value": self.current_popup.real_income.get(),
+            "income_day": self.current_popup.income_day.get(),
+            "income_month": self.current_popup.combobox_income_month.get(),
+            "recurrence": self.current_popup.combobox_recurrence.get(),
+        }
 
-    def show_starting_view(self, event=None) -> None:
+    def show_register_login(self, presenter) -> None:
+        self.current_frame = RegisterLogin(self, presenter)
+        self.current_frame.pack(expand=True, fill="both")
+
+    def show_incomig_outgoing(self, event=None) -> None:
         del event  # not used in this function
-        if self.current_popup:
-            self.current_popup.destroy()
-        self.current_frame = self.starting_view
+        if self.current_frame:
+            self.current_frame.destroy()
+        self.current_frame = IncomingOutgoing(self, self.presenter)
         self.current_frame.refresh_accounts()
+        self.current_frame.refresh_incomes()
         self.current_frame.pack(expand=True, fill="both")
 
     def show_add_account_popup(self, event=None) -> None:
         del event  # not used in this function
         if self.current_popup:
             self.current_popup.destroy()
-        self.current_popup = add_account_popup_view.AddAccountPopUp(self.current_frame, self.presenter)
+        self.current_popup = AddAccountPopUp(self.current_frame, self.presenter)
 
     def show_add_income_popup(self, event=None) -> None:
         del event  # not used in this function
         if self.current_popup:
             self.current_popup.destroy()
-        self.current_popup = add_income_popup_view.AddIncomePopUp(self.current_frame, self.presenter)
+        self.current_popup = AddIncomePopUp(self.current_frame, self.presenter)
 
     def destroy_current_popup(self) -> None:
         self.current_popup.destroy()

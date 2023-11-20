@@ -26,6 +26,7 @@ def read_income_by_name(db: db.session, name: str) -> int:
 
 def create_income(
     db: db.session,
+    user_id: int,
     account_id: int,
     name: str,
     expected_income_value: int = 0,
@@ -63,6 +64,7 @@ def create_income(
 
     # Add income to the database
     db_income = Income(
+        user_id=user_id,
         account_id=account_id,
         name=name,
         expected_income_value=expected_income_value,

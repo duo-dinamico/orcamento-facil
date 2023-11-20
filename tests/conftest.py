@@ -57,16 +57,18 @@ def fixture_valid_subcategory(db_session, valid_category):
 
 
 @pytest.fixture()
-def valid_income(db_session, valid_account):
+def valid_income(db_session, valid_account, valid_user):
     _ = valid_account
-    db_session.add(Income(account_id=1, name="validIncome"))
+    _ = valid_user
+    db_session.add(Income(account_id=1, user_id=1, name="validIncome"))
     db_session.commit()
 
 
 @pytest.fixture()
-def valid_income_second(db_session, valid_account):
+def valid_income_second(db_session, valid_account, valid_user):
     _ = valid_account
-    db_session.add(Income(account_id=1, name="validIncomeSecond"))
+    _ = valid_user
+    db_session.add(Income(account_id=1, user_id=1, name="validIncomeSecond"))
     db_session.commit()
 
 

@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
-from ezbudget.model import Account, AccountTypeEnum, Base, User
+from ezbudget.model import Account, AccountTypeEnum, Base, Income, MonthEnum, RecurrenceEnum, User
 
 
 class Model:
@@ -80,7 +80,7 @@ class Model:
         return account
 
     def read_account_by_name(self, account_name: str) -> Account | None:
-        """Return an account id that has the given name.
+        """Return an account that has the given name.
 
         Args:
             account_name: the account name.
@@ -100,10 +100,21 @@ class Model:
 
         Returns:
             account_list: list of the user accounts
-            None: if the user_id is not valid
         """
         accounts_list = self.session.scalars(select(Account).where(Account.user_id == user_id)).all()
         return accounts_list
+
+    def read_incomes_by_name(self, user_id: int) -> list:
+        """Return a list incomes from the selected user.
+
+        Args:
+            user_id: user id owner of the incomes.
+
+        Returns:
+            income_list: list of the user incomes
+        """
+        income_list = self.session.scalars(select(Income).where(Income.user_id == user_id)).all()
+        return income_list
 
     def read_account_by_id(self, account_id: str) -> Account | None:
         """Return an account object that has the given id.
@@ -117,3 +128,45 @@ class Model:
         """
         account = self.session.scalars(select(Account).where(Account.id == account_id)).first()
         return account
+
+    def add_income(
+        self,
+        user_id: int,
+        account_id: int,
+        name: str,
+        expected_income_value: int = 0,
+        real_income_value: int = 0,
+        income_day: str = "1",
+        income_month: MonthEnum = MonthEnum.JANUARY,
+        recurrence: RecurrenceEnum = RecurrenceEnum.ONE,
+    ) -> Income:
+        """Create a new income, for a given account and return the new income.
+
+        Args:
+            account_id: the account id for the income.
+            name: name of the income.
+            expected_income_value: expected value of the income in cents, it's zero by default.
+            real_income_value: real value of the income in cents, it's zero by default.
+            income_day: the day of the month of the first income, it's 1 by default.
+            income_month: the month of the income, from an enum.
+            recurrence: recurrence of the income, from an enum, it's ONE by default.
+
+        Returns:
+            Income: The newly created income.
+        """
+
+        # Add income to the database
+        income = Income(
+            user_id=user_id,
+            account_id=account_id,
+            name=name,
+            expected_income_value=expected_income_value,
+            real_income_value=real_income_value,
+            income_day=income_day,
+            income_month=income_month,
+            recurrence=recurrence,
+        )
+        self.session.add(income)
+        self.session.commit()
+        self.session.refresh(income)
+        return income

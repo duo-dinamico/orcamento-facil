@@ -87,8 +87,8 @@ def test_error_subcategory_creation_recurrent_not_bool(db_session, valid_categor
     assert subcategory_id is None
 
 
-def test_error_subcategory_creation_recurrency_invalid(db_session, valid_category):
+def test_error_subcategory_creation_recurrence_invalid(db_session, valid_category):
     _ = valid_category
-    subcategory_id = create_subcategory(db_session, category_id=1, name="validSubCategory", recurrency="sometime")
+    subcategory_id = create_subcategory(db_session, category_id=1, name="validSubCategory", recurrence="sometime")
 
     assert subcategory_id is None

@@ -1,12 +1,13 @@
 from sqlalchemy import select
 
-from ..utils.logging import logger
+from ezbudget.model import Model, RecurrenceEnum, SubCategory
+
 from .db_crud_category import read_category_by_id
-from .db_database import SessionLocal
-from .db_models import RecurrencyEnum, SubCategory
+
+db = Model()
 
 
-def read_subcategory_by_name(db: SessionLocal, name: str) -> int:
+def read_subcategory_by_name(db: db.session, name: str) -> int:
     """Return a subcategory id that has the given subcategory name.
 
     Args:
@@ -18,13 +19,12 @@ def read_subcategory_by_name(db: SessionLocal, name: str) -> int:
         None: if the subcategory don't exist.
     """
     subcategory = db.scalars(select(SubCategory).where(SubCategory.name == name)).first()
-    logger.info(f"read_subcategory_by_name: {subcategory}")
     if not subcategory:
         return None
     return subcategory.id
 
 
-def read_subcategory_list_by_category_id(db: SessionLocal, category_id: int) -> list:
+def read_subcategory_list_by_category_id(db: db.session, category_id: int) -> list:
     """Return a list of all subcategories from a given category id.
 
     Args:
@@ -39,22 +39,20 @@ def read_subcategory_list_by_category_id(db: SessionLocal, category_id: int) -> 
     # Check if the category_id exists
     category = read_category_by_id(db, category_id=category_id)
     if not category:
-        logger.info(f"category_id don't exist: {category}.")
         return None
 
     subcategory_list = db.scalars(select(SubCategory).where(SubCategory.category_id == category_id)).all()
-    logger.info(f"subcategory list: {subcategory_list}")
     if len(subcategory_list) == 0:
         return None
     return subcategory_list
 
 
 def create_subcategory(
-    db: SessionLocal,
+    db: db.session,
     category_id: int,
     name: str,
     recurrent: bool = False,
-    recurrency: RecurrencyEnum = "ONE",
+    recurrence: RecurrenceEnum = "ONE",
     include: bool = True,
 ) -> int:
     """Create a new subcategory in the database, and return the subcategory id.
@@ -70,23 +68,19 @@ def create_subcategory(
     # Check if name already exist
     subcategory = read_subcategory_by_name(db, name=name)
     if subcategory:
-        logger.info(f"category already exist with ID: {subcategory}.")
         return None
 
     # Check if category_id exist
     category = read_category_by_id(db, category_id=category_id)
     if not category:
-        logger.info(f"category_id don't exist: {category}.")
         return None
 
     # Check if boolean
     if not isinstance(recurrent, bool) or not isinstance(include, bool):
-        logger.info("recurrent and include must be booleans.")
         return None
 
-    # Check if recurrency is valid
-    if recurrency not in RecurrencyEnum.__members__:
-        logger.info(f"Account recurrency don't exist: {recurrency}.")
+    # Check if recurrence is valid
+    if recurrence not in RecurrenceEnum.__members__:
         return None
 
     # Add subcategory to the database
@@ -94,11 +88,10 @@ def create_subcategory(
         category_id=category_id,
         name=name,
         recurrent=recurrent,
-        recurrency=recurrency,
+        recurrence=recurrence,
         include=include,
     )
     db.add(db_subcategory)
     db.commit()
     db.refresh(db_subcategory)
-    logger.info(f"subcategory created: {db_subcategory}.")
     return db_subcategory.id

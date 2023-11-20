@@ -2,13 +2,14 @@ from datetime import datetime
 
 from sqlalchemy import select
 
-from ..utils.logging import logger
+from ezbudget.model import Model, Transaction
+
 from .db_crud_account import read_account_by_id
-from .db_database import SessionLocal
-from .db_models import Transaction
+
+db = Model()
 
 
-def read_transaction_by_id(db: SessionLocal, transaction_id: int) -> Transaction | None:
+def read_transaction_by_id(db: db.session, transaction_id: int) -> Transaction | None:
     """Return a transaction object that has the given id.
 
     Args:
@@ -20,14 +21,13 @@ def read_transaction_by_id(db: SessionLocal, transaction_id: int) -> Transaction
         None: if the transaction don't exist.
     """
     transaction = db.scalars(select(Transaction).where(Transaction.id == transaction_id)).first()
-    logger.debug(f"read_transaction_by_id: {transaction}")
     if not transaction:
         return None
     return transaction
 
 
 def create_transaction(
-    db: SessionLocal,
+    db: db.session,
     account_id: int,
     subcategory_id: int,
     date: datetime,
@@ -52,14 +52,11 @@ def create_transaction(
     # Check if the account id is valid
     account = read_account_by_id(db, account_id=account_id)
     if not account:
-        logger.debug(f"Account don't exist: {account_id}.")
         return None
 
     # Check if the subcategory id is valid
     #
     #
-
-    logger.info(f"create_transaction: {account_id} {subcategory_id} {date} {value} {description}")
 
     # Add account to the database
     db_transaction = Transaction(

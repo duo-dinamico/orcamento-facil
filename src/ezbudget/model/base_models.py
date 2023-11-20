@@ -29,7 +29,7 @@ class AccountTypeEnum(str, Enum):
     CASH = "Cash"
 
 
-# Define an enum type for recurrency
+# Define an enum type for recurrence
 class RecurrenceEnum(str, Enum):
     ONE = "One time only"
     DAY = "Daily"

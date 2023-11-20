@@ -26,7 +26,7 @@ mypy = "^1.7.0"
 
 [tool.taskipy.tasks]
 test = { cmd = "pytest", help = 'run pytest on all files' }
-lint_all = { cmd = "pylint --rcfile=.pylintrc **/*.py", help = 'run pylint in all files including non changed ones' }
+lint = { cmd = "ruff check .", help = 'ruff all files' }
 sort = { cmd = "isort -vc .", help = 'run isort in all files.' }
 
 

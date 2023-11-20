@@ -1,11 +1,11 @@
 from sqlalchemy import select
 
-from ..utils.logging import logger
-from .db_database import SessionLocal
-from .db_models import Category
+from ezbudget.model import Category, Model
+
+db = Model()
 
 
-def read_category_by_name(db: SessionLocal, name: str) -> int:
+def read_category_by_name(db: db.session, name: str) -> int:
     """Return a category id that has the given name.
 
     Args:
@@ -17,13 +17,12 @@ def read_category_by_name(db: SessionLocal, name: str) -> int:
         None: if the category don't exist.
     """
     category = db.scalars(select(Category).where(Category.name == name)).first()
-    logger.info(f"read_category_by_name: {category}")
     if not category:
         return None
     return category.id
 
 
-def read_category_by_id(db: SessionLocal, category_id: int) -> Category:
+def read_category_by_id(db: db.session, category_id: int) -> Category:
     """Return a category object that has the given category id.
 
     Args:
@@ -35,13 +34,12 @@ def read_category_by_id(db: SessionLocal, category_id: int) -> Category:
         None: if the category don't exist.
     """
     category = db.scalars(select(Category).where(Category.id == category_id)).first()
-    logger.info(f"read_category_by_id: {category}")
     if not category:
         return None
     return category
 
 
-def read_category_list(db: SessionLocal) -> list:
+def read_category_list(db: db.session) -> list:
     """Return a list of all categories.
 
     Args:
@@ -52,13 +50,12 @@ def read_category_list(db: SessionLocal) -> list:
         None: if there is no category.
     """
     category_list = db.scalars(select(Category)).all()
-    logger.info(f"read_category_list: {category_list}")
     if len(category_list) == 0:
         return None
     return category_list
 
 
-def create_category(db: SessionLocal, name: str) -> int:
+def create_category(db: db.session, name: str) -> int:
     """Create a new category in the database, and return the category id.
 
     Args:
@@ -72,7 +69,6 @@ def create_category(db: SessionLocal, name: str) -> int:
     # Check if name already exist
     category = read_category_by_name(db, name=name)
     if category:
-        logger.info(f"category already exist with ID: {category}.")
         return None
 
     # Add category to the database
@@ -80,5 +76,4 @@ def create_category(db: SessionLocal, name: str) -> int:
     db.add(db_category)
     db.commit()
     db.refresh(db_category)
-    logger.info(f"category created: {db_category}.")
     return db_category.id

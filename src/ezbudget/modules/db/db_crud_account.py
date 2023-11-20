@@ -1,12 +1,13 @@
 from sqlalchemy import select
 
-from ..utils.logging import logger
+from ezbudget.model import Account, AccountTypeEnum, Income, Model
+
 from .db_crud_user import read_user_by_id
-from .db_database import SessionLocal
-from .db_models import Account, AccountTypeEnum, Income
+
+db = Model()
 
 
-def read_account_by_id(db: SessionLocal, account_id: str) -> Account:
+def read_account_by_id(db: db.session, account_id: str) -> Account:
     """Return an account object that has the given id.
 
     Args:
@@ -18,13 +19,12 @@ def read_account_by_id(db: SessionLocal, account_id: str) -> Account:
         None: if the account don't exist.
     """
     account = db.scalars(select(Account).where(Account.id == account_id)).first()
-    logger.info(f"read_account_by_id: {account}")
     if not account:
         return None
     return account
 
 
-def read_account_by_name(db: SessionLocal, account_name: str) -> int:
+def read_account_by_name(db: db.session, account_name: str) -> int:
     """Return an account id that has the given name.
 
     Args:
@@ -36,14 +36,13 @@ def read_account_by_name(db: SessionLocal, account_name: str) -> int:
         None: if the account don't exist.
     """
     account = db.scalars(select(Account).where(Account.name == account_name)).first()
-    logger.info(f"read_account_by_name: {account}")
     if not account:
         return None
     return account.id
 
 
 def create_account(
-    db: SessionLocal,
+    db: db.session,
     account_name: str,
     user_id: int,
     initial_balance: int = 0,
@@ -68,21 +67,16 @@ def create_account(
     # Check if the user id is valid
     user = read_user_by_id(db, id=user_id)
     if not user:
-        logger.info(f"User don't exist: {user_id}.")
         return None
 
     # Check if the account name already exist
     account = read_account_by_name(db, account_name)
     if account:
-        logger.info(f"Account already exist: {account_name}.")
         return None
 
     # Check if type is valid
     if account_type not in AccountTypeEnum.__members__:
-        logger.info(f"Account type don't exist: {account_type}.")
         return None
-
-    logger.info(f"create_account: {user_id} {account_name} {account_type} {currency} {initial_balance}")
 
     # Add account to the database
     db_account = Account(
@@ -98,7 +92,7 @@ def create_account(
     return db_account.id
 
 
-def delete_account(db: SessionLocal, account_id: int, user_id: int) -> bool:
+def delete_account(db: db.session, account_id: int, user_id: int) -> bool:
     """Delete an account in the database.
 
     Args:
@@ -124,7 +118,7 @@ def delete_account(db: SessionLocal, account_id: int, user_id: int) -> bool:
         return True
 
 
-def read_account_incomes(db: SessionLocal, account_id: int) -> list:
+def read_account_incomes(db: db.session, account_id: int) -> list:
     """Return a list of account incomes.
 
     Args:
@@ -139,10 +133,8 @@ def read_account_incomes(db: SessionLocal, account_id: int) -> list:
     # Check if the account_id is valid
     account = read_account_by_id(db, account_id)
     if not account:
-        logger.info(f"invalid account id: {account}")
         return None
 
     # get the list of income
     income_list = db.scalars(select(Income).where(Income.account_id == account_id)).all()
-    logger.info(f"List of accounts: {income_list}")
     return income_list

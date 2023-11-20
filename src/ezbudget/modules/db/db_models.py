@@ -29,8 +29,8 @@ class AccountTypeEnum(str, Enum):
     CASH = "Cash"
 
 
-# Define an enum type for recurrency
-class RecurrencyEnum(str, Enum):
+# Define an enum type for recurrence
+class RecurrenceEnum(str, Enum):
     ONE = "One time only"
     DAY = "Daily"
     MONTH = "Monthly"
@@ -82,7 +82,7 @@ class Income(Base):
     real_income_value: Mapped[int] = mapped_column(default=0)  # In cents
     income_day: Mapped[Optional[str]] = mapped_column(default="1")  # Saved as a string, need conversion
     income_month: Mapped[Optional[MonthEnum]] = mapped_column(default=MonthEnum.JANUARY)
-    recurrency: Mapped[Optional[RecurrencyEnum]] = mapped_column(default=RecurrencyEnum.ONE)
+    recurrence: Mapped[Optional[RecurrenceEnum]] = mapped_column(default=RecurrenceEnum.ONE)
 
     def __str__(self) -> str:
         return f"ID: {self.id}, Name: {self.name}, Account ID: {self.account_id}."
@@ -106,7 +106,7 @@ class SubCategory(Base):
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id", name="category"))
     name: Mapped[str] = mapped_column(unique=True)
     recurrent: Mapped[bool] = mapped_column(default=False)
-    recurrency: Mapped[Optional[RecurrencyEnum]]
+    recurrence: Mapped[Optional[RecurrenceEnum]]
     include: Mapped[bool] = mapped_column(default=True)
 
 

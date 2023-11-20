@@ -4,8 +4,8 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from ezbudget.modules.db.db_models import Account, Base, Category, Income, SubCategory, Transaction, User
-from ezbudget.modules.utils.hash import get_hashed_password
+from ezbudget.model import Account, Base, Category, Income, SubCategory, Transaction, User
+from ezbudget.utils import get_hashed_password
 
 engine = create_engine("sqlite:///test.db")
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

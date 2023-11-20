@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
-from .base_models import Account, AccountTypeEnum, Base, User
+from ezbudget.model import Account, AccountTypeEnum, Base, User
 
 
 class Model:

@@ -1,6 +1,6 @@
-from model import Model
-from presenter import Presenter
-from view import RootView
+from ezbudget.model import Model
+from ezbudget.presenter import Presenter
+from ezbudget.view import RootView
 
 
 def main() -> None:
@@ -11,4 +11,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    main()
     main()

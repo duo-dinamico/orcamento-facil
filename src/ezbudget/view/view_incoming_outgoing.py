@@ -35,9 +35,11 @@ class IncomingOutgoing(ttk.Frame):
 
         self.accounts_tree.bind("<<TreeviewSelect>>", self.account_selected)
         self.incomes_tree.bind("<<TreeviewSelect>>", self.income_selected)
+        self.credit_cards_tree.bind("<<TreeviewSelect>>", self.credit_card_selected)
 
         self.add_account_button.bind("<Button-1>", self.parent.show_add_account_popup)
         self.add_income_button.bind("<Button-1>", self.parent.show_add_income_popup)
+        self.add_credit_card_button.bind("<Button-1>", self.parent.show_add_credit_popup)
 
         self.next_button = ttk.Button(master=self, text="Next")
         self.next_button.grid(row=1, column=0, columnspan=3, sticky="sew", padx=(10, 10), pady=(0, 10))
@@ -93,15 +95,29 @@ class IncomingOutgoing(ttk.Frame):
         self.delete_income_button.config(state="enabled")
         return self.incomes_tree.selection()
 
+    def credit_card_selected(self, event):
+        del event  # not used in this function
+        self.edit_credit_card_button.config(state="enabled")
+        self.delete_credit_card_button.config(state="enabled")
+        return self.credit_cards_tree.selection()
+
     def refresh_accounts(self):
         account_list = self.presenter.refresh_account_list()
+        # TODO in the future we'll need to clean the tree before adding
         for item in account_list:
             self.accounts_tree.insert(parent="", index="end", iid=item.id, values=(item.name, item.initial_balance))
 
     def refresh_incomes(self):
         income_list = self.presenter.refresh_income_list()
+        # TODO in the future we'll need to clean the tree before adding
         for item in income_list:
             self.incomes_tree.insert(parent="", index="end", iid=item.id, values=(item.name, item.real_income_value))
+
+    def refresh_credit_cards(self):
+        credit_card_list = self.presenter.refresh_credit_card_list()
+        # TODO in the future we'll need to clean the tree before adding
+        for item in credit_card_list:
+            self.credit_cards_tree.insert(parent="", index="end", iid=item.id, values=(item.name, item.initial_balance))
 
     def add_account(self, account):
         self.accounts_tree.insert(
@@ -117,4 +133,12 @@ class IncomingOutgoing(ttk.Frame):
             index="end",
             iid=income.id,
             values=(income.name, income.real_income_value),
+        )
+
+    def add_credit_card(self, credit_card):
+        self.credit_cards_tree.insert(
+            parent="",
+            index="end",
+            iid=credit_card.id,
+            values=(credit_card.name, credit_card.initial_balance),
         )

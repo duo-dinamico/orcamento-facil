@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from ezbudget.model import CurrencyEnum, MonthEnum, RecurrenceEnum
+from sqlalchemy import select
+
+from ezbudget.model import Account, CurrencyEnum, MonthEnum, RecurrenceEnum
 from ezbudget.utils import get_hashed_password, verify_password
 
 
@@ -48,6 +50,9 @@ class Model(Protocol):
     def read_incomes_by_name(self, user_id: int):
         ...
 
+    def read_accounts(self, query):
+        ...
+
 
 class View(Protocol):
     def init_ui(self, presenter: Presenter):
@@ -62,13 +67,16 @@ class View(Protocol):
     def show_incomig_outgoing(self, event):
         ...
 
-    def get_user_data(self) -> {str, str}:
+    def get_user_data(self):
         ...
 
-    def get_account_data(self) -> {str, str}:
+    def get_account_data(self):
         ...
 
     def get_income_data(self):
+        ...
+
+    def get_credit_card_data(self):
         ...
 
     def show_add_account_popup(self, event):
@@ -128,13 +136,8 @@ class Presenter:
         if check_account_exists:
             self.view.error_message_set("top", "Account already exists")
         else:
-            account = self.model.add_account(
-                account_name=account_data["account_name"],
-                user_id=self.model.user.id,
-                initial_balance=account_data["initial_balance"],
-                account_type="BANK",
-                currency=account_data["currency"],
-            )
+            account_data["user_id"] = self.model.user.id
+            account = self.model.add_account(**account_data)
 
         if account:
             self.view.current_frame.add_account(account)
@@ -161,11 +164,31 @@ class Presenter:
             self.view.current_frame.add_income(income)
             self.view.destroy_current_popup()
 
+    def handle_add_credit_card(self, event=None):
+        del event  # not used in this function
+        credit_card_data = self.view.get_credit_card_data()
+        check_credit_card_exists = self.model.read_account_by_name(credit_card_data["account_name"])
+
+        if check_credit_card_exists:
+            self.view.error_message_set("top", "Credit card already exists")
+        else:
+            credit_card_data["user_id"] = self.model.user.id
+            credit_card = self.model.add_account(**credit_card_data)
+
+        if credit_card:
+            self.view.current_frame.add_credit_card(credit_card)
+            self.view.destroy_current_popup()
+
     def refresh_account_list(self) -> None:
-        return self.model.read_accounts_by_user(self.model.user.id)
+        query = select(Account).where((Account.user_id == self.model.user.id) & (Account.account_type == "BANK"))
+        return self.model.read_accounts(query)
 
     def refresh_income_list(self) -> None:
         return self.model.read_incomes_by_name(self.model.user.id)
+
+    def refresh_credit_card_list(self) -> None:
+        query = select(Account).where((Account.user_id == self.model.user.id) & (Account.account_type == "CARD"))
+        return self.model.read_accounts(query)
 
     def get_currency(self):
         return list(CurrencyEnum.__members__.keys())
@@ -180,5 +203,7 @@ class Presenter:
         return list(MonthEnum.__members__.keys())
 
     def run(self) -> None:
+        self.view.init_ui(self)
+        self.view.mainloop()
         self.view.init_ui(self)
         self.view.mainloop()

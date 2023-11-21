@@ -1,7 +1,7 @@
 import tkinter as tk
 from typing import Protocol
 
-from ezbudget.view import AddAccountPopUp, AddIncomePopUp, IncomingOutgoing, RegisterLogin
+from ezbudget.view import AddAccountPopUp, AddCreditCardPopup, AddIncomePopUp, IncomingOutgoing, RegisterLogin
 
 TITLE = "Ez Budget"
 WINDOW_WIDTH = 1200
@@ -49,28 +49,41 @@ class RootView(tk.Tk):
         else:
             self.current_popup.error_message.set(message)
 
-    def get_user_data(self) -> {str, str}:
+    def get_user_data(self):
         return {
             "username": self.current_frame.username.get(),
             "password": self.current_frame.password.get(),
         }
 
-    def get_account_data(self) -> {str, str, str}:
+    def get_account_data(self):
         return {
             "account_name": self.current_popup.account_name.get(),
+            "account_type": "BANK",
             "initial_balance": self.current_popup.initial_balance.get(),
-            "currency": self.current_popup.currency_combobox.get(),
+            "currency": self.current_popup.cbx_currency.get(),
         }
 
-    def get_income_data(self) -> {str, str, str}:
+    def get_income_data(self):
         return {
             "name": self.current_popup.income_name.get(),
-            "account_name": self.current_popup.combobox_target_account.get(),
+            "account_name": self.current_popup.cbx_target_account.get(),
             "expected_income_value": self.current_popup.expected_income.get(),
             "real_income_value": self.current_popup.real_income.get(),
             "income_day": self.current_popup.income_day.get(),
-            "income_month": self.current_popup.combobox_income_month.get(),
-            "recurrence": self.current_popup.combobox_recurrence.get(),
+            "income_month": self.current_popup.cbx_income_month.get(),
+            "recurrence": self.current_popup.cbx_recurrence.get(),
+        }
+
+    def get_credit_card_data(self):
+        return {
+            "account_name": self.current_popup.credit_card_name.get(),
+            "account_type": "CARD",
+            "initial_balance": self.current_popup.balance.get(),
+            "credit_limit": self.current_popup.credit_limit.get(),
+            "payment_day": self.current_popup.payment_day.get(),
+            "interest_rate": self.current_popup.interest_rate.get(),
+            "credit_method": self.current_popup.credit_method.get(),
+            "currency": self.current_popup.cbx_currency.get(),
         }
 
     def show_register_login(self, presenter) -> None:
@@ -84,6 +97,7 @@ class RootView(tk.Tk):
         self.current_frame = IncomingOutgoing(self, self.presenter)
         self.current_frame.refresh_accounts()
         self.current_frame.refresh_incomes()
+        self.current_frame.refresh_credit_cards()
         self.current_frame.pack(expand=True, fill="both")
 
     def show_add_account_popup(self, event=None) -> None:
@@ -97,6 +111,12 @@ class RootView(tk.Tk):
         if self.current_popup:
             self.current_popup.destroy()
         self.current_popup = AddIncomePopUp(self.current_frame, self.presenter)
+
+    def show_add_credit_popup(self, event=None) -> None:
+        del event  # not used in this function
+        if self.current_popup:
+            self.current_popup.destroy()
+        self.current_popup = AddCreditCardPopup(self.current_frame, self.presenter)
 
     def destroy_current_popup(self) -> None:
         self.current_popup.destroy()

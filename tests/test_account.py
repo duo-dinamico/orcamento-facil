@@ -1,11 +1,3 @@
-from ezbudget.modules.db.db_crud_account import (
-    create_account,
-    delete_account,
-    read_account_by_id,
-    read_account_by_name,
-    read_account_incomes,
-)
-
 #
 # DEFAULT BEHAVIOUR
 #
@@ -13,7 +5,7 @@ from ezbudget.modules.db.db_crud_account import (
 
 def test_success_account_read_by_id(db_session, valid_account):
     _ = valid_account
-    account = read_account_by_id(db_session, 1)
+    account = db_session.read_account_by_id(account_id=1)
 
     assert account.id == 1
     assert account.name == "validAccount"
@@ -21,29 +13,28 @@ def test_success_account_read_by_id(db_session, valid_account):
 
 def test_success_account_read_by_name(db_session, valid_account):
     _ = valid_account
-    account_id = read_account_by_name(db_session, account_name="validAccount")
+    account = db_session.read_account_by_name(account_name="validAccount")
 
-    assert account_id == 1
+    assert account.id == 1
 
 
 def test_success_account_creation(db_session, valid_user):
     _ = valid_user
-    account_id = create_account(db_session, user_id=1, account_name="accountName")
+    account = db_session.add_account(user_id=1, account_name="accountName")
 
-    assert isinstance(account_id, int)
-    assert account_id == 1
+    assert isinstance(account.id, int)
+    assert account.id == 1
 
 
 def test_success_account_deletion(db_session, valid_account):
     _ = valid_account
-    result = delete_account(db_session, account_id=1, user_id=1)
-
-    assert result is True
+    result = db_session.delete_account(account_id=1)
+    assert result == 1
 
 
 def test_success_account_incomes_list(db_session, valid_income):
     _ = valid_income
-    income_list = read_account_incomes(db_session, account_id=1)
+    income_list = db_session.read_account_incomes(account_id=1)
 
     assert isinstance(income_list, list)
     assert len(income_list) > 0
@@ -56,54 +47,49 @@ def test_success_account_incomes_list(db_session, valid_income):
 
 def test_error_account_read_by_id(db_session, valid_account):
     _ = valid_account
-    user = read_account_by_id(db_session, 5)
+    user = db_session.read_account_by_id(account_id=5)
 
     assert user is None
 
 
 def test_error_account_read_by_name(db_session, valid_account):
     _ = valid_account
-    account_id = read_account_by_name(db_session, account_name="wrongAccount")
+    account_id = db_session.read_account_by_name(account_name="wrongAccount")
 
     assert account_id is None
 
 
 def test_error_account_creation_invalid_user(db_session, valid_account):
     _ = valid_account
-    account_id = create_account(db_session, user_id=2, account_name="accountName")
+    account = db_session.add_account(user_id=20, account_name="accountName")
 
-    assert account_id is None
+    assert isinstance(account, str) and "User ID does not exist" in account
 
 
 def test_error_account_creation_invalid_name(db_session, valid_account):
     _ = valid_account
-    account_id = create_account(db_session, user_id=1, account_name="validAccount")
+    account = db_session.add_account(user_id=1, account_name="validAccount")
 
-    assert account_id is None
+    assert account == "Account name already exists"
 
 
 def test_error_account_creation_invalid_type(db_session, valid_user):
     _ = valid_user
-    account_id = create_account(db_session, user_id=1, account_name="validAccount", account_type="STUPID")
+    account = db_session.add_account(user_id=1, account_name="validAccount", account_type="STUPID")
 
-    assert account_id is None
-
-
-def test_error_acccount_delete_wrong_account_id(db_session, valid_account):
-    _ = valid_account
-    result = delete_account(db_session, account_id=2, user_id=1)
-
-    assert result is False
+    assert (
+        account
+        == "A LookupError occurred: 'STUPID' is not among the defined enum values. Enum name: accounttypeenum. Possible values: BANK, CARD, CASH"
+    )
 
 
-def test_error_acccount_delete_wrong_user_id(db_session, valid_account):
-    _ = valid_account
-    result = delete_account(db_session, account_id=1, user_id=2)
+def test_error_acccount_delete_wrong_account_id(db_session):
+    result = db_session.delete_account(account_id=1)
 
-    assert result is False
+    assert result == 0
 
 
 def test_error_account_income_list_invalid_account(db_session):
-    income_list = read_account_incomes(db_session, account_id=1)
+    income_list = db_session.read_account_incomes(account_id=1)
 
-    assert income_list is None
+    assert income_list == list()

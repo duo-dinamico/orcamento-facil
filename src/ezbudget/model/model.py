@@ -1,7 +1,9 @@
 from datetime import datetime
 
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, event, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.exc import NoResultFound
 
 from ezbudget.model import (
     Account,
@@ -18,14 +20,26 @@ from ezbudget.model import (
 
 
 class Model:
-    def __init__(self) -> None:
-        engine = create_engine("sqlite:///of.db")
-        session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    def __init__(self, database_name: str = "of") -> None:
+        self.engine = create_engine(f"sqlite:///{database_name}.db")
 
-        Base.metadata.create_all(engine)
+        @event.listens_for(self.engine, "connect")
+        def set_sqlite_pragma(dbapi_connection, connection_record):
+            _ = connection_record
+            cursor = dbapi_connection.cursor()
+            cursor.execute("PRAGMA foreign_keys=ON;")
+            cursor.close()
+
+        session_local = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+
+        Base.metadata.create_all(self.engine)
         self.session = session_local()
 
         self.user = None
+
+    def close_session(self):
+        self.session.close()
+        Base.metadata.drop_all(self.engine)
 
     def add_user(self, username: str, password: str = "") -> User | None:
         """Create a new user in the database, and return the id.
@@ -55,8 +69,10 @@ class Model:
             User: if the user exist.
             None: if the username don't exist.
         """
-        user = self.session.scalars(select(User).where(User.username == username)).first()
-        return user
+        try:
+            return self.session.scalars(select(User).where(User.username == username)).first()
+        except NoResultFound:
+            return None
 
     def add_account(
         self,
@@ -83,22 +99,32 @@ class Model:
             Account: if a new account was created
             None: if the user_id is not valid or if the account name already exists
         """
-        account = Account(
-            user_id=user_id,
-            name=account_name,
-            account_type=account_type,
-            currency=currency,
-            initial_balance=initial_balance,
-            credit_limit=credit_limit,
-            payment_day=payment_day,
-            interest_rate=interest_rate,
-            credit_method=credit_method,
-        )
+        try:
+            new_account = Account(
+                user_id=user_id,
+                name=account_name,
+                account_type=account_type,
+                currency=currency,
+                initial_balance=initial_balance,
+                credit_limit=credit_limit,
+                payment_day=payment_day,
+                interest_rate=interest_rate,
+                credit_method=credit_method,
+            )
 
-        self.session.add(account)
-        self.session.commit()
-        self.session.refresh(account)
-        return account
+            self.session.add(new_account)
+            self.session.commit()
+            self.session.refresh(new_account)
+            return new_account
+        except IntegrityError as e:
+            if "foreign key constraint" in str(e.orig).lower():
+                return "User ID does not exist"
+            elif "unique constraint" in str(e.orig).lower():
+                return "Account name already exists"
+            else:
+                return "An unknown IntegrityError occurred"
+        except LookupError as lookup_error:
+            return f"A LookupError occurred: {lookup_error}"
 
     def read_account_by_name(self, account_name: str) -> Account | None:
         """Return an account that has the given name.
@@ -110,8 +136,10 @@ class Model:
             account_id: if the account exist.
             None: if the account don't exist.
         """
-        account = self.session.scalars(select(Account).where(Account.name == account_name)).first()
-        return account
+        try:
+            return self.session.scalars(select(Account).where(Account.name == account_name)).first()
+        except NoResultFound:
+            return None
 
     def read_accounts_by_user(self, user_id: int) -> list:
         """Return a list of user accounts.
@@ -122,8 +150,10 @@ class Model:
         Returns:
             account_list: list of the user accounts
         """
-        accounts_list = self.session.scalars(select(Account).where(Account.user_id == user_id)).all()
-        return accounts_list
+        try:
+            return self.session.scalars(select(Account).where(Account.user_id == user_id)).all()
+        except NoResultFound:
+            return None
 
     def read_accounts(self, query) -> list:
         """Return a list of accounts that matches the given query.
@@ -159,8 +189,10 @@ class Model:
             Account: if the account exist.
             None: if the account doesn't exist.
         """
-        account = self.session.scalars(select(Account).where(Account.id == account_id)).first()
-        return account
+        try:
+            return self.session.scalars(select(Account).where(Account.id == account_id)).first()
+        except NoResultFound:
+            return None
 
     def add_income(
         self,
@@ -219,11 +251,10 @@ class Model:
         """
 
         # Get the account checking the id's of the account and user
-
-        self.session.delete(account_id)  # TODO do we need to pass an account? can we not delete based on id?
+        deleted_row = self.session.query(Account).filter(Account.id == account_id).delete()
         self.session.commit()
-
-        return True
+        # Returns affected rows. It will return 0 for no lines deleted and x for the amount of numbers deleted
+        return deleted_row
 
     def read_account_incomes(self, account_id: int) -> list:
         """Return a list of account incomes.
@@ -288,7 +319,7 @@ class Model:
             return None
         return category_list
 
-    def create_category(self, name: str) -> int:
+    def add_category(self, name: str) -> int:
         """Create a new category in the database, and return the category id.
 
         Args:
@@ -441,7 +472,7 @@ class Model:
             return None
         return subcategory_list
 
-    def create_subcategory(
+    def add_subcategory(
         self,
         category_id: int,
         name: str,
@@ -506,7 +537,7 @@ class Model:
             return None
         return transaction
 
-    def create_transaction(
+    def add_transaction(
         self,
         account_id: int,
         subcategory_id: int,

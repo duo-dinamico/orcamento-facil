@@ -1,5 +1,3 @@
-from ezbudget.modules.db.db_crud_income import create_income, delete_income, read_income_by_name
-
 #
 # DEFAULT BEHAVIOUR
 #
@@ -7,25 +5,26 @@ from ezbudget.modules.db.db_crud_income import create_income, delete_income, rea
 
 def test_success_income_read_by_name(db_session, valid_income):
     _ = valid_income
-    income_id = read_income_by_name(db_session, name="validIncome")
+    income = db_session.read_income_by_name(name="validIncome")
 
-    assert income_id == 1
+    assert income.id == 1
+    assert income.name == "validIncome"
 
 
 def test_success_income_creation(db_session, valid_account, valid_user):
     _ = valid_account
     _ = valid_user
-    income_id = create_income(db_session, account_id=1, user_id=1, name="newIncome")
+    income = db_session.create_income(account_id=1, user_id=1, name="newIncome")
 
-    assert isinstance(income_id, int)
-    assert income_id == 1
+    assert isinstance(income.id, int)
+    assert income.id == 1
 
 
 def test_success_income_delete(db_session, valid_income):
     _ = valid_income
-    result = delete_income(db_session, income_id=1)
+    result = db_session.delete_income(id=1)
 
-    assert result is True
+    assert result == 1
 
 
 #
@@ -35,7 +34,7 @@ def test_success_income_delete(db_session, valid_income):
 
 def test_error_income_read_by_name(db_session, valid_income):
     _ = valid_income
-    income_id = read_income_by_name(db_session, name="wrongAccount")
+    income_id = db_session.read_income_by_name(name="wrongAccount")
     print("Teste")
 
     assert income_id is None
@@ -43,19 +42,19 @@ def test_error_income_read_by_name(db_session, valid_income):
 
 def test_error_income_creation_invalid_account(db_session, valid_user):
     _ = valid_user
-    income_id = create_income(db_session, account_id=1, user_id=1, name="newIncome")
+    income = db_session.create_income(account_id=1, user_id=1, name="newIncome")
 
-    assert income_id is None
+    assert income == "User ID or Account ID does not exist"
 
 
 def test_error_income_creation_invalid_name(db_session, valid_income):
     _ = valid_income
-    income_id = create_income(db_session, account_id=1, user_id=1, name="validIncome")
+    income = db_session.create_income(account_id=1, user_id=1, name="validIncome")
 
-    assert income_id is None
+    assert income == "Income name already exists"
 
 
 def test_error_income_delete_invalid_income(db_session):
-    result = delete_income(db_session, income_id=1)
+    result = db_session.delete_income(id=1)
 
-    assert result is False
+    assert result == 0

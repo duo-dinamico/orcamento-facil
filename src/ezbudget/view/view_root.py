@@ -15,7 +15,7 @@ class Presenter(Protocol):
     def handle_login_user(self, event=None) -> None:
         ...
 
-    def handle_add_account(self, event=None):
+    def handle_create_account(self, event=None):
         ...
 
     def run(self) -> None:
@@ -100,13 +100,13 @@ class RootView(tk.Tk):
         self.current_frame.refresh_credit_cards()
         self.current_frame.pack(expand=True, fill="both")
 
-    def show_add_account_popup(self, event=None) -> None:
+    def show_create_account_popup(self, event=None) -> None:
         del event  # not used in this function
         if self.current_popup:
             self.current_popup.destroy()
         self.current_popup = AddAccountPopUp(self.current_frame, self.presenter)
 
-    def show_add_income_popup(self, event=None) -> None:
+    def show_create_income_popup(self, event=None) -> None:
         del event  # not used in this function
         if self.current_popup:
             self.current_popup.destroy()

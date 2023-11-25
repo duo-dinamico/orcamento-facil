@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 
 
-class AddIncomePopUp(tk.Toplevel):
+class CreateIncomePopUp(tk.Toplevel):
     def __init__(self, parent, presenter) -> None:
         super().__init__(master=parent)
 
@@ -61,11 +61,11 @@ class AddIncomePopUp(tk.Toplevel):
 
         btn_cancel = ttk.Button(self, text="Cancel", command=self.cancel_input)
         btn_cancel.pack(side="left", padx=10, pady=5)
-        btn_add_income = ttk.Button(self, text="Add income source")
-        btn_add_income.pack(side="right", padx=10, pady=5)
-        btn_add_income.bind("<Button-1>", presenter.handle_add_income)
+        btn_create_income = ttk.Button(self, text="Add income source")
+        btn_create_income.pack(side="right", padx=10, pady=5)
+        btn_create_income.bind("<Button-1>", presenter.handle_create_income)
         # TODO this should enable us to confirm when we press enter
-        # self.bind("<Return>", presenter.handle_add_income)
+        # self.bind("<Return>", presenter.handle_create_income)
 
     def cancel_input(self):
         self.destroy()

@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 
 
-class AddCreditCardPopup(tk.Toplevel):
+class CreateCreditCardPopup(tk.Toplevel):
     def __init__(self, parent, presenter) -> None:
         super().__init__(master=parent)
 
@@ -60,11 +60,11 @@ class AddCreditCardPopup(tk.Toplevel):
 
         btn_cancel = ttk.Button(self, text="Cancel", command=self.cancel_input)
         btn_cancel.pack(side="left", padx=10, pady=5)
-        btn_add_income = ttk.Button(self, text="Add credit card")
-        btn_add_income.pack(side="right", padx=10, pady=5)
-        btn_add_income.bind("<Button-1>", presenter.handle_add_credit_card)
+        btn_create_income = ttk.Button(self, text="Add credit card")
+        btn_create_income.pack(side="right", padx=10, pady=5)
+        btn_create_income.bind("<Button-1>", presenter.handle_add_credit_card)
         # TODO this should enable us to confirm when we press enter
-        # self.bind("<Return>", presenter.handle_add_income)
+        # self.bind("<Return>", presenter.handle_create_income)
 
     def cancel_input(self):
         self.destroy()

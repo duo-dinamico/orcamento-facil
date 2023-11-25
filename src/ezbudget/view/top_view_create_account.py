@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 
 
-class AddAccountPopUp(tk.Toplevel):
+class CreateAccountPopUp(tk.Toplevel):
     def __init__(self, parent, presenter) -> None:
         super().__init__(master=parent)
 

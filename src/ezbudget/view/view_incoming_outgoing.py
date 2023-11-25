@@ -12,11 +12,11 @@ class IncomingOutgoing(ttk.Frame):
         style.configure("Treeview", font=(None, 11), rowheight=int(11 * 3))
 
         self.accounts_tree: ttk.Treeview | None = None
-        self.add_account_button: ttk.Button | None = None
+        self.create_account_button: ttk.Button | None = None
         self.edit_account_button: ttk.Button | None = None
         self.delete_account_button: ttk.Button | None = None
         self.incomes_tree: ttk.Treeview | None = None
-        self.add_income_button: ttk.Button | None = None
+        self.create_income_button: ttk.Button | None = None
         self.edit_income_button: ttk.Button | None = None
         self.delete_income_button: ttk.Button | None = None
         self.credit_cards_tree: ttk.Treeview | None = None
@@ -37,8 +37,8 @@ class IncomingOutgoing(ttk.Frame):
         self.incomes_tree.bind("<<TreeviewSelect>>", self.income_selected)
         self.credit_cards_tree.bind("<<TreeviewSelect>>", self.credit_card_selected)
 
-        self.add_account_button.bind("<Button-1>", self.parent.show_add_account_popup)
-        self.add_income_button.bind("<Button-1>", self.parent.show_add_income_popup)
+        self.create_account_button.bind("<Button-1>", self.parent.show_create_account_popup)
+        self.create_income_button.bind("<Button-1>", self.parent.show_create_income_popup)
         self.add_credit_card_button.bind("<Button-1>", self.parent.show_add_credit_popup)
 
         self.next_button = ttk.Button(master=self, text="Next")
@@ -69,12 +69,12 @@ class IncomingOutgoing(ttk.Frame):
         match column:
             case 0:
                 setattr(self, "accounts_tree", tree)
-                setattr(self, "add_account_button", add_button)
+                setattr(self, "create_account_button", add_button)
                 setattr(self, "edit_account_button", edit_button)
                 setattr(self, "delete_account_button", delete_button)
             case 1:
                 setattr(self, "incomes_tree", tree)
-                setattr(self, "add_income_button", add_button)
+                setattr(self, "create_income_button", add_button)
                 setattr(self, "edit_income_button", edit_button)
                 setattr(self, "delete_income_button", delete_button)
             case 2:
@@ -119,7 +119,7 @@ class IncomingOutgoing(ttk.Frame):
         for item in credit_card_list:
             self.credit_cards_tree.insert(parent="", index="end", iid=item.id, values=(item.name, item.initial_balance))
 
-    def add_account(self, account):
+    def create_account(self, account):
         self.accounts_tree.insert(
             parent="",
             index="end",
@@ -127,7 +127,7 @@ class IncomingOutgoing(ttk.Frame):
             values=(account.name, account.initial_balance),
         )
 
-    def add_income(self, income):
+    def create_income(self, income):
         self.incomes_tree.insert(
             parent="",
             index="end",

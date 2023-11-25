@@ -2,22 +2,20 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from sqlalchemy import select
-
-from ezbudget.model import Account, CurrencyEnum, MonthEnum, RecurrenceEnum
+from ezbudget.model import CurrencyEnum, MonthEnum, RecurrenceEnum
 from ezbudget.utils import get_hashed_password, verify_password
 
 
 class Model(Protocol):
-    def add_user(self, username: str, password: str = ""):
+    def create_user(self, username: str, password: str = ""):
         ...
 
     def read_user_by_name(self, username: str):
         ...
 
-    def add_account(
+    def create_account(
         self,
-        account_name: str,
+        name: str,
         user_id: int,
         account_type: str,
         initial_balance: int = 0,
@@ -25,7 +23,7 @@ class Model(Protocol):
     ):
         ...
 
-    def add_income(
+    def create_income(
         self,
         user_id: int,
         account_id: int,
@@ -38,19 +36,19 @@ class Model(Protocol):
     ):
         ...
 
-    def read_account_by_name(self, account_name: str):
+    def read_account_by_name(self, name: str):
         ...
 
-    def read_accounts_by_user(self, user_id: int):
+    def read_accounts_by_user(self, user_id: int, account_type: str):
         ...
 
-    def read_account_by_id(self, account_id: str):
+    def read_account_by_id(self, id: str):
         ...
 
-    def read_incomes_by_name(self, user_id: int):
+    def read_income_by_name(self, name: str):
         ...
 
-    def read_accounts(self, query):
+    def read_incomes_by_user(self, user_id: int):
         ...
 
 
@@ -79,7 +77,7 @@ class View(Protocol):
     def get_credit_card_data(self):
         ...
 
-    def show_add_account_popup(self, event):
+    def show_create_account_popup(self, event):
         ...
 
     def destroy_current_popup(self):
@@ -104,7 +102,7 @@ class Presenter:
         else:
             hashed_password = get_hashed_password(user_data["password"])
             try:
-                user = self.model.add_user(username=user_data["username"], password=hashed_password)
+                user = self.model.create_user(username=user_data["username"], password=hashed_password)
                 self.model.user = user
                 self.view.show_incomig_outgoing()
             except Exception as error:  # pylint: disable=broad-exception-caught
@@ -128,67 +126,65 @@ class Presenter:
         else:
             self.view.error_message_set("frame", "User not found")
 
-    def handle_add_account(self, event=None):
+    def handle_create_account(self, event=None):
         del event  # not used in this function
         account_data = self.view.get_account_data()
-        check_account_exists = self.model.read_account_by_name(account_data["account_name"])
+        check_account_exists = self.model.read_account_by_name(name=account_data["account_name"])
 
         if check_account_exists:
             self.view.error_message_set("top", "Account already exists")
         else:
             account_data["user_id"] = self.model.user.id
-            account = self.model.add_account(**account_data)
+            account = self.model.create_account(**account_data)
 
         if account:
-            self.view.current_frame.add_account(account)
+            self.view.current_frame.create_account(account)
             self.view.destroy_current_popup()
 
-    def handle_add_income(self, event=None):
+    def handle_create_income(self, event=None):
         del event  # not used in this function
         income_data = self.view.get_income_data()
-        check_income_exists = self.model.read_incomes_by_name(income_data["name"])
+        check_income_exists = self.model.read_income_by_name(name=income_data["name"])
 
         if check_income_exists:
             self.view.error_message_set("top", "Income source already exists")
         else:
-            account = self.model.read_account_by_name(income_data["account_name"])
+            account = self.model.read_account_by_name(name=income_data["account_name"])
             income_data["account_id"] = account.id
             del income_data["account_name"]
             income_data["user_id"] = self.model.user.id
             for recurrence in RecurrenceEnum:
                 if recurrence.value == income_data["recurrence"]:
                     income_data["recurrence"] = recurrence.name
-            income = self.model.add_income(**income_data)
+            income = self.model.create_income(**income_data)
 
         if income:
-            self.view.current_frame.add_income(income)
+            self.view.current_frame.create_income(income)
             self.view.destroy_current_popup()
 
     def handle_add_credit_card(self, event=None):
         del event  # not used in this function
         credit_card_data = self.view.get_credit_card_data()
-        check_credit_card_exists = self.model.read_account_by_name(credit_card_data["account_name"])
+        check_credit_card_exists = self.model.read_account_by_name(name=credit_card_data["account_name"])
 
         if check_credit_card_exists:
             self.view.error_message_set("top", "Credit card already exists")
         else:
             credit_card_data["user_id"] = self.model.user.id
-            credit_card = self.model.add_account(**credit_card_data)
+            credit_card = self.model.create_account(**credit_card_data)
 
         if credit_card:
             self.view.current_frame.add_credit_card(credit_card)
             self.view.destroy_current_popup()
 
     def refresh_account_list(self) -> None:
-        query = select(Account).where((Account.user_id == self.model.user.id) & (Account.account_type == "BANK"))
-        return self.model.read_accounts(query)
+        return self.model.read_accounts_by_user(user_id=self.model.user.id, account_type="BANK")
 
     def refresh_income_list(self) -> None:
-        return self.model.read_incomes_by_name(self.model.user.id)
+        return self.model.read_incomes_by_user(user_id=self.model.user.id)
 
     def refresh_credit_card_list(self) -> None:
-        query = select(Account).where((Account.user_id == self.model.user.id) & (Account.account_type == "CARD"))
-        return self.model.read_accounts(query)
+        return self.model.read_accounts_by_user(user_id=self.model.user.id, account_type="CARD")
 
     def get_currency(self):
         return list(CurrencyEnum.__members__.keys())
@@ -197,7 +193,10 @@ class Presenter:
         return [recurrence.value for recurrence in RecurrenceEnum]
 
     def get_target_accounts(self):
-        return [account.name for account in self.model.read_accounts_by_user(self.model.user.id)]
+        return [
+            account.name
+            for account in self.model.read_accounts_by_user(user_id=self.model.user.id, account_type="BANK")
+        ]
 
     def get_month(self):
         return list(MonthEnum.__members__.keys())

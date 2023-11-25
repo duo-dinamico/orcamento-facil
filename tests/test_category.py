@@ -1,5 +1,3 @@
-from ezbudget.modules.db.db_crud_category import create_category, read_category_by_id, read_category_by_name, read_category_list
-
 #
 # DEFAULT BEHAVIOUR
 #
@@ -7,15 +5,15 @@ from ezbudget.modules.db.db_crud_category import create_category, read_category_
 
 def test_success_read_category_by_name(db_session, valid_category):
     _ = valid_category
-    category_id = read_category_by_name(db_session, "validCategory")
+    category = db_session.read_category_by_name("validCategory")
 
-    assert isinstance(category_id, int)
-    assert category_id == 1
+    assert isinstance(category.id, int)
+    assert category.id == 1
 
 
 def test_success_read_category_by_id(db_session, valid_category):
     _ = valid_category
-    category = read_category_by_id(db_session, category_id=1)
+    category = db_session.read_category_by_id(id=1)
 
     assert category.name == "validCategory"
     assert category.id == 1
@@ -23,17 +21,18 @@ def test_success_read_category_by_id(db_session, valid_category):
 
 def test_success_read_category_list(db_session, valid_category):
     _ = valid_category
-    category_list = read_category_list(db_session)
+    category_list = db_session.read_categories()
 
     assert isinstance(category_list, list)
     assert len(category_list) == 1
 
 
 def test_success_category_creation(db_session):
-    category_id = create_category(db_session, name="newCategory")
+    category = db_session.create_category(name="newCategory")
 
-    assert isinstance(category_id, int)
-    assert category_id == 1
+    assert isinstance(category.id, int)
+    assert category.id == 1
+    assert category.name == "newCategory"
 
 
 #
@@ -43,26 +42,26 @@ def test_success_category_creation(db_session):
 
 def test_error_read_category_by_name(db_session, valid_category):
     _ = valid_category
-    category_id = read_category_by_name(db_session, "wrongCategory")
+    category_id = db_session.read_category_by_name("wrongCategory")
 
     assert category_id is None
 
 
 def test_error_read_category_by_id(db_session, valid_category):
     _ = valid_category
-    category = read_category_by_id(db_session, category_id=2)
+    category = db_session.read_category_by_id(id=2)
 
     assert category is None
 
 
 def test_error_read_category_list(db_session):
-    category_list = read_category_list(db_session)
+    categories = db_session.read_categories()
 
-    assert category_list is None
+    assert len(categories) < 1
 
 
 def test_error_category_creation_name_exist(db_session, valid_category):
     _ = valid_category
-    category_id = create_category(db_session, name="validCategory")
+    category_id = db_session.create_category(name="validCategory")
 
-    assert category_id is None
+    assert category_id == "Category already exists"

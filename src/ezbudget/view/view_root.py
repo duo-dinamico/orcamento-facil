@@ -1,7 +1,14 @@
 import tkinter as tk
 from typing import Protocol
 
-from ezbudget.view import AddAccountPopUp, AddCreditCardPopup, AddIncomePopUp, IncomingOutgoing, RegisterLogin
+from ezbudget.view import (
+    Categories,
+    CreateAccountPopUp,
+    CreateCreditCardPopup,
+    CreateIncomePopUp,
+    IncomingOutgoing,
+    RegisterLogin,
+)
 
 TITLE = "Ez Budget"
 WINDOW_WIDTH = 1200
@@ -41,7 +48,8 @@ class RootView(tk.Tk):
     def init_ui(self, presenter: Presenter) -> None:
         self.presenter = presenter
 
-        self.show_register_login(presenter)
+        self.show_register_login()
+        # self.show_categories()
 
     def error_message_set(self, target: str, message: str) -> None:
         if target == "frame":
@@ -86,8 +94,8 @@ class RootView(tk.Tk):
             "currency": self.current_popup.cbx_currency.get(),
         }
 
-    def show_register_login(self, presenter) -> None:
-        self.current_frame = RegisterLogin(self, presenter)
+    def show_register_login(self) -> None:
+        self.current_frame = RegisterLogin(self, self.presenter)
         self.current_frame.pack(expand=True, fill="both")
 
     def show_incomig_outgoing(self, event=None) -> None:
@@ -104,19 +112,26 @@ class RootView(tk.Tk):
         del event  # not used in this function
         if self.current_popup:
             self.current_popup.destroy()
-        self.current_popup = AddAccountPopUp(self.current_frame, self.presenter)
+        self.current_popup = CreateAccountPopUp(self.current_frame, self.presenter)
 
     def show_create_income_popup(self, event=None) -> None:
         del event  # not used in this function
         if self.current_popup:
             self.current_popup.destroy()
-        self.current_popup = AddIncomePopUp(self.current_frame, self.presenter)
+        self.current_popup = CreateIncomePopUp(self.current_frame, self.presenter)
 
     def show_add_credit_popup(self, event=None) -> None:
         del event  # not used in this function
         if self.current_popup:
             self.current_popup.destroy()
-        self.current_popup = AddCreditCardPopup(self.current_frame, self.presenter)
+        self.current_popup = CreateCreditCardPopup(self.current_frame, self.presenter)
+
+    def show_categories(self, event=None) -> None:
+        del event  # not used in this function
+        if self.current_frame:
+            self.current_frame.destroy()
+        self.current_frame = Categories(self, self.presenter)
+        self.current_frame.pack(expand=True, fill="both")
 
     def destroy_current_popup(self) -> None:
         self.current_popup.destroy()

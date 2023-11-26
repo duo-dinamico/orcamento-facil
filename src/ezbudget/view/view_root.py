@@ -13,8 +13,8 @@ from ezbudget.view import (
 from ezbudget.view.view_transactions import Transactions
 
 TITLE = "Ez Budget"
-WINDOW_WIDTH = 1200
-WINDOW_HEIGHT = 800
+# WINDOW_WIDTH = 1200
+# WINDOW_HEIGHT = 800
 
 
 class Presenter(Protocol):
@@ -43,9 +43,11 @@ class RootView(ttk.Window):
 
         # Put the windows in the center of the screen
         # x_center = self.winfo_screenwidth() / 2 - WINDOW_WIDTH / 2
+        screen_width = self.winfo_screenwidth()
         # y_center = self.winfo_screenheight() / 2 - WINDOW_HEIGHT / 2
+        screen_height = self.winfo_screenheight()
         # self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}+{int(x_center)}+{int(y_center)}")
-        self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
+        self.geometry(f"{int(screen_width / 1.5)}x{int(screen_height / 1.5)}")
 
     def init_ui(self, presenter: Presenter) -> None:
         self.presenter = presenter

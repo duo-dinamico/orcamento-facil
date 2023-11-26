@@ -129,7 +129,7 @@ class Presenter:
     def handle_create_account(self, event=None):
         del event  # not used in this function
         account_data = self.view.get_account_data()
-        check_account_exists = self.model.read_account_by_name(name=account_data["account_name"])
+        check_account_exists = self.model.read_account_by_name(name=account_data["name"])
 
         if check_account_exists:
             self.view.error_message_set("top", "Account already exists")
@@ -162,10 +162,10 @@ class Presenter:
             self.view.current_frame.create_income(income)
             self.view.destroy_current_popup()
 
-    def handle_add_credit_card(self, event=None):
+    def handle_create_credit_card(self, event=None):
         del event  # not used in this function
         credit_card_data = self.view.get_credit_card_data()
-        check_credit_card_exists = self.model.read_account_by_name(name=credit_card_data["account_name"])
+        check_credit_card_exists = self.model.read_account_by_name(name=credit_card_data["name"])
 
         if check_credit_card_exists:
             self.view.error_message_set("top", "Credit card already exists")
@@ -185,6 +185,10 @@ class Presenter:
 
     def refresh_credit_card_list(self) -> None:
         return self.model.read_accounts_by_user(user_id=self.model.user.id, account_type="CARD")
+
+    def refresh_transactions_list(self) -> None:
+        # Just a sample list
+        return [{"id": 0, "account_id": 1}, {"id": 1, "account_id": 2}]
 
     def get_currency(self):
         return list(CurrencyEnum.__members__.keys())

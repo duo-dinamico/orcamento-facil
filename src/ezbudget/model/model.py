@@ -175,7 +175,7 @@ class Model:
         except LookupError as lookup_error:
             return f"A LookupError occurred: {lookup_error}"
 
-    def read_account_by_id(self, id: str) -> Account | None:
+    def read_account_by_id(self, id: int) -> Account | None:
         """Return an account object that has the given id.
 
         Args:

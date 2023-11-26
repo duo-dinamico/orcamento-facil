@@ -63,7 +63,7 @@ class CreateCreditCardPopup(tk.Toplevel):
         btn_cancel.pack(side="left", padx=10, pady=5)
         btn_create_income = ttk.Button(self, text="Add credit card", bootstyle="SUCCESS")
         btn_create_income.pack(side="right", padx=10, pady=5)
-        btn_create_income.bind("<Button-1>", presenter.handle_add_credit_card)
+        btn_create_income.bind("<Button-1>", presenter.handle_create_credit_card)
         # TODO this should enable us to confirm when we press enter
         # self.bind("<Return>", presenter.handle_create_income)
 

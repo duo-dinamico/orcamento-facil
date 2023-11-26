@@ -10,6 +10,7 @@ from ezbudget.view import (
     IncomingOutgoing,
     RegisterLogin,
 )
+from ezbudget.view.view_transactions import Transactions
 
 TITLE = "Ez Budget"
 WINDOW_WIDTH = 1200
@@ -51,6 +52,7 @@ class RootView(ttk.Window):
 
         self.show_register_login()
         # self.show_categories()
+        # self.show_transactions()
 
     def error_message_set(self, target: str, message: str) -> None:
         if target == "frame":
@@ -66,7 +68,7 @@ class RootView(ttk.Window):
 
     def get_account_data(self):
         return {
-            "account_name": self.current_popup.account_name.get(),
+            "name": self.current_popup.account_name.get(),
             "account_type": "BANK",
             "initial_balance": self.current_popup.initial_balance.get(),
             "currency": self.current_popup.cbx_currency.get(),
@@ -85,7 +87,7 @@ class RootView(ttk.Window):
 
     def get_credit_card_data(self):
         return {
-            "account_name": self.current_popup.credit_card_name.get(),
+            "name": self.current_popup.credit_card_name.get(),
             "account_type": "CARD",
             "initial_balance": self.current_popup.balance.get(),
             "credit_limit": self.current_popup.credit_limit.get(),
@@ -132,6 +134,10 @@ class RootView(ttk.Window):
         if self.current_frame:
             self.current_frame.destroy()
         self.current_frame = Categories(self, self.presenter)
+        self.current_frame.pack(expand=True, fill="both")
+
+    def show_transactions(self) -> None:
+        self.current_frame = Transactions(self, self.presenter)
         self.current_frame.pack(expand=True, fill="both")
 
     def destroy_current_popup(self) -> None:

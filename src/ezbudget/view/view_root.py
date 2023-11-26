@@ -65,7 +65,7 @@ class RootView(tk.Tk):
 
     def get_account_data(self):
         return {
-            "account_name": self.current_popup.account_name.get(),
+            "name": self.current_popup.account_name.get(),
             "account_type": "BANK",
             "initial_balance": self.current_popup.initial_balance.get(),
             "currency": self.current_popup.cbx_currency.get(),

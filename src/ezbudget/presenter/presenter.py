@@ -129,7 +129,7 @@ class Presenter:
     def handle_create_account(self, event=None):
         del event  # not used in this function
         account_data = self.view.get_account_data()
-        check_account_exists = self.model.read_account_by_name(name=account_data["account_name"])
+        check_account_exists = self.model.read_account_by_name(name=account_data["name"])
 
         if check_account_exists:
             self.view.error_message_set("top", "Account already exists")

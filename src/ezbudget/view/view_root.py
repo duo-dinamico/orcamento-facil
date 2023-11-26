@@ -84,7 +84,7 @@ class RootView(tk.Tk):
 
     def get_credit_card_data(self):
         return {
-            "account_name": self.current_popup.credit_card_name.get(),
+            "name": self.current_popup.credit_card_name.get(),
             "account_type": "CARD",
             "initial_balance": self.current_popup.balance.get(),
             "credit_limit": self.current_popup.credit_limit.get(),

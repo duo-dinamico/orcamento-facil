@@ -162,10 +162,10 @@ class Presenter:
             self.view.current_frame.create_income(income)
             self.view.destroy_current_popup()
 
-    def handle_add_credit_card(self, event=None):
+    def handle_create_credit_card(self, event=None):
         del event  # not used in this function
         credit_card_data = self.view.get_credit_card_data()
-        check_credit_card_exists = self.model.read_account_by_name(name=credit_card_data["account_name"])
+        check_credit_card_exists = self.model.read_account_by_name(name=credit_card_data["name"])
 
         if check_credit_card_exists:
             self.view.error_message_set("top", "Credit card already exists")

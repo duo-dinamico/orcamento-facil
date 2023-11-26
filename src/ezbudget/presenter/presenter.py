@@ -204,5 +204,3 @@ class Presenter:
     def run(self) -> None:
         self.view.init_ui(self)
         self.view.mainloop()
-        self.view.init_ui(self)
-        self.view.mainloop()

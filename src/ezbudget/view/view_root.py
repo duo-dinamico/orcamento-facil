@@ -1,5 +1,6 @@
-import tkinter as tk
 from typing import Protocol
+
+import ttkbootstrap as ttk
 
 from ezbudget.view import (
     Categories,
@@ -29,9 +30,9 @@ class Presenter(Protocol):
         ...
 
 
-class RootView(tk.Tk):
+class RootView(ttk.Window):
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__(themename="darkly")
         self.title(TITLE)
         self.resizable(False, False)
         self.presenter = None

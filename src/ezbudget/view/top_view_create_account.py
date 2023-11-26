@@ -1,5 +1,6 @@
 import tkinter as tk
-from tkinter import ttk
+
+import ttkbootstrap as ttk
 
 
 class CreateAccountPopUp(tk.Toplevel):
@@ -36,9 +37,9 @@ class CreateAccountPopUp(tk.Toplevel):
         lbl_error_popup = ttk.Label(self, textvariable=self.error_message)
         lbl_error_popup.pack(anchor="w", padx=10, pady=5, fill="x")
 
-        btn_cancel = ttk.Button(self, text="Cancel", command=self.cancel_input)
+        btn_cancel = ttk.Button(self, text="Cancel", command=self.cancel_input, bootstyle="DANGER")
         btn_cancel.pack(side="left", padx=10, pady=5)
-        btn_add_account = ttk.Button(self, text="Add account")
+        btn_add_account = ttk.Button(self, text="Add account", bootstyle="SUCCESS")
         btn_add_account.pack(side="right", padx=10, pady=5)
         btn_add_account.bind("<Button-1>", presenter.handle_add_account)
         # TODO this should enable us to confirm when we press enter

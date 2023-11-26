@@ -1,5 +1,6 @@
 import tkinter as tk
-from tkinter import ttk
+
+import ttkbootstrap as ttk
 
 
 class CreateCreditCardPopup(tk.Toplevel):
@@ -58,9 +59,9 @@ class CreateCreditCardPopup(tk.Toplevel):
         lbl_error_popup = ttk.Label(self, textvariable=self.error_message)
         lbl_error_popup.pack(anchor="w", padx=10, pady=5, fill="x")
 
-        btn_cancel = ttk.Button(self, text="Cancel", command=self.cancel_input)
+        btn_cancel = ttk.Button(self, text="Cancel", command=self.cancel_input, bootstyle="DANGER")
         btn_cancel.pack(side="left", padx=10, pady=5)
-        btn_create_income = ttk.Button(self, text="Add credit card")
+        btn_create_income = ttk.Button(self, text="Add credit card", bootstyle="SUCCESS")
         btn_create_income.pack(side="right", padx=10, pady=5)
         btn_create_income.bind("<Button-1>", presenter.handle_add_credit_card)
         # TODO this should enable us to confirm when we press enter

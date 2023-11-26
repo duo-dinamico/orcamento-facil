@@ -9,6 +9,7 @@ from ezbudget.view import (
     IncomingOutgoing,
     RegisterLogin,
 )
+from ezbudget.view.view_transactions import Transactions
 
 TITLE = "Ez Budget"
 WINDOW_WIDTH = 1200
@@ -50,6 +51,7 @@ class RootView(tk.Tk):
 
         self.show_register_login()
         # self.show_categories()
+        # self.show_transactions()
 
     def error_message_set(self, target: str, message: str) -> None:
         if target == "frame":
@@ -131,6 +133,10 @@ class RootView(tk.Tk):
         if self.current_frame:
             self.current_frame.destroy()
         self.current_frame = Categories(self, self.presenter)
+        self.current_frame.pack(expand=True, fill="both")
+
+    def show_transactions(self) -> None:
+        self.current_frame = Transactions(self, self.presenter)
         self.current_frame.pack(expand=True, fill="both")
 
     def destroy_current_popup(self) -> None:

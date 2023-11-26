@@ -186,6 +186,10 @@ class Presenter:
     def refresh_credit_card_list(self) -> None:
         return self.model.read_accounts_by_user(user_id=self.model.user.id, account_type="CARD")
 
+    def refresh_transactions_list(self) -> None:
+        # Just a sample list
+        return [{"id": 0, "account_id": 1}, {"id": 1, "account_id": 2}]
+
     def get_currency(self):
         return list(CurrencyEnum.__members__.keys())
 

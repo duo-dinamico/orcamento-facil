@@ -1,3 +1,4 @@
+from ast import List
 from datetime import datetime
 from typing import Optional
 
@@ -476,7 +477,9 @@ class Model:
         except NoResultFound:
             return []
 
+    #
     # TRANSACTION MODELS
+    #
     def create_transaction(
         self,
         account_id: int,
@@ -514,14 +517,12 @@ class Model:
         except IntegrityError as e:
             if "foreign key constraint" in str(e.orig).lower():
                 return "Either Account ID or SubCategory ID does not exist"
-            elif "unique constraint" in str(e.orig).lower():
-                return "Transaction name already exists"
             else:
                 return "An unknown IntegrityError occurred"
         except LookupError as lookup_error:
             return f"A LookupError occurred: {lookup_error}"
 
-    def read_transaction_by_id(self, id: int) -> Transaction | None:
+    def read_transaction_by_id(self, transaction_id: int) -> Transaction | None:
         """Return a transaction object that has the given id.
 
         Args:
@@ -532,6 +533,21 @@ class Model:
             None: if the transaction don't exist.
         """
         try:
-            return self.read_first_basequery(select(Transaction).where(Transaction.id == id))
+            return self.read_first_basequery(select(Transaction).where(Transaction.id == transaction_id))
+        except NoResultFound:
+            return None
+
+    def read_transaction_list_by_account(self, account_id: int) -> List:
+        """Return a list of transactions objects that has the given account_id.
+
+        Args:
+            account_id: the account id.
+
+        Returns:
+            transaction_list: a list of transactions object if the account exist.
+            []: empty list if no transaction with that account.
+        """
+        try:
+            return self.read_all_basequery(select(Transaction).where(Transaction.account_id == account_id))
         except NoResultFound:
             return None

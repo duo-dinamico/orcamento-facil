@@ -7,11 +7,10 @@ from ezbudget.view import (
     CreateAccountPopUp,
     CreateCreditCardPopup,
     CreateIncomePopUp,
-    CreateTransactionPopup,
     IncomingOutgoing,
     RegisterLogin,
+    Transactions,
 )
-from ezbudget.view.view_transactions import Transactions
 
 TITLE = "Ez Budget"
 # WINDOW_WIDTH = 1200
@@ -145,7 +144,9 @@ class RootView(ttk.Window):
         self.current_frame = Categories(self, self.presenter)
         self.current_frame.pack(expand=True, fill="both")
 
-    def show_transactions(self) -> None:
+    def show_transactions(self, event=None) -> None:
+        if self.current_frame:
+            self.current_frame.destroy()
         self.current_frame = Transactions(self, self.presenter)
         self.current_frame.pack(expand=True, fill="both")
 

@@ -5,5 +5,5 @@ from .top_view_create_transaction import CreateTransactionPopup
 from .view_categories import Categories
 from .view_incoming_outgoing import IncomingOutgoing
 from .view_register_login import RegisterLogin
-from .view_root import RootView
 from .view_transactions import Transactions
+from .view_window import RootView

@@ -7,6 +7,7 @@ from ezbudget.view import (
     CreateAccountPopUp,
     CreateCreditCardPopup,
     CreateIncomePopUp,
+    CreateTransactionPopup,
     IncomingOutgoing,
     RegisterLogin,
 )
@@ -52,9 +53,9 @@ class RootView(ttk.Window):
     def init_ui(self, presenter: Presenter) -> None:
         self.presenter = presenter
 
-        self.show_register_login()
+        # self.show_register_login()
         # self.show_categories()
-        # self.show_transactions()
+        self.show_transactions()
 
     def error_message_set(self, target: str, message: str) -> None:
         if target == "frame":
@@ -126,6 +127,12 @@ class RootView(ttk.Window):
         self.current_popup = CreateIncomePopUp(self.current_frame, self.presenter)
 
     def show_add_credit_popup(self, event=None) -> None:
+        del event  # not used in this function
+        if self.current_popup:
+            self.current_popup.destroy()
+        self.current_popup = CreateCreditCardPopup(self.current_frame, self.presenter)
+
+    def show_create_transaction_popup(self, event=None) -> None:
         del event  # not used in this function
         if self.current_popup:
             self.current_popup.destroy()

@@ -7,6 +7,7 @@ from ezbudget.view import (
     CreateAccountPopUp,
     CreateCreditCardPopup,
     CreateIncomePopUp,
+    CreateTransactionPopup,
     IncomingOutgoing,
     RegisterLogin,
     Transactions,
@@ -135,7 +136,7 @@ class RootView(ttk.Window):
         del event  # not used in this function
         if self.current_popup:
             self.current_popup.destroy()
-        self.current_popup = CreateCreditCardPopup(self.current_frame, self.presenter)
+        self.current_popup = CreateTransactionPopup(self.current_frame, self.presenter)
 
     def show_categories(self, event=None) -> None:
         del event  # not used in this function

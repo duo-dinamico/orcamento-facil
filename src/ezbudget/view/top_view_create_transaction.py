@@ -4,59 +4,52 @@ import ttkbootstrap as ttk
 
 
 class CreateTransactionPopup(tk.Toplevel):
-    """Class that creates the pop up window to create a transaction."""
+    """A Toplevel window for the transaction creation."""
 
     def __init__(self, parent, presenter) -> None:
+        """Construct the CreateTransactionPopup object.
+        Parameters:
+            parent: the id of the account where the transaction will be created.
+            presenter: the id of the category of the transation.
+        """
         super().__init__(master=parent)
 
+        # Make this window a transient of is parent window
         self.transient(parent)
+
         self.resizable(False, False)
-        self.title("Add Credit Card")
+        self.title("Add New Transaction")
 
+        # Define Class atributes
         self.error_message = tk.StringVar(value="")
-        self.credit_card_name = tk.StringVar()
-        self.balance = tk.StringVar()
-        self.credit_limit = tk.StringVar()
-        self.payment_day = tk.StringVar()
-        self.interest_rate = tk.StringVar()
-        self.credit_method = tk.StringVar()
-        currencies = presenter.get_currency()
+        self.account_id = tk.StringVar()
+        self.subcategory_id = tk.StringVar()
+        self.transaction_date = tk.StringVar()
+        self.value = tk.StringVar()
+        self.description = tk.StringVar()
 
-        lbl_credit_card_name = ttk.Label(self, text="Credit card name")
-        lbl_credit_card_name.pack(anchor="w", padx=10, pady=5, fill="x")
-        ent_credit_card_name = ttk.Entry(self, textvariable=self.credit_card_name)
-        ent_credit_card_name.pack(anchor="w", padx=10, pady=5, fill="x")
+        # Get the account list
+        accounts = presenter.get_account_list_by_user()
 
-        lbl_balance = ttk.Label(self, text="Initial balance")
-        lbl_balance.pack(anchor="w", padx=10, pady=5, fill="x")
-        ent_balance = ttk.Entry(self, textvariable=self.balance)
-        ent_balance.pack(anchor="w", padx=10, pady=5, fill="x")
+        # Get the subcategory list
+        subcategories = presenter.get_subcategory_list_by_user()
 
-        lbl_currency = ttk.Label(self, text="Currency")
-        lbl_currency.pack(anchor="w", padx=10, pady=5, fill="x")
-        self.cbx_currency = ttk.Combobox(self, state="readonly", values=currencies)
-        self.cbx_currency.current(0)
-        self.cbx_currency.pack(anchor="w", padx=10, pady=5, fill="x")
+        lbl_account = ttk.Label(self, text="Account")
+        lbl_account.pack(anchor="w", padx=10, pady=5, fill="x")
+        self.cbx_account = ttk.Combobox(self, state="readonly", values=accounts)
+        self.cbx_account.current(0)
+        self.cbx_account.pack(anchor="w", padx=10, pady=5, fill="x")
 
-        lbl_credit_limit = ttk.Label(self, text="Credit limit")
-        lbl_credit_limit.pack(anchor="w", padx=10, pady=5, fill="x")
-        ent_credit_limit = ttk.Entry(self, textvariable=self.credit_limit)
-        ent_credit_limit.pack(anchor="w", padx=10, pady=5, fill="x")
+        lbl_subcategory = ttk.Label(self, text="Subcategory")
+        lbl_subcategory.pack(anchor="w", padx=10, pady=5, fill="x")
+        self.cbx_subcategory = ttk.Combobox(self, state="readonly", values=subcategories)
+        self.cbx_subcategory.current(0)
+        self.cbx_subcategory.pack(anchor="w", padx=10, pady=5, fill="x")
 
-        lbl_payment_day = ttk.Label(self, text="Repayment day")
-        lbl_payment_day.pack(anchor="w", padx=10, pady=5, fill="x")
-        ent_payment_day = ttk.Entry(self, textvariable=self.payment_day)
-        ent_payment_day.pack(anchor="w", padx=10, pady=5, fill="x")
-
-        lbl_interest_rate = ttk.Label(self, text="Interest rate")
-        lbl_interest_rate.pack(anchor="w", padx=10, pady=5, fill="x")
-        ent_interest_rate = ttk.Entry(self, textvariable=self.interest_rate)
-        ent_interest_rate.pack(anchor="w", padx=10, pady=5, fill="x")
-
-        lbl_credit_method = ttk.Label(self, text="Credit method")
-        lbl_credit_method.pack(anchor="w", padx=10, pady=5, fill="x")
-        ent_credit_method = ttk.Entry(self, textvariable=self.credit_method)
-        ent_credit_method.pack(anchor="w", padx=10, pady=5, fill="x")
+        lbl_transaction_date = ttk.Label(self, text="Date")
+        lbl_transaction_date.pack(anchor="w", padx=10, pady=5, fill="x")
+        ent_transaction_date = ttk.Entry(self, textvariable=self.transaction_date)
+        ent_transaction_date.pack(anchor="w", padx=10, pady=5, fill="x")
 
         lbl_error_popup = ttk.Label(self, textvariable=self.error_message)
         lbl_error_popup.pack(anchor="w", padx=10, pady=5, fill="x")

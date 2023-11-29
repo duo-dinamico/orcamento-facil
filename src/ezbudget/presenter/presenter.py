@@ -193,6 +193,27 @@ class Presenter:
     def get_currency(self):
         return list(CurrencyEnum.__members__.keys())
 
+    def get_account_list_by_user(self):
+        # TODO define a dummy user
+        self.model.user = self.model.read_user_by_id(id=1)
+
+        # Get user account object list
+        accounts_list = self.model.read_accounts_by_user(user_id=self.model.user.id, account_type="BANK")
+
+        # Transform in a list of names of accounts
+        return_list = [account.name for account in accounts_list]
+
+        return return_list
+
+    def get_subcategory_list_by_user(self):
+        # Get user subcategory object list
+        # TODO read_subcategory_list
+        # subcategory_list = self.model.read_subcategory_list()
+
+        # Transform in a list of names of subcategories
+        # return_list = [subcategory.name for subcategory in subcategory_list]
+        return ["1", "2"]
+
     def get_recurrence(self):
         return [recurrence.value for recurrence in RecurrenceEnum]
 

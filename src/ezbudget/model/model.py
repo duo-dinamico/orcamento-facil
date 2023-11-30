@@ -491,7 +491,7 @@ class Model:
             category_id: category id from where we get the subcategories list
 
         Returns:
-            subcategory_list: list of all subcategories for a given category id, if there is at least one subcategory.
+            subcategory_list: list of all subcategories for a given category id.
         """
         try:
             return self.read_all_basequery(select(SubCategory).where(SubCategory.category_id == category_id))

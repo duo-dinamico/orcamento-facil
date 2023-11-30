@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Protocol
 
 import ttkbootstrap as ttk
@@ -7,10 +8,11 @@ from ezbudget.view import (
     CreateAccountPopUp,
     CreateCreditCardPopup,
     CreateIncomePopUp,
+    CreateTransactionPopup,
     IncomingOutgoing,
     RegisterLogin,
+    Transactions,
 )
-from ezbudget.view.view_transactions import Transactions
 
 TITLE = "Ez Budget"
 # WINDOW_WIDTH = 1200
@@ -52,9 +54,12 @@ class RootView(ttk.Window):
     def init_ui(self, presenter: Presenter) -> None:
         self.presenter = presenter
 
-        self.show_register_login()
+        # TODO Delete this
+        self.presenter.login_dummy_data()
+
+        # self.show_register_login()
         # self.show_categories()
-        # self.show_transactions()
+        self.show_transactions()
 
     def error_message_set(self, target: str, message: str) -> None:
         if target == "frame":
@@ -99,6 +104,23 @@ class RootView(ttk.Window):
             "currency": self.current_popup.cbx_currency.get(),
         }
 
+    def get_transaction_data(self):
+        # TODO Strong date validation
+        # Get datetime object
+        data_obj = datetime.strptime(self.current_popup.transaction_date.get(), "%m-%d-%y").date()
+
+        # Get account id from the name that comes from Combobox
+        account_id = self.presenter.get_account_id_by_name(self.current_popup.cbx_account.get())
+
+        return {
+            "account_id": account_id,
+            # "subcategory_id": self.current_popup.subcategory_id.get(),
+            "subcategory_id": 1,
+            "date": data_obj,
+            "value": self.current_popup.value.get(),
+            "description": self.current_popup.description.get(),
+        }
+
     def show_register_login(self) -> None:
         self.current_frame = RegisterLogin(self, self.presenter)
         self.current_frame.pack(expand=True, fill="both")
@@ -131,6 +153,12 @@ class RootView(ttk.Window):
             self.current_popup.destroy()
         self.current_popup = CreateCreditCardPopup(self.current_frame, self.presenter)
 
+    def show_create_transaction_popup(self, event=None) -> None:
+        del event  # not used in this function
+        if self.current_popup:
+            self.current_popup.destroy()
+        self.current_popup = CreateTransactionPopup(self.current_frame, self.presenter)
+
     def show_categories(self, event=None) -> None:
         del event  # not used in this function
         if self.current_frame:
@@ -139,7 +167,9 @@ class RootView(ttk.Window):
         self.current_frame.refresh_categories()
         self.current_frame.pack(expand=True, fill="both")
 
-    def show_transactions(self) -> None:
+    def show_transactions(self, event=None) -> None:
+        if self.current_frame:
+            self.current_frame.destroy()
         self.current_frame = Transactions(self, self.presenter)
         self.current_frame.pack(expand=True, fill="both")
 

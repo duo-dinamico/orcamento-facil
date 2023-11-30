@@ -183,6 +183,15 @@ class Presenter:
             self.view.current_frame.add_credit_card(credit_card)
             self.view.destroy_current_popup()
 
+    def handle_create_transaction(self, _) -> None:
+        """Create a transaction in Model, when activated in View."""
+
+        # Get values from the View
+        transaction_data = self.view.get_transaction_data()
+        print("XXXXX", transaction_data)
+        transaction = self.model.create_transaction(**transaction_data)
+        print("YYY", transaction)
+
     def refresh_account_list(self) -> None:
         return self.model.read_accounts_by_user(user_id=self.model.user.id, account_type="BANK")
 
@@ -205,6 +214,30 @@ class Presenter:
     def get_currency(self):
         return list(CurrencyEnum.__members__.keys())
 
+    def get_account_list_by_user(self):
+        # TODO define a dummy user
+        self.model.user = self.model.read_user_by_id(id=1)
+
+        # Get user account object list
+        accounts_list = self.model.read_accounts_by_user(user_id=self.model.user.id, account_type="BANK")
+
+        # Transform in a list of names of accounts
+        return_list = [account.name for account in accounts_list]
+
+        return return_list
+
+    def get_subcategory_list(self):
+        # Get user subcategory object list
+        # TODO read_subcategory_list
+        subcategory_list = self.model.read_subcategories_list_all()
+
+        # Transform in a list of names of subcategories
+        return_list = [subcategory.name for subcategory in subcategory_list]
+        return return_list
+
+    def get_account_id_by_name(self, account_name):
+        return self.model.read_account_by_name(name=account_name).id
+
     def get_recurrence(self):
         return [recurrence.value for recurrence in RecurrenceEnum]
 
@@ -220,3 +253,9 @@ class Presenter:
     def run(self) -> None:
         self.view.init_ui(self)
         self.view.mainloop()
+
+    # TODO Delete this after tests
+    def login_dummy_data(self):
+        self.model.user = self.model.read_user_by_id(1)
+        self.model.create_category("teste")
+        self.model.create_subcategory(category_id=1, name="str", recurrent=False, recurrence="ONE", include=True)

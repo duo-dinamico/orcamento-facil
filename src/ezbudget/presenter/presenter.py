@@ -51,6 +51,12 @@ class Model(Protocol):
     def read_incomes_by_user(self, user_id: int):
         ...
 
+    def read_categories(self):
+        ...
+
+    def read_subcategories(self):
+        ...
+
 
 class View(Protocol):
     def init_ui(self, presenter: Presenter):
@@ -189,6 +195,12 @@ class Presenter:
     def refresh_transactions_list(self) -> None:
         # Just a sample list
         return [{"id": 0, "account_id": 1}, {"id": 1, "account_id": 2}]
+
+    def refresh_category_list(self) -> None:
+        return self.model.read_categories()
+
+    def refresh_subcategory_list(self) -> None:
+        return self.model.read_subcategories()
 
     def get_currency(self):
         return list(CurrencyEnum.__members__.keys())

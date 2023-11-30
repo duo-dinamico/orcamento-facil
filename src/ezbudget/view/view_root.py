@@ -136,6 +136,7 @@ class RootView(ttk.Window):
         if self.current_frame:
             self.current_frame.destroy()
         self.current_frame = Categories(self, self.presenter)
+        self.current_frame.refresh_categories()
         self.current_frame.pack(expand=True, fill="both")
 
     def show_transactions(self) -> None:

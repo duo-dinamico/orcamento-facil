@@ -1,3 +1,5 @@
+import os
+import tomllib
 from ast import List
 from datetime import datetime
 from typing import Optional
@@ -39,7 +41,26 @@ class Model:
         Base.metadata.create_all(self.engine)
         self.session = session_local()
 
+        self.populate_categories()
+
         self.user = None
+
+    def populate_categories(self):
+        current_path = os.path.dirname(os.path.realpath(__file__))
+        with open(f"{current_path}/categories_data.toml", mode="rb") as doc:
+            data = tomllib.load(doc)
+        if self.session.query(Category).count() < 1:
+            for item in data["categories"]:
+                category = Category(name=item)
+                self.session.add(category)
+                self.session.commit()
+                self.session.refresh(category)
+        if self.session.query(SubCategory).count() < 1:
+            for item in data["subcategories"]:
+                subcategory = SubCategory(category_id=item["category_id"], name=item["name"])
+                self.session.add(subcategory)
+                self.session.commit()
+                self.session.refresh(subcategory)
 
     def close_session(self):
         self.session.close()
@@ -477,6 +498,14 @@ class Model:
         except NoResultFound:
             return []
 
+    def read_subcategories(self) -> list:
+        """Return a list of all subcategories.
+
+        Returns:
+            subcategory_list: list of all subcategories.
+        """
+        return self.read_all_basequery(select(SubCategory))
+
     #
     # TRANSACTION MODELS
     #
@@ -550,4 +579,6 @@ class Model:
         try:
             return self.read_all_basequery(select(Transaction).where(Transaction.account_id == account_id))
         except NoResultFound:
+            return None
+            return None
             return None

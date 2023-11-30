@@ -111,9 +111,10 @@ class SubCategory(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id", name="category"))
-    name: Mapped[str] = mapped_column(unique=True)
+    name: Mapped[str]
     recurrent: Mapped[bool] = mapped_column(default=False)
     recurrence: Mapped[Optional[RecurrenceEnum]]
+    # TODO we can remove this include since we have the connection table
     include: Mapped[bool] = mapped_column(default=True)
 
 
@@ -122,3 +123,11 @@ class Category(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(unique=True)
+
+
+class UserCategory(Base):
+    __tablename__ = "usercategories"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", name="user"))
+    subcategory_id: Mapped[int] = mapped_column(ForeignKey("subcategories.id", name="subcategory"))

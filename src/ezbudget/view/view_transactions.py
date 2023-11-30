@@ -1,7 +1,5 @@
 import ttkbootstrap as ttk
 
-columns = ("ID", "Account", "Category", "Date", "Value", "Description")
-
 
 class Transactions(ttk.Frame):
     """Class that creates the transactions view."""
@@ -10,9 +8,11 @@ class Transactions(ttk.Frame):
         super().__init__(master=parent)
         self.presenter = presenter
         self.parent = parent
+
         style = ttk.Style()
         style.configure("Treeview", font=(None, 11), rowheight=int(11 * 3))
 
+        columns = ("ID", "Account", "Category", "Date", "Value", "Description")
         self.tree = ttk.Treeview(self, columns=columns, show="headings")
 
         # Set the columns headers
@@ -21,8 +21,6 @@ class Transactions(ttk.Frame):
 
         self.bind("<<TreeviewSelect>>", self.transaction_selected)
 
-        self.refresh_transactions_list()
-
         self.tree.pack(fill="both", expand=True)
 
         # Buttons
@@ -30,6 +28,9 @@ class Transactions(ttk.Frame):
         self.create_transaction_button = ttk.Button(self, text="Add Transaction")
         self.create_transaction_button.pack()
         self.create_transaction_button.bind("<Button-1>", self.parent.show_create_transaction_popup)
+
+        # Fill the Treeview with transactions
+        self.refresh_transactions_list()
 
     def refresh_transactions_list(self):
         """Method that refresh the TreeView of transactions."""

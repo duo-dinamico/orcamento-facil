@@ -19,6 +19,14 @@ def test_success_read_category_list_by_category_id(db_session, valid_subcategory
     assert len(category_list) == 1
 
 
+def test_success_read_subcategory_list_all(db_session, valid_subcategory):
+    _ = valid_subcategory
+    subcategory_list = db_session.read_subcategories_list_all()
+
+    assert isinstance(subcategory_list, list)
+    assert len(subcategory_list) == 1
+
+
 def test_success_subcategory_creation(db_session, valid_category):
     _ = valid_category
     subcategory = db_session.create_subcategory(category_id=1, name="newSubCategory")

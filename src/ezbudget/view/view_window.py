@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Protocol
 
 import ttkbootstrap as ttk
@@ -53,6 +54,9 @@ class RootView(ttk.Window):
     def init_ui(self, presenter: Presenter) -> None:
         self.presenter = presenter
 
+        # TODO Delete this
+        self.presenter.login_dummy_data()
+
         # self.show_register_login()
         # self.show_categories()
         self.show_transactions()
@@ -98,6 +102,23 @@ class RootView(ttk.Window):
             "interest_rate": self.current_popup.interest_rate.get(),
             "credit_method": self.current_popup.credit_method.get(),
             "currency": self.current_popup.cbx_currency.get(),
+        }
+
+    def get_transaction_data(self):
+        # TODO Strong date validation
+        # Get datetime object
+        data_obj = datetime.strptime(self.current_popup.transaction_date.get(), "%m-%d-%y").date()
+
+        # Get account id from the name that comes from Combobox
+        account_id = self.presenter.get_account_id_by_name(self.current_popup.cbx_account.get())
+
+        return {
+            "account_id": account_id,
+            # "subcategory_id": self.current_popup.subcategory_id.get(),
+            "subcategory_id": 1,
+            "date": data_obj,
+            "value": self.current_popup.value.get(),
+            "description": self.current_popup.description.get(),
         }
 
     def show_register_login(self) -> None:

@@ -10,5 +10,6 @@ from .base_models import (
     SubCategory,
     Transaction,
     User,
+    UserSubCategory,
 )
 from .model import Model

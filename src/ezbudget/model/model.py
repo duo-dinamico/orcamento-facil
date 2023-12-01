@@ -23,6 +23,7 @@ from ezbudget.model import (
     Transaction,
     User,
 )
+from ezbudget.model.base_models import UserSubCategory
 
 
 class Model:
@@ -43,7 +44,7 @@ class Model:
 
         self.populate_categories()
 
-        self.user = None
+        self.user = {id: 1}
 
     def populate_categories(self):
         current_path = os.path.dirname(os.path.realpath(__file__))
@@ -51,16 +52,10 @@ class Model:
             data = tomllib.load(doc)
         if self.session.query(Category).count() < 1:
             for item in data["categories"]:
-                category = Category(name=item)
-                self.session.add(category)
-                self.session.commit()
-                self.session.refresh(category)
+                self.create_category(name=item)
         if self.session.query(SubCategory).count() < 1:
             for item in data["subcategories"]:
-                subcategory = SubCategory(category_id=item["category_id"], name=item["name"])
-                self.session.add(subcategory)
-                self.session.commit()
-                self.session.refresh(subcategory)
+                self.create_subcategory(category_id=item["category_id"], name=item["name"])
 
     def close_session(self):
         self.session.close()
@@ -582,3 +577,36 @@ class Model:
             return None
             return None
             return None
+
+    # USER SUBCATEGORY MODELS
+    def create_user_subcategory(self, user_id: int, subcategory_id: int) -> UserSubCategory | None:
+        """Create a new user and subcategory relationship.
+
+        Args:
+            user_id: the id of the user.
+            subcategory_id: the id of the subcategory.
+
+        Returns:
+            UserSubCategory: if the relationship was created
+            None: if it failed to create.
+        """
+        try:
+            new_user_subcategory = UserSubCategory(
+                user_id=user_id,
+                subcategory_id=subcategory_id,
+            )
+
+            self.session.add(new_user_subcategory)
+            self.session.commit()
+            self.session.refresh(new_user_subcategory)
+            return new_user_subcategory
+        except IntegrityError as e:
+            if "foreign key constraint" in str(e.orig).lower():
+                return "Either User ID or SubCategory ID does not exist"
+            # TODO create unique constraint of the columns and test it
+            elif "unique constraint" in str(e.orig).lower():
+                return "SubCategory name already exists"
+            else:
+                return "An unknown IntegrityError occurred"
+        except LookupError as lookup_error:
+            return f"A LookupError occurred: {lookup_error}"

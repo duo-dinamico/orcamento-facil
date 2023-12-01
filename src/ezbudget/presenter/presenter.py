@@ -116,6 +116,9 @@ class Presenter:
                 # TODO replace this with the log
                 print(error)
 
+    def handle_add_user_category(self) -> None:
+        ...
+
     def handle_login_user(self, event=None) -> None:
         del event  # not used in this function
         user_data = self.view.get_user_data()

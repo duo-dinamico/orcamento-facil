@@ -72,6 +72,7 @@ class Categories(ttk.Frame):
         for item in items:
             subcategory_index = int(item) - len(categories)
             try:
+                self.presenter.handle_add_user_category()
                 self.tvw_selected_categories.insert(
                     "", "end", iid=subcategory_index, text=self.tvw_categories.item(item)["text"]
                 )

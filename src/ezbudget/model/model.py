@@ -580,5 +580,3 @@ class Model:
             return self.read_all_basequery(select(Transaction).where(Transaction.account_id == account_id))
         except NoResultFound:
             return None
-            return None
-            return None

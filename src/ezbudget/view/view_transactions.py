@@ -30,14 +30,20 @@ class Transactions(ttk.Frame):
         self.create_transaction_button.bind("<Button-1>", self.parent.show_create_transaction_popup)
 
         # Fill the Treeview with transactions
-        self.refresh_transactions_list()
+        self.refresh_transactions()
 
-    def refresh_transactions_list(self):
+    def refresh_transactions(self):
         """Method that refresh the TreeView of transactions."""
+
         transactions_list = self.presenter.refresh_transactions_list()
+
         # TODO in the future we'll need to clean the tree before adding
         for item in transactions_list:
-            self.tree.insert(parent="", index="end", values=(item["id"], item["account_id"]))
+            self.tree.insert(
+                parent="",
+                index="end",
+                values=(item.id, item.account.name, item.subcategory_id, item.date, item.value, item.description),
+            )
 
     def transaction_selected(self):
         pass

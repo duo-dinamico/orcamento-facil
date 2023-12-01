@@ -1,6 +1,5 @@
 import os
 import tomllib
-from ast import List
 from datetime import datetime
 from typing import Optional
 
@@ -561,7 +560,7 @@ class Model:
         except NoResultFound:
             return None
 
-    def read_transaction_list_by_account(self, account_id: int) -> List:
+    def read_transaction_list_by_account(self, account_id: int) -> list:
         """Return a list of transactions objects that has the given account_id.
 
         Args:
@@ -574,8 +573,6 @@ class Model:
         try:
             return self.read_all_basequery(select(Transaction).where(Transaction.account_id == account_id))
         except NoResultFound:
-            return None
-            return None
             return None
 
     # USER SUBCATEGORY MODELS

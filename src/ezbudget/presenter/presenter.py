@@ -191,9 +191,13 @@ class Presenter:
 
         # Get values from the View
         transaction_data = self.view.get_transaction_data()
-        print("XXXXX", transaction_data)
+
+        # Create the transaction in the model
         transaction = self.model.create_transaction(**transaction_data)
-        print("YYY", transaction)
+
+        if transaction:
+            self.view.destroy_current_popup()
+            self.view.current_frame.refresh_transactions()
 
     def refresh_account_list(self) -> None:
         return self.model.read_accounts_by_user(user_id=self.model.user.id, account_type="BANK")
@@ -205,8 +209,8 @@ class Presenter:
         return self.model.read_accounts_by_user(user_id=self.model.user.id, account_type="CARD")
 
     def refresh_transactions_list(self) -> None:
-        # Just a sample list
-        return [{"id": 0, "account_id": 1}, {"id": 1, "account_id": 2}]
+        # TODO Check if we only want to show the current account
+        return self.model.read_transaction_list_by_account(account_id=1)
 
     def refresh_category_list(self) -> None:
         return self.model.read_categories()
@@ -232,7 +236,7 @@ class Presenter:
     def get_subcategory_list(self):
         # Get user subcategory object list
         # TODO read_subcategory_list
-        subcategory_list = self.model.read_subcategories_list_all()
+        subcategory_list = self.model.read_subcategories()
 
         # Transform in a list of names of subcategories
         return_list = [subcategory.name for subcategory in subcategory_list]
@@ -260,5 +264,5 @@ class Presenter:
     # TODO Delete this after tests
     def login_dummy_data(self):
         self.model.user = self.model.read_user_by_id(1)
-        self.model.create_category("teste")
+        # self.model.create_category("teste45")
         self.model.create_subcategory(category_id=1, name="str", recurrent=False, recurrence="ONE", include=True)

@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -74,6 +74,9 @@ class Account(Base):
     interest_rate: Mapped[Optional[float]]
     credit_method: Mapped[Optional[str]]
 
+    # Relatioships
+    transactions: Mapped[List["Transaction"]] = relationship(back_populates="account")
+
     def __str__(self) -> str:
         return f"ID: {self.id}, Name: {self.name}"
 
@@ -104,6 +107,9 @@ class Transaction(Base):
     date: Mapped[datetime]
     value: Mapped[int] = mapped_column(default=0)  # In cents
     description: Mapped[Optional[str]]
+
+    # Relatioships
+    account: Mapped["Account"] = relationship(back_populates="transactions")
 
 
 class SubCategory(Base):

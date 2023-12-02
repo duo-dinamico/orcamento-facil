@@ -35,6 +35,11 @@ class Transactions(ttk.Frame):
     def refresh_transactions(self):
         """Method that refresh the TreeView of transactions."""
 
+        # Clear the Treeview
+        for row in self.tree.get_children():
+            self.tree.delete(row)
+
+        # Get the transaction list from the presenter
         transactions_list = self.presenter.refresh_transactions_list()
 
         # TODO in the future we'll need to clean the tree before adding

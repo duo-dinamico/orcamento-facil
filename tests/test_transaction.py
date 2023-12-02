@@ -30,7 +30,7 @@ def test_success_transaction_read_list_by_account(db_session, valid_transaction)
     _ = valid_transaction
     transaction_list = db_session.read_transaction_list_by_account(account_id=1)
 
-    assert type(transaction_list) is list
+    assert isinstance(transaction_list, list)
     assert transaction_list[0].description == "validTransaction"
 
 
@@ -40,6 +40,15 @@ def test_success_transaction_read_list_by_wrong_account(db_session, valid_subcat
     transaction = db_session.read_transaction_list_by_account(account_id=5)
 
     assert transaction == []
+
+
+def test_success_transaction_read_list_by_user(db_session, valid_transaction):
+    """Tests the success of the read_transaction_list_by_user method."""
+    _ = valid_transaction
+    transaction_list = db_session.read_transaction_list_by_user(user_id=1)
+
+    assert isinstance(transaction_list, list)
+    assert transaction_list[0].description == "validTransaction"
 
 
 #
@@ -63,3 +72,12 @@ def test_error_transaction_read_by_id(db_session, valid_subcategory):
     transaction = db_session.read_transaction_by_id(transaction_id=5)
 
     assert transaction is None
+
+
+def test_error_transaction_read_list_by_user(db_session):
+    """Tests error of the read_transaction_list_by_user method if the user don't exist."""
+
+    transaction_list = db_session.read_transaction_list_by_user(user_id=55)
+
+    assert isinstance(transaction_list, list)
+    assert transaction_list == []

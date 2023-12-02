@@ -63,3 +63,10 @@ def valid_transaction(db_session, valid_account, valid_subcategory):
     db_session.create_transaction(
         account_id=1, subcategory_id=1, date=datetime(2022, 12, 12), value=100, description="validTransaction"
     )
+
+
+@pytest.fixture()
+def valid_user_subcategory(db_session, valid_user, valid_subcategory):
+    _ = valid_user
+    _ = valid_subcategory
+    db_session.create_user_subcategory(user_id=1, subcategory_id=1)

@@ -23,9 +23,10 @@ from ezbudget.model import (
     User,
 )
 from ezbudget.model.base_models import UserSubCategory
+from ezbudget.presenter import ModelProtocol
 
 
-class Model:
+class Model(ModelProtocol):
     def __init__(self, database_name: str = "of") -> None:
         self.engine = create_engine(f"sqlite:///{database_name}.db")
 
@@ -41,9 +42,10 @@ class Model:
         Base.metadata.create_all(self.engine)
         self.session = session_local()
 
-        self.populate_categories()
+        if database_name == "of":
+            self.populate_categories()
 
-        self.user = {id: 1}
+        self.user = None
 
     def populate_categories(self):
         current_path = os.path.dirname(os.path.realpath(__file__))
@@ -456,8 +458,6 @@ class Model:
         except IntegrityError as e:
             if "foreign key constraint" in str(e.orig).lower():
                 return "Category ID does not exist"
-            elif "unique constraint" in str(e.orig).lower():
-                return "SubCategory name already exists"
             else:
                 return "An unknown IntegrityError occurred"
         except LookupError as lookup_error:
@@ -602,8 +602,72 @@ class Model:
                 return "Either User ID or SubCategory ID does not exist"
             # TODO create unique constraint of the columns and test it
             elif "unique constraint" in str(e.orig).lower():
-                return "SubCategory name already exists"
+                return "User ID and SubCategory ID combination must be unique"
             else:
                 return "An unknown IntegrityError occurred"
-        except LookupError as lookup_error:
-            return f"A LookupError occurred: {lookup_error}"
+
+    def read_user_subcategories_multiple_args(self, **kwargs) -> UserSubCategory | None:
+        """Return a user subcategory from given key-value pairs.
+
+        Args:
+            **kwargs: key-value pairs to filter on
+
+        Returns:
+            UserSubCategory: a user subcategory for given key-value pairs.
+            None: if the user subcategory does not exist.
+        """
+        try:
+            filters = [getattr(UserSubCategory, key) == value for key, value in kwargs.items()]
+            query = select(UserSubCategory).where(and_(*filters))
+            return self.read_first_basequery(query)
+        except NoResultFound:
+            return None
+        except AttributeError as e:
+            return f"AttributeError: {e.args[0]}"
+
+    def read_user_subcategories_single_arg(self, key: str, value: str | int) -> UserSubCategory | None:
+        """Return a user subcategory from a given key-value pair.
+
+        Args:
+            key: the name of the column to filter on
+            value: the value to filter on
+
+        Returns:
+            UserSubCategory: a user subcategory for given key-value pairs.
+            None: if the user subcategory does not exist.
+        """
+        try:
+            query = select(UserSubCategory).where(getattr(UserSubCategory, key) == value)
+            return self.read_first_basequery(query)
+        except NoResultFound:
+            return None
+        except AttributeError as e:
+            return f"AttributeError: {e.args[0]}"
+
+    def read_user_subcategories_by_user(self, user_id: int) -> list | None:
+        """Return a list of user subcategory from a given user.
+
+        Args:
+            user_id: the user to filter the list
+
+        Returns:
+            list: a list of user subcategories for given user id.
+            None: if the user does not have any user subcategories selected.
+        """
+        return self.read_all_basequery(select(UserSubCategory).where(UserSubCategory.user_id == user_id))
+
+    def delete_user_subcategory(self, subcategory_id: int) -> int:
+        """Removes a user subcategory relationship for a given subcategory id.
+
+        Args:
+            subcategory_id: the id of the subcategory.
+
+        Returns:
+            int: the number of deleted rows
+        """
+        # TODO Delete and update are under consideration due to the risk of permanent changes
+        deleted_row = (
+            self.session.query(UserSubCategory).where(UserSubCategory.subcategory_id == subcategory_id).delete()
+        )
+        self.session.commit()
+        return deleted_row

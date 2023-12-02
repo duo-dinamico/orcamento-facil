@@ -43,6 +43,7 @@ class IncomingOutgoing(ttk.Frame):
 
         self.next_button = ttk.Button(master=self, text="Next")
         self.next_button.grid(row=1, column=0, columnspan=3, sticky="sew", padx=(10, 10), pady=(0, 10))
+        self.next_button.bind("<Button-1>", self.parent.show_categories)
 
     def create_tree_widget(self, title: str, column: int):
         frame = ttk.Frame(self)

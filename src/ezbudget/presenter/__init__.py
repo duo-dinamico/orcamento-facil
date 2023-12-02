@@ -1,1 +1,1 @@
-from .presenter import Presenter
+from .presenter import ModelProtocol, Presenter, ViewProtocol

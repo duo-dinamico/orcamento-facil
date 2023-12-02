@@ -19,9 +19,9 @@ def test_success_read_category_list_by_category_id(db_session, valid_subcategory
     assert len(category_list) == 1
 
 
-def test_success_read_subcategory_list_all(db_session, valid_subcategory):
+def test_success_read_subcategories(db_session, valid_subcategory):
     _ = valid_subcategory
-    subcategory_list = db_session.read_subcategories_list_all()
+    subcategory_list = db_session.read_subcategories()
 
     assert isinstance(subcategory_list, list)
     assert len(subcategory_list) == 1
@@ -73,10 +73,3 @@ def test_error_subcategory_creation_category_invalid(db_session):
     subcategory = db_session.create_subcategory(category_id=1, name="validSubCategory")
 
     assert subcategory == "Category ID does not exist"
-
-
-def test_error_subcategory_creation_name_exist(db_session, valid_subcategory):
-    _ = valid_subcategory
-    subcategory = db_session.create_subcategory(category_id=1, name="validSubCategory")
-
-    assert subcategory == "SubCategory name already exists"

@@ -1,20 +1,6 @@
 import tkinter as tk
-from tkinter import messagebox
 
 import ttkbootstrap as ttk
-
-categories = [
-    {"id": 1, "name": "house"},
-    {"id": 2, "name": "entertainment"},
-    {"id": 3, "name": "utilities"},
-    {"id": 4, "name": "transportation"},
-]
-
-subcategories = [
-    {"id": 1, "category_id": 1, "name": "house 1", "recurrent": True, "recurrence": "MONTH", "include": True},
-    {"id": 2, "category_id": 1, "name": "house 2", "recurrent": False, "recurrence": "ONE", "include": True},
-    {"id": 3, "category_id": 3, "name": "utilities 1", "recurrent": True, "recurrence": "YEAR", "include": True},
-]
 
 
 class Categories(ttk.Frame):
@@ -68,39 +54,38 @@ class Categories(ttk.Frame):
     def move_selected(self, event):
         del event
         items = self.tvw_categories.selection()
-        caught_errors = []
         for item in items:
-            subcategory_index = int(item) - len(categories)
-            try:
-                self.presenter.handle_add_user_category()
-                self.tvw_selected_categories.insert(
-                    "", "end", iid=subcategory_index, text=self.tvw_categories.item(item)["text"]
-                )
-            except tk.TclError as e:
-                # TODO in the future we should log this error for tracking
-                del e
-                caught_errors.append(f'{self.tvw_categories.item(item)["text"]} already selected')
-
-        if len(caught_errors) > 0:
-            error_message = "\n".join(caught_errors)
-            caught_errors = []
-            # TODO replace with ttk toplevel?
-            messagebox.showinfo(title="Information", message=error_message)
+            self.presenter.handle_add_user_category(subcategory_id=item.split(" ")[1])
+        self.refresh_selected_categories()
 
     def remove_selected(self, event):
         del event
         items = self.tvw_selected_categories.selection()
         for item in items:
-            self.tvw_selected_categories.delete(item)
+            self.presenter.handle_remove_user_category(subcategory_id=item.split(" ")[1])
+        self.refresh_selected_categories()
 
     def refresh_categories(self):
         category_list = self.presenter.refresh_category_list()
         subcategory_list = self.presenter.refresh_subcategory_list()
         for category in category_list:
-            self.tvw_categories.insert("", "end", text=category.name, iid=category.id, open=False, tags="parent")
-        for subcategory in subcategory_list:
-            subcategory_index = subcategory.id + len(category_list)
             self.tvw_categories.insert(
-                "", "end", text=subcategory.name, iid=subcategory_index, open=False, tags="selectable"
+                "", "end", text=category.name, iid=f"category {category.id}", open=False, tags="parent"
             )
-            self.tvw_categories.move(item=subcategory_index, parent=subcategory.category_id, index=subcategory_index)
+        for subcategory in subcategory_list:
+            self.tvw_categories.insert(
+                "", "end", text=subcategory.name, iid=f"subcategory {subcategory.id}", open=False, tags="selectable"
+            )
+            self.tvw_categories.move(
+                item=f"subcategory {subcategory.id}", parent=f"category {subcategory.category_id}", index=subcategory.id
+            )
+
+    def refresh_selected_categories(self):
+        for item in self.tvw_selected_categories.get_children():
+            self.tvw_selected_categories.delete(item)
+
+        selected_categories = self.presenter.refresh_selected_category_list()
+        for category in selected_categories:
+            self.tvw_selected_categories.insert(
+                "", "end", iid=f"subcategory {category.subcategory_id}", text=category.subcategory.name
+            )

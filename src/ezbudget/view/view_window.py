@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Protocol
 
 import ttkbootstrap as ttk
 
@@ -17,20 +16,6 @@ from ezbudget.view import (
 TITLE = "Ez Budget"
 # WINDOW_WIDTH = 1200
 # WINDOW_HEIGHT = 800
-
-
-class Presenter(Protocol):
-    def handle_register_user(self, event=None):
-        ...
-
-    def handle_login_user(self, event=None) -> None:
-        ...
-
-    def handle_create_account(self, event=None):
-        ...
-
-    def run(self) -> None:
-        ...
 
 
 class RootView(ttk.Window):
@@ -51,14 +36,13 @@ class RootView(ttk.Window):
         # self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}+{int(x_center)}+{int(y_center)}")
         self.geometry(f"{int(screen_width / 1.5)}x{int(screen_height / 1.5)}")
 
-    def init_ui(self, presenter: Presenter) -> None:
+    def init_ui(self, presenter) -> None:
         self.presenter = presenter
 
         # TODO Delete this
         # self.presenter.login_dummy_data()
 
-        # self.show_register_login()
-        self.show_categories()
+        self.show_register_login()
         # self.show_transactions()
 
     def error_message_set(self, target: str, message: str) -> None:
@@ -165,6 +149,7 @@ class RootView(ttk.Window):
             self.current_frame.destroy()
         self.current_frame = Categories(self, self.presenter)
         self.current_frame.refresh_categories()
+        self.current_frame.refresh_selected_categories()
         self.current_frame.pack(expand=True, fill="both")
 
     def show_transactions(self, event=None) -> None:

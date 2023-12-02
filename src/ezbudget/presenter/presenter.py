@@ -6,49 +6,34 @@ from ezbudget.model import CurrencyEnum, MonthEnum, RecurrenceEnum
 from ezbudget.utils import get_hashed_password, verify_password
 
 
-class Model(Protocol):
-    def create_user(self, username: str, password: str = ""):
+class ModelProtocol(Protocol):
+    def create_user(self, username, password):
         ...
 
-    def read_user_by_name(self, username: str):
+    def read_user_by_name(self, username):
         ...
 
-    def create_account(
-        self,
-        name: str,
-        user_id: int,
-        account_type: str,
-        initial_balance: int = 0,
-        currency: str = "EUR",
-    ):
+    def create_account(self, name, user_id, account_type, initial_balance, currency):
         ...
 
     def create_income(
-        self,
-        user_id: int,
-        account_id: int,
-        name: str,
-        expected_income_value: int,
-        real_income_value: int,
-        income_day: str,
-        income_month,
-        recurrence,
+        self, user_id, account_id, name, expected_income_value, real_income_value, income_day, income_month, recurrence
     ):
         ...
 
-    def read_account_by_name(self, name: str):
+    def read_account_by_name(self, name):
         ...
 
-    def read_accounts_by_user(self, user_id: int, account_type: str):
+    def read_accounts_by_user(self, user_id, account_type):
         ...
 
-    def read_account_by_id(self, id: str):
+    def read_account_by_id(self, id):
         ...
 
-    def read_income_by_name(self, name: str):
+    def read_income_by_name(self, name):
         ...
 
-    def read_incomes_by_user(self, user_id: int):
+    def read_incomes_by_user(self, user_id):
         ...
 
     def read_categories(self):
@@ -57,12 +42,24 @@ class Model(Protocol):
     def read_subcategories(self):
         ...
 
-
-class View(Protocol):
-    def init_ui(self, presenter: Presenter):
+    def create_user_subcategory(self):
         ...
 
-    def error_message_set(self, target: str, message: str):
+    def read_user_subcategories_multiple_args(self, user_id, subcategory_id):
+        ...
+
+    def read_user_subcategories_by_user(self, user_id):
+        ...
+
+    def delete_user_subcategory(self, id):
+        ...
+
+
+class ViewProtocol(Protocol):
+    def init_ui(self, presenter):
+        ...
+
+    def error_message_set(self, target, message):
         ...
 
     def show_register_login(self, presenter):
@@ -94,7 +91,7 @@ class View(Protocol):
 
 
 class Presenter:
-    def __init__(self, model: Model, view: View) -> None:
+    def __init__(self, model: ModelProtocol, view: ViewProtocol) -> None:
         self.model = model
         self.view = view
 
@@ -116,8 +113,12 @@ class Presenter:
                 # TODO replace this with the log
                 print(error)
 
-    def handle_add_user_category(self) -> None:
-        ...
+    def handle_add_user_category(self, subcategory_id) -> None:
+        check_user_subcategory_exists = self.model.read_user_subcategories_multiple_args(
+            user_id=self.model.user.id, subcategory_id=subcategory_id
+        )
+        if check_user_subcategory_exists is None:
+            self.model.create_user_subcategory(user_id=self.model.user.id, subcategory_id=subcategory_id)
 
     def handle_login_user(self, event=None) -> None:
         del event  # not used in this function
@@ -218,6 +219,9 @@ class Presenter:
     def refresh_subcategory_list(self) -> None:
         return self.model.read_subcategories()
 
+    def refresh_selected_category_list(self) -> None:
+        return self.model.read_user_subcategories_by_user(user_id=self.model.user.id)
+
     def get_currency(self):
         return list(CurrencyEnum.__members__.keys())
 
@@ -253,6 +257,9 @@ class Presenter:
             account.name
             for account in self.model.read_accounts_by_user(user_id=self.model.user.id, account_type="BANK")
         ]
+
+    def handle_remove_user_category(self, subcategory_id: int):
+        return self.model.delete_user_subcategory(subcategory_id=subcategory_id)
 
     def get_month(self):
         return list(MonthEnum.__members__.keys())

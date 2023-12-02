@@ -159,6 +159,9 @@ class RootView(ttk.Window):
             self.current_popup.destroy()
         self.current_popup = CreateTransactionPopup(self.current_frame, self.presenter)
 
+    def show_update_transaction_popup(self, event=None) -> None:
+        pass
+
     def show_categories(self, event=None) -> None:
         del event  # not used in this function
         if self.current_frame:

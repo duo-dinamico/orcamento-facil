@@ -212,6 +212,11 @@ class Presenter:
         # TODO Account type
         return self.model.read_transaction_list_by_user(user_id=self.model.user.id)
 
+    def remove_transaction(self, transaction_id):
+        """Presenter method that call model to delete transaction."""
+        # TODO model DELETE
+        print("TRANSACTION ID", transaction_id)
+
     def refresh_category_list(self) -> None:
         return self.model.read_categories()
 

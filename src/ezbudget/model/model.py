@@ -560,6 +560,26 @@ class Model(ModelProtocol):
         except NoResultFound:
             return None
 
+    def read_transaction_list_by_user(self, user_id: int) -> list:
+        """Return a list of all transaction objects of a given user.
+
+        Args:
+            user_id: the user id.
+        """
+        try:
+            # Get the account list for this user
+            accounts_list = self.read_accounts_by_user(user_id=user_id, account_type="BANK")  # TODO Type
+
+            # Join the transactions of all accounts
+            transaction_list: list = []
+
+            for account in accounts_list:
+                transaction_list.extend(self.read_transaction_list_by_account(account.id))
+
+            return transaction_list
+        except NoResultFound:
+            return None
+
     def read_transaction_list_by_account(self, account_id: int) -> list:
         """Return a list of transactions objects that has the given account_id.
 

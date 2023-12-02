@@ -40,7 +40,7 @@ class RootView(ttk.Window):
         self.presenter = presenter
 
         # TODO Delete this
-        # self.presenter.login_dummy_data()
+        self.presenter.login_dummy_data()
 
         self.show_register_login()
         # self.show_transactions()
@@ -142,6 +142,9 @@ class RootView(ttk.Window):
         if self.current_popup:
             self.current_popup.destroy()
         self.current_popup = CreateTransactionPopup(self.current_frame, self.presenter)
+
+    def show_update_transaction_popup(self, event=None) -> None:
+        pass
 
     def show_categories(self, event=None) -> None:
         del event  # not used in this function

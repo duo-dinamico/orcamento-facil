@@ -210,8 +210,13 @@ class Presenter:
         return self.model.read_accounts_by_user(user_id=self.model.user.id, account_type="CARD")
 
     def refresh_transactions_list(self) -> None:
-        # TODO Check if we only want to show the current account
-        return self.model.read_transaction_list_by_account(account_id=1)
+        # TODO Account type
+        return self.model.read_transaction_list_by_user(user_id=self.model.user.id)
+
+    def remove_transaction(self, transaction_id):
+        """Presenter method that call model to delete transaction."""
+        # TODO model DELETE
+        print("TRANSACTION ID", transaction_id)
 
     def refresh_category_list(self) -> None:
         return self.model.read_categories()

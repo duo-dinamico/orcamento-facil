@@ -1,6 +1,7 @@
 import tkinter as tk
 
 import ttkbootstrap as ttk
+from sqlalchemy import Boolean
 
 
 class CreateTransactionPopup(tk.Toplevel):
@@ -26,7 +27,10 @@ class CreateTransactionPopup(tk.Toplevel):
         self.account_id = tk.StringVar()
         self.subcategory_id = tk.StringVar()
         self.transaction_date = tk.StringVar(value="01-01-23")
-        self.value = tk.StringVar()
+        self.cbx_frame_date_day = tk.StringVar(value="01")
+        self.cbx_frame_date_month = tk.StringVar(value="01")
+        self.cbx_frame_date_year = tk.StringVar(value="2023")
+        self.value = tk.StringVar(value=0)
         self.description = tk.StringVar()
 
         # Get the account list
@@ -53,14 +57,42 @@ class CreateTransactionPopup(tk.Toplevel):
             self.cbx_subcategory.current(0)
         self.cbx_subcategory.pack(anchor="w", padx=10, pady=5, fill="x")
 
-        lbl_transaction_date = ttk.Label(self, text="Date (day-month-year)")
-        lbl_transaction_date.pack(anchor="w", padx=10, pady=5, fill="x")
-        ent_transaction_date = ttk.Entry(self, textvariable=self.transaction_date)
-        ent_transaction_date.pack(anchor="w", padx=10, pady=5, fill="x")
+        #
+        # Create a frame just for the date
+        #
+        self.frame_date = ttk.LabelFrame(self, text="Date")
+        self.frame_date.pack(anchor="w", padx=10, pady=5, fill="x")
+
+        lbl_frame_date_day = ttk.Label(self.frame_date, text="Day")
+        lbl_frame_date_day.grid(row=0, column=0)
+        self.cbx_frame_date_day = ttk.Combobox(self.frame_date, state="readonly", values=list(range(1, 32)))
+        self.cbx_frame_date_day.current(0)
+        self.cbx_frame_date_day.grid(row=1, column=0)
+
+        # Get month list
+        month_list = presenter.get_month()
+
+        lbl_frame_date_month = ttk.Label(self.frame_date, text="Month")
+        lbl_frame_date_month.grid(row=0, column=1)
+        self.cbx_frame_date_month = ttk.Combobox(self.frame_date, state="readonly", values=month_list)
+        self.cbx_frame_date_month.current(0)
+        self.cbx_frame_date_month.grid(row=1, column=1)
+
+        lbl_frame_date_year = ttk.Label(self.frame_date, text="Year")
+        lbl_frame_date_year.grid(row=0, column=2)
+        self.cbx_frame_date_year = ttk.Combobox(
+            self.frame_date, state="readonly", values=list(range(2020, 2025))
+        )  # TODO other years?!
+        self.cbx_frame_date_year.current(0)
+        self.cbx_frame_date_year.grid(row=1, column=2)
+
+        #
+        # Date frame terminated
+        #
 
         lbl_value = ttk.Label(self, text="Value")
         lbl_value.pack(anchor="w", padx=10, pady=5, fill="x")
-        ent_value = ttk.Entry(self, textvariable=self.value)
+        ent_value = ttk.Entry(self, textvariable=self.value, validate="key", validatecommand=self.check_value)
         ent_value.pack(anchor="w", padx=10, pady=5, fill="x")
 
         lbl_description = ttk.Label(self, text="Description")
@@ -84,3 +116,9 @@ class CreateTransactionPopup(tk.Toplevel):
 
     def cancel_input(self):
         self.destroy()
+
+    def check_value(self) -> Boolean:
+        if self.value.get().isdigit() or self.value.get() == "":
+            return True
+        else:
+            return False

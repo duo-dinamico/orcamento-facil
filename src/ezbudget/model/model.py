@@ -593,6 +593,20 @@ class Model(ModelProtocol):
         except NoResultFound:
             return None
 
+    def delete_transaction(self, transaction_id: int) -> int:
+        """Delete a transaction with the given id.
+
+        Args:
+            transaction_id: the transaction id.
+
+        Returns:
+            Number of rows deleted. Should allways be 1.
+        """
+        try:
+            return self.session.query(Transaction).where(Transaction.id == transaction_id).delete()
+        except NoResultFound:
+            return None
+
     # USER SUBCATEGORY MODELS
     def create_user_subcategory(self, user_id: int, subcategory_id: int) -> UserSubCategory | None:
         """Create a new user and subcategory relationship.

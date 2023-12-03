@@ -51,6 +51,15 @@ def test_success_transaction_read_list_by_user(db_session, valid_transaction):
     assert transaction_list[0].description == "validTransaction"
 
 
+def test_success_transaction_delete(db_session, valid_transaction):
+    """Tests the success of the delete_transaction method."""
+    _ = valid_transaction
+    deleted_id = db_session.delete_transaction(transaction_id=1)
+
+    assert isinstance(deleted_id, int)
+    assert deleted_id == 1
+
+
 #
 # ERROR HANDLING
 #
@@ -81,3 +90,12 @@ def test_error_transaction_read_list_by_user(db_session):
 
     assert isinstance(transaction_list, list)
     assert transaction_list == []
+
+
+def test_error_transaction_delete(db_session, valid_transaction):
+    """Tests the error of the delete_transaction method when invalid transaction."""
+    _ = valid_transaction
+    deleted_id = db_session.delete_transaction(transaction_id=55)
+
+    assert isinstance(deleted_id, int)
+    assert deleted_id != 55

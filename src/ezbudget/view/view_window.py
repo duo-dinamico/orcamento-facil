@@ -8,6 +8,7 @@ from ezbudget.view import (
     CreateCreditCardPopup,
     CreateIncomePopUp,
     CreateTransactionPopup,
+    HomePage,
     IncomingOutgoing,
     RegisterLogin,
     Transactions,
@@ -61,7 +62,7 @@ class RootView(ttk.Window):
         return {
             "name": self.current_popup.account_name.get(),
             "account_type": "BANK",
-            "initial_balance": self.current_popup.initial_balance.get(),
+            "balance": self.current_popup.balance.get(),
             "currency": self.current_popup.cbx_currency.get(),
         }
 
@@ -80,7 +81,7 @@ class RootView(ttk.Window):
         return {
             "name": self.current_popup.credit_card_name.get(),
             "account_type": "CARD",
-            "initial_balance": self.current_popup.balance.get(),
+            "balance": self.current_popup.balance.get(),
             "credit_limit": self.current_popup.credit_limit.get(),
             "payment_day": self.current_popup.payment_day.get(),
             "interest_rate": self.current_popup.interest_rate.get(),
@@ -153,6 +154,13 @@ class RootView(ttk.Window):
         self.current_frame = Categories(self, self.presenter)
         self.current_frame.refresh_categories()
         self.current_frame.refresh_selected_categories()
+        self.current_frame.pack(expand=True, fill="both")
+
+    def show_homepage(self, event=None) -> None:
+        del event  # not used in this function
+        if self.current_frame:
+            self.current_frame.destroy()
+        self.current_frame = HomePage(self, self.presenter)
         self.current_frame.pack(expand=True, fill="both")
 
     def show_transactions(self, event=None) -> None:

@@ -12,7 +12,7 @@ class CreateAccountPopUp(tk.Toplevel):
         self.title("Add account")
 
         self.account_name = tk.StringVar()
-        self.initial_balance = tk.StringVar()
+        self.balance = tk.StringVar(value=0)
         self.error_message = tk.StringVar(value="")
         currencies = presenter.get_currency()
 
@@ -23,10 +23,10 @@ class CreateAccountPopUp(tk.Toplevel):
         # ent_account_name.focus_set()
         ent_account_name.pack(anchor="w", padx=10, pady=5, fill="x")
 
-        lbl_initial_balance = ttk.Label(self, text="Initial balance")
-        lbl_initial_balance.pack(anchor="w", padx=10, pady=5, fill="x")
-        ent_initial_balance = ttk.Entry(self, textvariable=self.initial_balance)
-        ent_initial_balance.pack(anchor="w", padx=10, pady=5, fill="x")
+        lbl_balance = ttk.Label(self, text="Balance")
+        lbl_balance.pack(anchor="w", padx=10, pady=5, fill="x")
+        ent_balance = ttk.Entry(self, textvariable=self.balance)
+        ent_balance.pack(anchor="w", padx=10, pady=5, fill="x")
 
         lbl_currency = ttk.Label(self, text="Currency")
         lbl_currency.pack(anchor="w", padx=10, pady=5, fill="x")

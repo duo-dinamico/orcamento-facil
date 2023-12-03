@@ -13,7 +13,7 @@ class ModelProtocol(Protocol):
     def read_user_by_name(self, username):
         ...
 
-    def create_account(self, name, user_id, account_type, initial_balance, currency):
+    def create_account(self, name, user_id, account_type, balance, currency):
         ...
 
     def create_income(
@@ -89,6 +89,9 @@ class ViewProtocol(Protocol):
     def account_selected(self, event):
         ...
 
+    def show_homepage(self, event):
+        ...
+
 
 class Presenter:
     def __init__(self, model: ModelProtocol, view: ViewProtocol) -> None:
@@ -129,8 +132,7 @@ class Presenter:
             check_password = verify_password(user_data["password"], user.password)
             if check_password:
                 self.model.user = user
-                # TODO this is supposed to change to the main view
-                self.view.show_incomig_outgoing()
+                self.view.show_homepage()
             else:
                 self.view.error_message_set("frame", "Wrong username or password")
         else:
@@ -147,9 +149,17 @@ class Presenter:
             account_data["user_id"] = self.model.user.id
             account = self.model.create_account(**account_data)
 
-        if account:
-            self.view.current_frame.create_account(account)
-            self.view.destroy_current_popup()
+            if account:
+                # * This is necessary for when the pop up is called outside of incoming outgoing view
+                if hasattr(self.view.current_frame, "create_account") and callable(
+                    self.view.current_frame.create_account
+                ):
+                    self.view.current_frame.create_account(account)
+                if hasattr(self.view.current_frame, "refresh_total_and_accounts") and callable(
+                    self.view.current_frame.refresh_total_and_accounts
+                ):
+                    self.view.current_frame.refresh_total_and_accounts()
+                self.view.destroy_current_popup()
 
     def handle_create_income(self, event=None):
         del event  # not used in this function
@@ -268,6 +278,21 @@ class Presenter:
 
     def get_month(self):
         return list(MonthEnum.__members__.keys())
+
+    def handle_set_username(self):
+        if self.model.user is not None:
+            return self.model.user.username
+        return "User"
+
+    def handle_set_total_accounts(self):
+        if self.model.user is not None:
+            user_accounts = self.model.read_accounts_by_user(user_id=self.model.user.id, account_type="BANK")
+            if len(user_accounts) > 0:
+                balance = 0
+                for account in user_accounts:
+                    balance += account.balance
+                return {"balance": balance, "user_accounts": user_accounts}
+            return 0
 
     def run(self) -> None:
         self.view.init_ui(self)

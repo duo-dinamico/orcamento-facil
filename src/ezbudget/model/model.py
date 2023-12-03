@@ -145,7 +145,6 @@ class Model(ModelProtocol):
         name: str,
         account_type: AccountTypeEnum = "BANK",
         currency: str = "EUR",
-        initial_balance: int = 0,
         balance: int = 0,
         credit_limit: int = 0,
         payment_day: str = "",
@@ -157,7 +156,7 @@ class Model(ModelProtocol):
         Args:
             user_id: user id that own the account, which must exist in the users table.
             name: the name of the account, that must be unique.
-            initial_balance: the initial balance of the account, it's zero by default
+            balance: the balance of the account, it's zero by default
             account_type: the type of the account, it's BANK by default
             currency: the currency of the account, it's EUR by default
 
@@ -171,7 +170,6 @@ class Model(ModelProtocol):
                 name=name,
                 account_type=account_type,
                 currency=currency,
-                initial_balance=initial_balance,
                 balance=balance,
                 credit_limit=credit_limit,
                 payment_day=payment_day,

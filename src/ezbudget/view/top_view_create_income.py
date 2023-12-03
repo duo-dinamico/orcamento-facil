@@ -13,9 +13,9 @@ class CreateIncomePopUp(tk.Toplevel):
 
         self.error_message = tk.StringVar(value="")
         self.income_name = tk.StringVar()
-        self.expected_income = tk.StringVar()
-        self.real_income = tk.StringVar()
-        self.income_day = tk.StringVar()
+        self.expected_income = tk.StringVar(value=0)
+        self.real_income = tk.StringVar(value=0)
+        self.income_day = tk.StringVar(value=30)
         income_month = presenter.get_month()
         recurrence = presenter.get_recurrence()
         target_accounts = presenter.get_target_accounts()
@@ -28,7 +28,8 @@ class CreateIncomePopUp(tk.Toplevel):
         lbl_target_account = ttk.Label(self, text="Chose target account")
         lbl_target_account.pack(anchor="w", padx=10, pady=5, fill="x")
         self.cbx_target_account = ttk.Combobox(self, state="readonly", values=target_accounts)
-        self.cbx_target_account.current(0)
+        if len(target_accounts) > 0:
+            self.cbx_target_account.current(0)
         self.cbx_target_account.pack(anchor="w", padx=10, pady=5, fill="x")
 
         lbl_expected_income = ttk.Label(self, text="Expected income")

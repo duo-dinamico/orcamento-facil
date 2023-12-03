@@ -13,10 +13,10 @@ class CreateCreditCardPopup(tk.Toplevel):
 
         self.error_message = tk.StringVar(value="")
         self.credit_card_name = tk.StringVar()
-        self.balance = tk.StringVar()
-        self.credit_limit = tk.StringVar()
-        self.payment_day = tk.StringVar()
-        self.interest_rate = tk.StringVar()
+        self.balance = tk.StringVar(value=0)
+        self.credit_limit = tk.StringVar(value=0)
+        self.payment_day = tk.StringVar(value=15)
+        self.interest_rate = tk.StringVar(value=0.0)
         self.credit_method = tk.StringVar()
         currencies = presenter.get_currency()
 
@@ -25,7 +25,7 @@ class CreateCreditCardPopup(tk.Toplevel):
         ent_credit_card_name = ttk.Entry(self, textvariable=self.credit_card_name)
         ent_credit_card_name.pack(anchor="w", padx=10, pady=5, fill="x")
 
-        lbl_balance = ttk.Label(self, text="Initial balance")
+        lbl_balance = ttk.Label(self, text="Balance")
         lbl_balance.pack(anchor="w", padx=10, pady=5, fill="x")
         ent_balance = ttk.Entry(self, textvariable=self.balance)
         ent_balance.pack(anchor="w", padx=10, pady=5, fill="x")

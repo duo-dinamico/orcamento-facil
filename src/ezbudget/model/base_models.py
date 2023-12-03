@@ -67,7 +67,6 @@ class Account(Base):
     name: Mapped[str] = mapped_column(unique=True)
     account_type: Mapped[AccountTypeEnum] = mapped_column(default="BANK")
     currency: Mapped[CurrencyEnum] = mapped_column(default="EUR")
-    initial_balance: Mapped[int] = mapped_column(default=0)  # In cents
     balance: Mapped[int] = mapped_column(default=0)  # In cents
     credit_limit: Mapped[Optional[int]]  # In cents
     payment_day: Mapped[Optional[str]]  # Saved as a string, need conversion

@@ -161,4 +161,5 @@ cython_debug/
 
 # Don't save databases
 *.db
+*.db-journal
 .ruff_cache

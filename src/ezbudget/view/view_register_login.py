@@ -5,29 +5,47 @@ import ttkbootstrap as ttk
 
 class RegisterLogin(ttk.Frame):
     def __init__(self, parent, presenter) -> None:
-        super().__init__(master=parent)
-
+        super().__init__(master=parent, bootstyle="secondary")
+        self.presenter = presenter
         self.username = tk.StringVar()
         self.password = tk.StringVar()
         self.error_message = tk.StringVar(value="")
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=3)
+        self.columnconfigure(1, weight=1)
 
-        lbl_username = ttk.Label(self, text="Username")
-        lbl_username.grid(row=0, column=0, columnspan=2, padx=10, pady=5)
-        ent_username = ttk.Entry(self, textvariable=self.username)
-        ent_username.grid(row=1, column=0, columnspan=2, padx=10, pady=5)
+        frm_login = ttk.Frame(self)
+        frm_login.grid(column=1, row=0, padx=10, pady=10, sticky="nsew")
 
-        lbl_password = ttk.Label(self, text="Password")
-        lbl_password.grid(row=2, column=0, columnspan=2, padx=10, pady=5)
-        ent_password = ttk.Entry(self, textvariable=self.password, show="*")
-        ent_password.grid(row=3, column=0, columnspan=2, padx=10, pady=5)
+        ttk.Label(frm_login, text="Welcome back!", justify="center", anchor="center", font=("Roboto", 25, "bold")).pack(
+            expand=True, fill="x", padx=10, pady=(100, 5)
+        )
+        ttk.Label(frm_login, text="Please enter your details", justify="center", anchor="center", font=("Roboto")).pack(
+            expand=True, fill="x", padx=10, pady=5
+        )
 
-        lbl_error = ttk.Label(self, textvariable=self.error_message)
-        lbl_error.grid(row=4, column=0, columnspan=2, padx=10, pady=5)
+        lbl_username = ttk.Label(frm_login, text="Username", font=("Roboto"))
+        lbl_username.pack(expand=True, fill="x", padx=10, pady=5)
+        ent_username = ttk.Entry(frm_login, textvariable=self.username)
+        ent_username.pack(expand=True, fill="x", padx=10, pady=5)
 
-        btn_register = ttk.Button(self, text="Register")
-        btn_register.grid(row=5, column=0, padx=10, pady=5)
-        btn_register.bind("<Button-1>", presenter.handle_register_user)
+        lbl_password = ttk.Label(frm_login, text="Password", font=("Roboto"))
+        lbl_password.pack(expand=True, fill="x", padx=10, pady=5)
+        ent_password = ttk.Entry(frm_login, textvariable=self.password, show="*")
+        ent_password.pack(expand=True, fill="x", padx=10, pady=5)
+        ent_password.bind("<Return>", self.enter_to_login)
 
-        btn_login = ttk.Button(self, text="Login")
-        btn_login.grid(row=5, column=1, padx=10, pady=5)
-        btn_login.bind("<Button-1>", presenter.handle_login_user)
+        lbl_error = ttk.Label(frm_login, textvariable=self.error_message)
+        lbl_error.pack(expand=True, fill="x", padx=10, pady=5)
+
+        btn_login = ttk.Button(frm_login, text="Login", bootstyle="outline")
+        btn_login.pack(expand=True, fill="x", padx=10, pady=5)
+        btn_login.bind("<Button-1>", self.presenter.handle_login_user)
+
+        btn_register = ttk.Button(frm_login, text="Register")
+        btn_register.pack(expand=True, fill="x", padx=10, pady=(5, 100))
+        btn_register.bind("<Button-1>", self.presenter.handle_register_user)
+
+    def enter_to_login(self, event):
+        del event
+        self.presenter.handle_login_user()

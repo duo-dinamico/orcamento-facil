@@ -20,7 +20,7 @@ TITLE = "Ez Budget"
 
 class RootView(ttk.Window):
     def __init__(self) -> None:
-        super().__init__(themename="darkly")
+        super().__init__(themename="flatly")
         self.title(TITLE)
         self.resizable(False, False)
         self.presenter = None

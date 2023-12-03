@@ -3,13 +3,9 @@ import ttkbootstrap as ttk
 
 class IncomingOutgoing(ttk.Frame):
     def __init__(self, parent, presenter) -> None:
-        super().__init__(master=parent)
+        super().__init__(master=parent, bootstyle="secondary")
         self.parent = parent
         self.presenter = presenter
-
-        style = ttk.Style()
-        # style.configure("Treeview.Heading", font=(None, 14), rowheight=int(14 * 2.5))
-        style.configure("Treeview", font=(None, 11), rowheight=int(11 * 3))
 
         self.accounts_tree: ttk.Treeview | None = None
         self.create_account_button: ttk.Button | None = None
@@ -46,13 +42,15 @@ class IncomingOutgoing(ttk.Frame):
         self.next_button.bind("<Button-1>", self.parent.show_categories)
 
     def create_tree_widget(self, title: str, column: int):
-        frame = ttk.Frame(self)
+        frame = ttk.Frame(self, bootstyle="secondary")
         frame.grid(row=0, column=column, sticky="nsew", padx=(10, 10), pady=(10, 0))
-        title_label = ttk.Label(frame, text=title, anchor="center")
+        title_label = ttk.Label(
+            frame, text=title, anchor="center", font=("Roboto", 14, "bold"), bootstyle="inverse-secondary"
+        )
         title_label.pack(fill="x", pady=(5, 5))
 
         columns = ("name", "balance")
-        tree = ttk.Treeview(frame, columns=columns, show="headings", selectmode="browse", style="Treeview")
+        tree = ttk.Treeview(frame, columns=columns, show="headings", selectmode="browse", bootstyle="light")
 
         # define headings
         tree.heading("name", text="Name")
@@ -60,11 +58,11 @@ class IncomingOutgoing(ttk.Frame):
 
         tree.pack(fill="both", expand=True)
 
-        add_button = ttk.Button(frame, text="Add")
+        add_button = ttk.Button(frame, text="Add", bootstyle="dark")
         add_button.pack(fill="x", pady=(5, 5))
-        edit_button = ttk.Button(frame, text="Edit", state="disabled")
+        edit_button = ttk.Button(frame, text="Edit", state="disabled", bootstyle="dark")
         edit_button.pack(fill="x", pady=(5, 5))
-        delete_button = ttk.Button(frame, text="Delete", state="disabled")
+        delete_button = ttk.Button(frame, text="Delete", state="disabled", bootstyle="dark")
         delete_button.pack(fill="x", pady=(5, 5))
 
         match column:

@@ -26,6 +26,9 @@ class CreateTransactionPopup(tk.Toplevel):
         self.account_id = tk.StringVar()
         self.subcategory_id = tk.StringVar()
         self.transaction_date = tk.StringVar(value="01-01-23")
+        self.cbx_frame_date_day = tk.StringVar(value="01")
+        self.cbx_frame_date_month = tk.StringVar(value="01")
+        self.cbx_frame_date_year = tk.StringVar(value="2023")
         self.value = tk.StringVar()
         self.description = tk.StringVar()
 
@@ -53,10 +56,35 @@ class CreateTransactionPopup(tk.Toplevel):
             self.cbx_subcategory.current(0)
         self.cbx_subcategory.pack(anchor="w", padx=10, pady=5, fill="x")
 
-        lbl_transaction_date = ttk.Label(self, text="Date (day-month-year)")
-        lbl_transaction_date.pack(anchor="w", padx=10, pady=5, fill="x")
-        ent_transaction_date = ttk.Entry(self, textvariable=self.transaction_date)
-        ent_transaction_date.pack(anchor="w", padx=10, pady=5, fill="x")
+        #
+        # Create a frame just for the date
+        #
+        self.frame_date = ttk.LabelFrame(self, text="Date")
+        self.frame_date.pack(anchor="w", padx=10, pady=5, fill="x")
+
+        lbl_frame_date_day = ttk.Label(self.frame_date, text="Day")
+        lbl_frame_date_day.pack(anchor="w", padx=10, pady=5, fill="x")
+        self.cbx_frame_date_day = ttk.Combobox(self.frame_date, state="readonly", values=list(range(1, 32)))
+        self.cbx_frame_date_day.pack(side="left")
+
+        # Get month list
+        month_list = presenter.get_month()
+
+        lbl_frame_date_month = ttk.Label(self.frame_date, text="Month")
+        lbl_frame_date_month.pack(anchor="w", padx=10, pady=5, fill="x")
+        self.cbx_frame_date_month = ttk.Combobox(self.frame_date, state="readonly", values=month_list)
+        self.cbx_frame_date_month.pack(side="left")
+
+        lbl_frame_date_year = ttk.Label(self.frame_date, text="Year")
+        lbl_frame_date_year.pack(anchor="w", padx=10, pady=5, fill="x")
+        self.cbx_frame_date_year = ttk.Combobox(
+            self.frame_date, state="readonly", values=list(range(2020, 2025))
+        )  # TODO other years?!
+        self.cbx_frame_date_year.pack(side="left")
+
+        #
+        # Date frame terminated
+        #
 
         lbl_value = ttk.Label(self, text="Value")
         lbl_value.pack(anchor="w", padx=10, pady=5, fill="x")

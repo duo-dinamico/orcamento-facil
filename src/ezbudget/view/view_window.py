@@ -90,8 +90,19 @@ class RootView(ttk.Window):
 
     def get_transaction_data(self):
         # TODO Strong date validation
+
+        # Join date
+        month_value = self.presenter.get_month_value(self.current_popup.cbx_frame_date_month.get())
+        date_str = (
+            self.current_popup.cbx_frame_date_day.get()
+            + "-"
+            + str(month_value)
+            + "-"
+            + self.current_popup.cbx_frame_date_year.get()
+        )
+
         # Get datetime object
-        data_obj = datetime.strptime(self.current_popup.transaction_date.get(), "%m-%d-%y").date()
+        data_obj = datetime.strptime(date_str, "%m-%d-%Y").date()
 
         # Get account id from the name that comes from Combobox
         account_id = self.presenter.get_account_id_by_name(self.current_popup.cbx_account.get())

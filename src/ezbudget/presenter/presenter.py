@@ -275,6 +275,10 @@ class Presenter:
     def get_month(self):
         return list(MonthEnum.__members__.keys())
 
+    def get_month_value(self, month):
+        month_value = MonthEnum[month].value
+        return month_value
+
     def run(self) -> None:
         self.view.init_ui(self)
         self.view.mainloop()

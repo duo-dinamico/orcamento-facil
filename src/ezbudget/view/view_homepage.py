@@ -40,10 +40,23 @@ class HomePage(ttk.Frame):
 
         frm_credit_cards = ttk.Frame(self)
         frm_credit_cards.grid(sticky="nsew", row=1, column=1, padx=5, pady=(5, 10))
-
         ttk.Label(frm_credit_cards, text="Credit Cards", font=("Roboto", 14, "bold")).pack(
             fill="x", padx=5, pady=(5, 0)
         )
+        self.tvw_credit_cards = ttk.Treeview(
+            frm_credit_cards, columns=("name", "total"), show="headings", selectmode="none", bootstyle="secondary"
+        )
+        self.tvw_credit_cards.heading("name", text=" ")
+        self.tvw_credit_cards.heading("total", text="Total")
+        self.tvw_credit_cards.column("total", anchor="center")
+        self.tvw_credit_cards.tag_configure("parent", font=("Roboto", 11, "bold"))
+        self.refresh_total_and_credit_cards()
+        self.tvw_credit_cards.pack(fill="both", expand=True, padx=5, pady=(5, 0))
+        frm_card_buttons = ttk.Frame(frm_credit_cards)
+        frm_card_buttons.pack(fill="x", side="bottom")
+        btn_add_credit_card = ttk.Button(frm_card_buttons, text="Add a credit card")
+        btn_add_credit_card.pack(fill="x", padx=5, pady=5)
+        btn_add_credit_card.bind("<Button-1>", self.parent.show_add_credit_popup)
 
         frm_budgeted_balance = ttk.Frame(self)
         frm_budgeted_balance.grid(sticky="nsew", row=1, column=2, padx=(0, 10), pady=(5, 10))
@@ -71,3 +84,18 @@ class HomePage(ttk.Frame):
             self.tvw_accounts.insert(
                 1, "end", iid=f"account {account.id}", values=(f"    {account.name}", account.balance)
             )
+
+    def refresh_total_and_credit_cards(self):
+        for item in self.tvw_credit_cards.get_children():
+            self.tvw_credit_cards.delete(item)
+        total_balance_and_user_cards = self.presenter.handle_set_total_credit_cards()
+        self.tvw_credit_cards.insert(
+            "",
+            "end",
+            open=True,
+            iid=1,
+            tags="parent",
+            values=("Sum of all cards", total_balance_and_user_cards["balance"]),
+        )
+        for card in total_balance_and_user_cards["user_cards"]:
+            self.tvw_credit_cards.insert(1, "end", iid=f"card {card.id}", values=(f"    {card.name}", card.balance))

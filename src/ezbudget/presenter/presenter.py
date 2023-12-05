@@ -193,9 +193,16 @@ class Presenter:
             credit_card_data["user_id"] = self.model.user.id
             credit_card = self.model.create_account(**credit_card_data)
 
-        if credit_card:
-            self.view.current_frame.add_credit_card(credit_card)
-            self.view.destroy_current_popup()
+            if credit_card:
+                if hasattr(self.view.current_frame, "add_credit_card") and callable(
+                    self.view.current_frame.add_credit_card
+                ):
+                    self.view.current_frame.add_credit_card(credit_card)
+                if hasattr(self.view.current_frame, "refresh_total_and_credit_cards") and callable(
+                    self.view.current_frame.refresh_total_and_credit_cards
+                ):
+                    self.view.current_frame.refresh_total_and_credit_cards()
+                self.view.destroy_current_popup()
 
     def handle_create_transaction(self, _) -> None:
         """Create a transaction in Model, when activated in View."""
@@ -302,7 +309,17 @@ class Presenter:
                 for account in user_accounts:
                     balance += account.balance
                 return {"balance": balance, "user_accounts": user_accounts}
-            return 0
+            return {"balance": 0, "user_cards": []}
+
+    def handle_set_total_credit_cards(self):
+        if self.model.user is not None:
+            user_cards = self.model.read_accounts_by_user(user_id=self.model.user.id, account_type="CARD")
+            if len(user_cards) > 0:
+                balance = 0
+                for card in user_cards:
+                    balance += card.balance
+                return {"balance": balance, "user_cards": user_cards}
+            return {"balance": 0, "user_cards": []}
 
     def run(self) -> None:
         self.view.init_ui(self)

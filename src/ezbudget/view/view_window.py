@@ -43,8 +43,8 @@ class RootView(ttk.Window):
         # TODO Delete this
         self.presenter.login_dummy_data()
 
-        # self.show_register_login()
-        self.show_transactions()
+        self.show_register_login()
+        # self.show_transactions()
 
     def error_message_set(self, target: str, message: str) -> None:
         if target == "frame":

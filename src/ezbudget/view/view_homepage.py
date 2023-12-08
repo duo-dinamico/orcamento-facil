@@ -35,8 +35,9 @@ class HomePage(ttk.Frame):
         btn_add_account = ttk.Button(frm_buttons, text="Add an account")
         btn_add_account.pack(fill="x", padx=5, pady=(5, 0))
         btn_add_account.bind("<Button-1>", self.parent.show_create_account_popup)
-        btn_add_transaction = ttk.Button(frm_buttons, text="Add a transaction")
+        btn_add_transaction = ttk.Button(frm_buttons, text="Show transactions")
         btn_add_transaction.pack(fill="x", padx=5, pady=5)
+        btn_add_transaction.bind("<Button-1>", self.parent.show_transactions)
 
         frm_credit_cards = ttk.Frame(self)
         frm_credit_cards.grid(sticky="nsew", row=1, column=1, padx=5, pady=(5, 10))

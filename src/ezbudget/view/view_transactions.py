@@ -26,6 +26,11 @@ class Transactions(ttk.Frame):
         self.tree.pack(fill="both", expand=True)
 
         # Buttons
+        self.go_back: ttk.Button | None = None
+        self.go_back = ttk.Button(self, text="Go to homepage")
+        self.go_back.pack(side="left", expand=True)
+        self.go_back.bind("<Button-1>", self.parent.show_homepage)
+
         self.create_transaction_button: ttk.Button | None = None
         self.create_transaction_button = ttk.Button(self, text="Add Transaction")
         self.create_transaction_button.pack(side="left", expand=True)

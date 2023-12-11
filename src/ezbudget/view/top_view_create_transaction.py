@@ -30,7 +30,7 @@ class CreateTransactionPopup(tk.Toplevel):
         self.cbx_frame_date_day = tk.StringVar(value="01")
         self.cbx_frame_date_month = tk.StringVar(value="01")
         self.cbx_frame_date_year = tk.StringVar(value="2023")
-        self.value = tk.StringVar(value=0)
+        self.value = tk.StringVar()
         self.description = tk.StringVar()
 
         # Get the account list
@@ -92,8 +92,16 @@ class CreateTransactionPopup(tk.Toplevel):
 
         lbl_value = ttk.Label(self, text="Value")
         lbl_value.pack(anchor="w", padx=10, pady=5, fill="x")
-        ent_value = ttk.Entry(self, textvariable=self.value, validate="key", validatecommand=self.check_value)
-        ent_value.pack(anchor="w", padx=10, pady=5, fill="x")
+
+        # The validatecommand is a tupple with the method and a substitution code. %S is the char
+        self.ent_value = ttk.Entry(
+            self,
+            textvariable=self.value,
+            justify="right",
+            validate="key",
+            validatecommand=(self.register(self.check_value), "%S"),
+        )
+        self.ent_value.pack(anchor="w", padx=10, pady=5, fill="x")
 
         lbl_description = ttk.Label(self, text="Description")
         lbl_description.pack(anchor="w", padx=10, pady=5, fill="x")
@@ -117,8 +125,34 @@ class CreateTransactionPopup(tk.Toplevel):
     def cancel_input(self):
         self.destroy()
 
-    def check_value(self) -> Boolean:
-        if self.value.get().isdigit() or self.value.get() == "":
+    def check_value(self, char) -> Boolean:
+        if char.isdigit() or char == ".":
+            value_before_change = self.value.get()
+            number_of_points = [x for x in value_before_change if x == "."]
+
+            # Check if already have a point. Only can have one
+            if char == "." and len(number_of_points) >= 1:
+                print("JA TEM PONTO: ", number_of_points)
+                return False
+
+            # Check if we have two decimal, to add the point
+            if len(value_before_change) == 1:
+                value_with_point = "0." + self.value.get() + char
+                self.value.set(value_with_point)
+
+            # if we already have a point, then move it
+            elif len(number_of_points) == 1:
+                resultado = "".join(
+                    (
+                        value_before_change[:-3],
+                        value_before_change[-2],
+                        value_before_change[-3],
+                        value_before_change[-1:],
+                        char,
+                    )
+                )
+                self.value.set(resultado)
+                self.ent_value.icursor(len(resultado))
             return True
         else:
             return False

@@ -41,8 +41,9 @@ class HomePage(ttk.Frame):
         btn_manage_categories = ttk.Button(frm_buttons, text="Manage Categories")
         btn_manage_categories.pack(fill="x", padx=5, pady=(5, 5))
         btn_manage_categories.bind("<Button-1>", self.parent.show_categories)
-        btn_add_transaction = ttk.Button(frm_buttons, text="Manage Transactions")
-        btn_add_transaction.pack(fill="x", padx=5, pady=(0, 5))
+        btn_add_transaction = ttk.Button(frm_buttons, text="Show transactions")
+        btn_add_transaction.pack(fill="x", padx=5, pady=5)
+        btn_add_transaction.bind("<Button-1>", self.parent.show_transactions)
 
         ttk.Label(frm_balances, text="Credit Cards", font=("Roboto", 14, "bold")).pack(fill="x", padx=5, pady=(5, 0))
         self.tvw_credit_cards = ttk.Treeview(

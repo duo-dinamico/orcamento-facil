@@ -6,6 +6,7 @@ import ttkbootstrap as ttk
 class Categories(ttk.Frame):
     def __init__(self, parent, presenter) -> None:
         super().__init__(master=parent, bootstyle="secondary")
+        self.parent = parent
         self.presenter = presenter
 
         txt_instructions = tk.Text(self, height=2, font=("Roboto", 14, "bold"))
@@ -16,13 +17,15 @@ class Categories(ttk.Frame):
         txt_instructions["state"] = "disabled"
         txt_instructions.pack(fill="x", padx=10, pady=(10, 0))
 
-        self.tvw_categories = ttk.Treeview(self, selectmode="none", bootstyle="light")
-        self.tvw_categories.heading("#0", text="Categories", anchor="w")
+        frm_treeviews = ttk.Frame(self, bootstyle="secondary")
+        frm_treeviews.pack(fill="both", expand=True, padx=10, pady=10)
 
-        self.tvw_categories.pack(fill="both", expand=True, padx=10, pady=10, side="left")
+        self.tvw_categories = ttk.Treeview(frm_treeviews, selectmode="none", bootstyle="light")
+        self.tvw_categories.heading("#0", text="Categories", anchor="w")
+        self.tvw_categories.pack(fill="both", expand=True, pady=10, side="left")
         self.tvw_categories.bind("<Button-1>", self.enable_selection)
 
-        frm_buttons = ttk.Frame(self, bootstyle="secondary")
+        frm_buttons = ttk.Frame(frm_treeviews, bootstyle="secondary")
         frm_buttons.pack(padx=10, pady=10, side="left")
 
         btn_move_selected = ttk.Button(frm_buttons, text=">>", style="TButton", bootstyle="dark")
@@ -32,9 +35,13 @@ class Categories(ttk.Frame):
         btn_remove_selected.pack(padx=10, pady=10)
         btn_remove_selected.bind("<Button-1>", self.remove_selected)
 
-        self.tvw_selected_categories = ttk.Treeview(self, bootstyle="light", selectmode="extended")
+        self.tvw_selected_categories = ttk.Treeview(frm_treeviews, bootstyle="light", selectmode="extended")
         self.tvw_selected_categories.heading("#0", text="Selected categories", anchor="w")
-        self.tvw_selected_categories.pack(fill="both", expand=True, padx=10, pady=10, side="left")
+        self.tvw_selected_categories.pack(fill="both", expand=True, pady=10, side="left")
+
+        btn_show_homepage = ttk.Button(master=self, text="Return to Homepage")
+        btn_show_homepage.pack(padx=10, pady=(0, 10), side="bottom", fill="x")
+        btn_show_homepage.bind("<Button-1>", self.parent.show_homepage)
 
     def enable_selection(self, event):
         tree = event.widget

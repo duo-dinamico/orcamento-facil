@@ -11,17 +11,20 @@ class HomePage(ttk.Frame):
 
         self.rowconfigure(0, weight=0)
         self.rowconfigure(1, weight=1)
-        self.columnconfigure((0, 1, 2), weight=1)
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=3)
 
         ttk.Label(self, text=f" Hello {username}!", font=("Roboto", 14, "bold")).grid(
-            sticky="ew", row=0, column=0, columnspan=3, ipady=10, padx=10, pady=(10, 0)
+            sticky="ew", row=0, column=0, columnspan=3, ipady=10, padx=10, pady=(10, 5)
         )
 
-        frm_balance = ttk.Frame(self)
-        frm_balance.grid(sticky="nsew", row=1, column=0, padx=(10, 0), pady=(5, 10))
-        ttk.Label(frm_balance, text="Balance", font=("Roboto", 14, "bold")).pack(fill="x", padx=5, pady=(5, 0))
+        frm_balances = ttk.Frame(self)
+        frm_balances.grid(sticky="nsew", row=1, column=0, padx=(10, 5), pady=(5, 10))
+        ttk.Label(frm_balances, text="Bank and Credit Card Balances", font=("Roboto", 14, "bold")).pack(
+            fill="x", padx=5, pady=(5, 0)
+        )
         self.tvw_accounts = ttk.Treeview(
-            frm_balance, columns=("name", "total"), show="headings", selectmode="none", bootstyle="secondary"
+            frm_balances, columns=("name", "total"), show="headings", selectmode="none", bootstyle="secondary"
         )
         self.tvw_accounts.heading("name", text=" ")
         self.tvw_accounts.heading("total", text="Total")
@@ -30,21 +33,20 @@ class HomePage(ttk.Frame):
         self.refresh_total_and_accounts()
         self.tvw_accounts.pack(fill="both", expand=True, padx=5, pady=(5, 0))
 
-        frm_buttons = ttk.Frame(frm_balance)
+        frm_buttons = ttk.Frame(frm_balances)
         frm_buttons.pack(fill="x", side="bottom")
-        btn_add_account = ttk.Button(frm_buttons, text="Add an account")
-        btn_add_account.pack(fill="x", padx=5, pady=(5, 0))
-        btn_add_account.bind("<Button-1>", self.parent.show_create_account_popup)
-        btn_add_transaction = ttk.Button(frm_buttons, text="Add a transaction")
-        btn_add_transaction.pack(fill="x", padx=5, pady=5)
+        btn_manage_incoming_outgoing = ttk.Button(frm_buttons, text="Manage Accounts and Sources")
+        btn_manage_incoming_outgoing.pack(fill="x", padx=5, pady=(5, 0))
+        btn_manage_incoming_outgoing.bind("<Button-1>", self.parent.show_incomig_outgoing)
+        btn_manage_categories = ttk.Button(frm_buttons, text="Manage Categories")
+        btn_manage_categories.pack(fill="x", padx=5, pady=(5, 5))
+        btn_manage_categories.bind("<Button-1>", self.parent.show_categories)
+        btn_add_transaction = ttk.Button(frm_buttons, text="Manage Transactions")
+        btn_add_transaction.pack(fill="x", padx=5, pady=(0, 5))
 
-        frm_credit_cards = ttk.Frame(self)
-        frm_credit_cards.grid(sticky="nsew", row=1, column=1, padx=5, pady=(5, 10))
-        ttk.Label(frm_credit_cards, text="Credit Cards", font=("Roboto", 14, "bold")).pack(
-            fill="x", padx=5, pady=(5, 0)
-        )
+        ttk.Label(frm_balances, text="Credit Cards", font=("Roboto", 14, "bold")).pack(fill="x", padx=5, pady=(5, 0))
         self.tvw_credit_cards = ttk.Treeview(
-            frm_credit_cards, columns=("name", "total"), show="headings", selectmode="none", bootstyle="secondary"
+            frm_balances, columns=("name", "total"), show="headings", selectmode="none", bootstyle="secondary"
         )
         self.tvw_credit_cards.heading("name", text=" ")
         self.tvw_credit_cards.heading("total", text="Total")
@@ -52,14 +54,9 @@ class HomePage(ttk.Frame):
         self.tvw_credit_cards.tag_configure("parent", font=("Roboto", 11, "bold"))
         self.refresh_total_and_credit_cards()
         self.tvw_credit_cards.pack(fill="both", expand=True, padx=5, pady=(5, 0))
-        frm_card_buttons = ttk.Frame(frm_credit_cards)
-        frm_card_buttons.pack(fill="x", side="bottom")
-        btn_add_credit_card = ttk.Button(frm_card_buttons, text="Add a credit card")
-        btn_add_credit_card.pack(fill="x", padx=5, pady=5)
-        btn_add_credit_card.bind("<Button-1>", self.parent.show_add_credit_popup)
 
         frm_budgeted_balance = ttk.Frame(self)
-        frm_budgeted_balance.grid(sticky="nsew", row=1, column=2, padx=(0, 10), pady=(5, 10))
+        frm_budgeted_balance.grid(sticky="nsew", row=1, column=1, padx=(5, 10), pady=(5, 10))
 
         ttk.Label(frm_budgeted_balance, text="Budgeted Balance", font=("Roboto", 14, "bold")).pack(
             fill="x", padx=5, pady=(5, 0)

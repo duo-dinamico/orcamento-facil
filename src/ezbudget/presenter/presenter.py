@@ -110,7 +110,7 @@ class Presenter:
             try:
                 user = self.model.create_user(username=user_data["username"], password=hashed_password)
                 self.model.user = user
-                self.view.show_incomig_outgoing()
+                self.view.show_homepage()
             except Exception as error:  # pylint: disable=broad-exception-caught
                 self.view.error_message_set("frame", "Was not able to create user")
                 # TODO replace this with the log
@@ -150,15 +150,7 @@ class Presenter:
             account = self.model.create_account(**account_data)
 
             if account:
-                # * This is necessary for when the pop up is called outside of incoming outgoing view
-                if hasattr(self.view.current_frame, "create_account") and callable(
-                    self.view.current_frame.create_account
-                ):
-                    self.view.current_frame.create_account(account)
-                if hasattr(self.view.current_frame, "refresh_total_and_accounts") and callable(
-                    self.view.current_frame.refresh_total_and_accounts
-                ):
-                    self.view.current_frame.refresh_total_and_accounts()
+                self.view.current_frame.create_account(account)
                 self.view.destroy_current_popup()
 
     def handle_create_income(self, event=None):
@@ -194,14 +186,7 @@ class Presenter:
             credit_card = self.model.create_account(**credit_card_data)
 
             if credit_card:
-                if hasattr(self.view.current_frame, "add_credit_card") and callable(
-                    self.view.current_frame.add_credit_card
-                ):
-                    self.view.current_frame.add_credit_card(credit_card)
-                if hasattr(self.view.current_frame, "refresh_total_and_credit_cards") and callable(
-                    self.view.current_frame.refresh_total_and_credit_cards
-                ):
-                    self.view.current_frame.refresh_total_and_credit_cards()
+                self.view.current_frame.add_credit_card(credit_card)
                 self.view.destroy_current_popup()
 
     def handle_create_transaction(self, _) -> None:
@@ -309,7 +294,7 @@ class Presenter:
                 for account in user_accounts:
                     balance += account.balance
                 return {"balance": balance, "user_accounts": user_accounts}
-            return {"balance": 0, "user_cards": []}
+            return {"balance": 0, "user_accounts": []}
 
     def handle_set_total_credit_cards(self):
         if self.model.user is not None:

@@ -37,9 +37,9 @@ class IncomingOutgoing(ttk.Frame):
         self.create_income_button.bind("<Button-1>", self.parent.show_create_income_popup)
         self.add_credit_card_button.bind("<Button-1>", self.parent.show_add_credit_popup)
 
-        self.next_button = ttk.Button(master=self, text="Choose your categories")
-        self.next_button.grid(row=1, column=0, columnspan=3, sticky="sew", padx=(10, 10), pady=(0, 10))
-        self.next_button.bind("<Button-1>", self.parent.show_categories)
+        btn_show_homepage = ttk.Button(master=self, text="Return to Homepage")
+        btn_show_homepage.grid(row=1, column=0, columnspan=3, sticky="sew", padx=(10, 10), pady=(0, 10))
+        btn_show_homepage.bind("<Button-1>", self.parent.show_homepage)
 
     def create_tree_widget(self, title: str, column: int):
         frame = ttk.Frame(self, bootstyle="secondary")

@@ -1,29 +1,35 @@
 import ttkbootstrap as ttk
 
+from ezbudget.view import Header
+
 
 class Transactions(ttk.Frame):
     """Class that creates the transactions view."""
 
     def __init__(self, parent, presenter) -> None:
-        super().__init__(master=parent)
+        super().__init__(master=parent, bootstyle="secondary")
         self.presenter = presenter
         self.parent = parent
 
-        style = ttk.Style()
-        style.configure("Treeview", font=(None, 11), rowheight=int(11 * 3))
+        header = Header(self, self.presenter)
+        header.pack(fill="x", ipady=10, padx=10, pady=(10, 5))
 
-        columns = ("ID", "Account", "Category", "Date", "Value", "Description")
+        columns = ("Account", "Category", "Date", "Value", "Description")
 
         # Create the Treeview object with browse option so that only allow one selection
-        self.tree = ttk.Treeview(self, columns=columns, show="headings", selectmode="browse")
+        self.tvw_transactions = ttk.Treeview(
+            self, columns=columns, show="headings", selectmode="browse", bootstyle="secondary"
+        )
+        col_width = self.tvw_transactions.winfo_width() // len(columns)
 
         # Set the columns headers
         for i, col in enumerate(columns):
-            self.tree.heading(i, text=col, anchor="w")
+            self.tvw_transactions.column(col, anchor="center", width=col_width)
+            self.tvw_transactions.heading(i, text=col, anchor="w")
 
         self.bind("<<TreeviewSelect>>", self.transaction_selected)
 
-        self.tree.pack(fill="both", expand=True)
+        self.tvw_transactions.pack(fill="both", expand=True, padx=10, pady=(5, 10))
 
         # Buttons
         self.go_back: ttk.Button | None = None
@@ -53,17 +59,17 @@ class Transactions(ttk.Frame):
         """Method that refresh the TreeView of transactions."""
 
         # Clear the Treeview
-        for row in self.tree.get_children():
-            self.tree.delete(row)
+        for row in self.tvw_transactions.get_children():
+            self.tvw_transactions.delete(row)
 
         # Get the transaction list from the presenter
         transactions_list = self.presenter.refresh_transactions_list()
 
         for item in transactions_list:
-            self.tree.insert(
+            self.tvw_transactions.insert(
                 parent="",
                 index="end",
-                values=(item.id, item.account.name, item.subcategory_id, item.date, item.value, item.description),
+                values=(item.account.name, item.subcategory.name, item.date, item.value, item.description),
             )
 
     def transaction_selected(self):
@@ -73,10 +79,10 @@ class Transactions(ttk.Frame):
         """Delete the selected transaction method."""
 
         # Get selected row
-        row = self.tree.focus()
+        row = self.tvw_transactions.focus()
 
         # Get the transaction_id of that row
-        transaction_id = int(self.tree.item(row).get("values")[0])
+        transaction_id = int(self.tvw_transactions.item(row).get("values")[0])
 
         # Call presenter method to delete transaction
         self.presenter.remove_transaction(transaction_id)

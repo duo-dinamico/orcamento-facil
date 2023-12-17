@@ -109,6 +109,7 @@ class Transaction(Base):
 
     # Relatioships
     account: Mapped["Account"] = relationship(back_populates="transactions")
+    subcategory: Mapped["SubCategory"] = relationship("SubCategory")
 
 
 class SubCategory(Base):

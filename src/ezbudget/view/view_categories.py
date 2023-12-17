@@ -2,6 +2,8 @@ import tkinter as tk
 
 import ttkbootstrap as ttk
 
+from ezbudget.view import Header
+
 
 class Categories(ttk.Frame):
     def __init__(self, parent, presenter) -> None:
@@ -9,35 +11,48 @@ class Categories(ttk.Frame):
         self.parent = parent
         self.presenter = presenter
 
+        header = Header(self, self.presenter)
+        header.pack(fill="x", ipady=10, padx=10, pady=(10, 5))
+
         txt_instructions = tk.Text(self, height=2, font=("Roboto", 14, "bold"))
         txt_instructions.insert(
             "end", "Click on subcategories to select or click categories to select all subcategories."
         )
         txt_instructions.insert("end", "\nPress arrow button to move into selected categories.")
         txt_instructions["state"] = "disabled"
-        txt_instructions.pack(fill="x", padx=10, pady=(10, 0))
+        txt_instructions.pack(fill="x", padx=10, pady=(5, 0))
 
-        frm_treeviews = ttk.Frame(self, bootstyle="secondary")
-        frm_treeviews.pack(fill="both", expand=True, padx=10, pady=10)
+        frm_treeviews = ttk.Frame(self)
+        frm_treeviews.pack(fill="both", expand=True, padx=10, pady=5)
 
-        self.tvw_categories = ttk.Treeview(frm_treeviews, selectmode="none", bootstyle="light")
+        self.tvw_categories = ttk.Treeview(frm_treeviews, selectmode="none", bootstyle="secondary")
+        scb_categories = ttk.Scrollbar(
+            frm_treeviews, orient="vertical", command=self.tvw_categories.yview, bootstyle="secondary"
+        )
+        self.tvw_categories.configure(yscrollcommand=scb_categories.set)
         self.tvw_categories.heading("#0", text="Categories", anchor="w")
-        self.tvw_categories.pack(fill="both", expand=True, pady=10, side="left")
+        self.tvw_categories.pack(fill="both", expand=True, padx=(5, 0), pady=5, side="left")
+        scb_categories.pack(fill="y", padx=(0, 5), pady=5, side="left")
         self.tvw_categories.bind("<Button-1>", self.enable_selection)
 
-        frm_buttons = ttk.Frame(frm_treeviews, bootstyle="secondary")
-        frm_buttons.pack(padx=10, pady=10, side="left")
+        frm_buttons = ttk.Frame(frm_treeviews)
+        frm_buttons.pack(side="left")
 
-        btn_move_selected = ttk.Button(frm_buttons, text=">>", style="TButton", bootstyle="dark")
-        btn_move_selected.pack(padx=10, pady=10)
+        btn_move_selected = ttk.Button(frm_buttons, text=">>")
+        btn_move_selected.pack(pady=5)
         btn_move_selected.bind("<Button-1>", self.move_selected)
-        btn_remove_selected = ttk.Button(frm_buttons, text="<<", style="TButton", bootstyle="dark")
-        btn_remove_selected.pack(padx=10, pady=10)
+        btn_remove_selected = ttk.Button(frm_buttons, text="<<")
+        btn_remove_selected.pack()
         btn_remove_selected.bind("<Button-1>", self.remove_selected)
 
-        self.tvw_selected_categories = ttk.Treeview(frm_treeviews, bootstyle="light", selectmode="extended")
+        self.tvw_selected_categories = ttk.Treeview(frm_treeviews, bootstyle="secondary", selectmode="extended")
+        scb_selected_categories = ttk.Scrollbar(
+            frm_treeviews, orient="vertical", command=self.tvw_selected_categories.yview, bootstyle="secondary"
+        )
+        self.tvw_selected_categories.configure(yscrollcommand=scb_selected_categories.set)
         self.tvw_selected_categories.heading("#0", text="Selected categories", anchor="w")
-        self.tvw_selected_categories.pack(fill="both", expand=True, pady=10, side="left")
+        self.tvw_selected_categories.pack(fill="both", expand=True, padx=(5, 0), pady=5, side="left")
+        scb_selected_categories.pack(fill="y", padx=(0, 5), pady=5, side="left")
 
         btn_show_homepage = ttk.Button(master=self, text="Return to Homepage")
         btn_show_homepage.pack(padx=10, pady=(0, 10), side="bottom", fill="x")

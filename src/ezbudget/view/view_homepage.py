@@ -1,5 +1,7 @@
 import ttkbootstrap as ttk
 
+from ezbudget.view import Header
+
 
 class HomePage(ttk.Frame):
     def __init__(self, parent, presenter) -> None:
@@ -7,16 +9,13 @@ class HomePage(ttk.Frame):
         self.parent = parent
         self.presenter = presenter
 
-        username = self.set_username()
-
         self.rowconfigure(0, weight=0)
         self.rowconfigure(1, weight=1)
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=3)
 
-        ttk.Label(self, text=f" Hello {username}!", font=("Roboto", 14, "bold")).grid(
-            sticky="ew", row=0, column=0, columnspan=3, ipady=10, padx=10, pady=(10, 5)
-        )
+        header = Header(self, self.presenter)
+        header.grid(sticky="ew", row=0, column=0, columnspan=3, ipady=10, padx=10, pady=(10, 5))
 
         frm_balances = ttk.Frame(self)
         frm_balances.grid(sticky="nsew", row=1, column=0, padx=(10, 5), pady=(5, 10))
@@ -41,8 +40,8 @@ class HomePage(ttk.Frame):
         btn_manage_categories = ttk.Button(frm_buttons, text="Manage Categories")
         btn_manage_categories.pack(fill="x", padx=5, pady=(5, 5))
         btn_manage_categories.bind("<Button-1>", self.parent.show_categories)
-        btn_add_transaction = ttk.Button(frm_buttons, text="Show transactions")
-        btn_add_transaction.pack(fill="x", padx=5, pady=5)
+        btn_add_transaction = ttk.Button(frm_buttons, text="Manage transactions")
+        btn_add_transaction.pack(fill="x", padx=5, pady=(0, 5))
         btn_add_transaction.bind("<Button-1>", self.parent.show_transactions)
 
         ttk.Label(frm_balances, text="Credit Cards", font=("Roboto", 14, "bold")).pack(fill="x", padx=5, pady=(5, 0))
@@ -62,9 +61,6 @@ class HomePage(ttk.Frame):
         ttk.Label(frm_budgeted_balance, text="Budgeted Balance", font=("Roboto", 14, "bold")).pack(
             fill="x", padx=5, pady=(5, 0)
         )
-
-    def set_username(self):
-        return self.presenter.handle_set_username()
 
     def refresh_total_and_accounts(self):
         for item in self.tvw_accounts.get_children():

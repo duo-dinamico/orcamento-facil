@@ -1,5 +1,7 @@
 import ttkbootstrap as ttk
 
+from ezbudget.view import Header
+
 
 class IncomingOutgoing(ttk.Frame):
     def __init__(self, parent, presenter) -> None:
@@ -21,13 +23,23 @@ class IncomingOutgoing(ttk.Frame):
         self.delete_credit_card_button: ttk.Button | None = None
 
         # grid layout
-        self.rowconfigure(0, weight=100)
+        self.rowconfigure((0, 2), weight=0)
         self.rowconfigure(1, weight=1)
         self.columnconfigure((0, 1, 2), weight=1)
 
-        self.create_tree_widget("Account List", 0)
-        self.create_tree_widget("Income List", 1)
-        self.create_tree_widget("Credit Cards", 2)
+        header = Header(self, self.presenter)
+        header.grid(sticky="ew", row=0, column=0, columnspan=3, ipady=10, padx=10, pady=(10, 5))
+
+        self.frm_account_list = ttk.Frame(self)
+        self.frm_account_list.grid(row=1, column=0, sticky="nsew", padx=(10, 5), pady=5)
+        self.frm_income_list = ttk.Frame(self)
+        self.frm_income_list.grid(row=1, column=1, sticky="nsew", padx=(5, 5), pady=5)
+        self.frm_credit_cards = ttk.Frame(self)
+        self.frm_credit_cards.grid(row=1, column=2, sticky="nsew", padx=(5, 10), pady=5)
+
+        self.create_tree_widget("Account List", self.frm_account_list)
+        self.create_tree_widget("Income List", self.frm_income_list)
+        self.create_tree_widget("Credit Cards", self.frm_credit_cards)
 
         self.accounts_tree.bind("<<TreeviewSelect>>", self.account_selected)
         self.incomes_tree.bind("<<TreeviewSelect>>", self.income_selected)
@@ -38,45 +50,44 @@ class IncomingOutgoing(ttk.Frame):
         self.add_credit_card_button.bind("<Button-1>", self.parent.show_add_credit_popup)
 
         btn_show_homepage = ttk.Button(master=self, text="Return to Homepage")
-        btn_show_homepage.grid(row=1, column=0, columnspan=3, sticky="sew", padx=(10, 10), pady=(0, 10))
+        btn_show_homepage.grid(row=2, column=0, columnspan=3, sticky="sew", padx=(10, 10), pady=(0, 10))
         btn_show_homepage.bind("<Button-1>", self.parent.show_homepage)
 
-    def create_tree_widget(self, title: str, column: int):
-        frame = ttk.Frame(self, bootstyle="secondary")
-        frame.grid(row=0, column=column, sticky="nsew", padx=(10, 10), pady=(10, 0))
-        title_label = ttk.Label(
-            frame, text=title, anchor="center", font=("Roboto", 14, "bold"), bootstyle="inverse-secondary"
-        )
-        title_label.pack(fill="x", pady=(5, 5))
+    def create_tree_widget(self, title: str, frame):
+        lbl_title = ttk.Label(frame, text=title, font=("Roboto", 14, "bold"))
+        lbl_title.pack(fill="x", padx=5, pady=(5, 0))
 
         columns = ("name", "balance")
-        tree = ttk.Treeview(frame, columns=columns, show="headings", selectmode="browse", bootstyle="light")
+        tree = ttk.Treeview(frame, columns=columns, show="headings", selectmode="browse", bootstyle="secondary")
 
         # define headings
         tree.heading("name", text="Name")
         tree.heading("balance", text="Balance")
+        col_width = tree.winfo_width() // 2
+        tree.column("name", anchor="center", width=col_width)
+        tree.column("balance", anchor="center", width=col_width)
 
-        tree.pack(fill="both", expand=True)
+        tree.pack(fill="both", expand=True, padx=5, pady=(5, 0))
 
-        add_button = ttk.Button(frame, text="Add", bootstyle="dark")
-        add_button.pack(fill="x", pady=(5, 5))
-        edit_button = ttk.Button(frame, text="Edit", state="disabled", bootstyle="dark")
-        edit_button.pack(fill="x", pady=(5, 5))
-        delete_button = ttk.Button(frame, text="Delete", state="disabled", bootstyle="dark")
-        delete_button.pack(fill="x", pady=(5, 5))
+        add_button = ttk.Button(frame, text="Add")
+        add_button.pack(side="left", fill="x", expand=True, padx=(5, 0), pady=5)
+        edit_button = ttk.Button(frame, text="Edit", state="disabled")
+        edit_button.pack(side="left", fill="x", expand=True, padx=(5, 5), pady=5)
+        delete_button = ttk.Button(frame, text="Delete", state="disabled")
+        delete_button.pack(side="left", fill="x", expand=True, padx=(0, 5), pady=5)
 
-        match column:
-            case 0:
+        match title:
+            case "Account List":
                 setattr(self, "accounts_tree", tree)
                 setattr(self, "create_account_button", add_button)
                 setattr(self, "edit_account_button", edit_button)
                 setattr(self, "delete_account_button", delete_button)
-            case 1:
+            case "Income List":
                 setattr(self, "incomes_tree", tree)
                 setattr(self, "create_income_button", add_button)
                 setattr(self, "edit_income_button", edit_button)
                 setattr(self, "delete_income_button", delete_button)
-            case 2:
+            case "Credit Cards":
                 setattr(self, "credit_cards_tree", tree)
                 setattr(self, "add_credit_card_button", add_button)
                 setattr(self, "edit_credit_card_button", edit_button)

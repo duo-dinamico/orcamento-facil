@@ -39,6 +39,7 @@ exclude = '''
     \.git
   | __pycache__
   | \.venv
+  | __init__
 )/
 '''
 
@@ -48,8 +49,6 @@ addopts = "-v"
 
 [tool.isort]
 profile = "black"
-line_length = 120
-src_paths = ["src"]
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.

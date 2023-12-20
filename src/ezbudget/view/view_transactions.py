@@ -115,7 +115,7 @@ class Transactions(ttk.Frame):
         # Buttons
         self.btn_homepage: ttk.Button | None = None
         self.btn_homepage = ttk.Button(self, text="Go to homepage")
-        self.btn_homepage.pack(padx=10, pady=(5, 10), side="bottom", fill="x")
+        self.btn_homepage.pack(padx=10, pady=5, side="bottom", fill="x")
         self.btn_homepage.bind("<Button-1>", self.parent.show_homepage)
 
         # Fill the Treeview with transactions
@@ -136,6 +136,7 @@ class Transactions(ttk.Frame):
             self.tvw_transactions.insert(
                 parent="",
                 index="end",
+                iid=item.id,
                 values=(
                     item.account.name,
                     f"{item.subcategory.category.name} - {item.subcategory.name}",
@@ -149,6 +150,7 @@ class Transactions(ttk.Frame):
         if event.widget.selection():
             self.create_duplicate_btn.set("Duplicate Transaction")
             self.btn_clear_selection.configure(state="normal")
+            self.btn_delete_transaction.configure(state="normal")
             tree = event.widget
             item_id = tree.selection()
             item = tree.item(item_id)
@@ -169,18 +171,23 @@ class Transactions(ttk.Frame):
         """Delete the selected transaction method."""
 
         # Get selected row
-        row = self.tvw_transactions.focus()
+        selected_entry = self.tvw_transactions.selection()
+        item = self.tvw_transactions.item(selected_entry)
 
         # Get the transaction_id of that row
-        transaction_id = int(self.tvw_transactions.item(row).get("values")[0])
+        transaction_id = int(selected_entry[0])
+        account_name = item["values"][0]
+        value = item["values"][3]
 
         # Call presenter method to delete transaction
-        self.presenter.remove_transaction(transaction_id)
+        self.presenter.remove_transaction(transaction_id, account_name, value)
+        self.clear_selection(_)
 
     def clear_selection(self, _):
         self.tvw_transactions.selection_set("")
         self.create_duplicate_btn.set("Add Transaction")
         self.btn_clear_selection.configure(state="disabled")
+        self.btn_delete_transaction.configure(state="disabled")
         self.cbx_account.current(0)
         self.cbx_subcategory.current(0)
         self.dte_date.entry.delete(0, 10)

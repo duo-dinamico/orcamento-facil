@@ -9,10 +9,9 @@ packages = [{ include = "ezbudget", from = "src" }]
 include = [{ path = "tests", format = "sdist" }]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.12.1"
 black = "^23.9.1"
 sqlalchemy = "^2.0.22"
-passlib = "^1.7.4"
 ruff = "^0.1.6"
 ttkbootstrap = "^1.10.1"
 

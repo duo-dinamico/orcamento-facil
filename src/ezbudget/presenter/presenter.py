@@ -57,6 +57,9 @@ class ModelProtocol(Protocol):
     def read_subcategory_by_name(self, name):
         ...
 
+    def update_account(self, account):
+        ...
+
 
 class ViewProtocol(Protocol):
     def init_ui(self, presenter):
@@ -202,6 +205,13 @@ class Presenter:
         transaction = self.model.create_transaction(**transaction_data)
 
         if transaction:
+            account = self.model.read_account_by_id(transaction.account_id)
+            if transaction.value >= 0:
+                account.balance += transaction.value
+            else:
+                account.balance -= abs(transaction.value)
+            self.model.update_account(account)
+            self.view.current_frame.clear_selection(_)
             self.view.current_frame.refresh_transactions()
 
     def refresh_account_list(self) -> None:
@@ -217,16 +227,21 @@ class Presenter:
         # TODO Account type
         return self.model.read_transaction_list_by_user(user_id=self.model.user.id)
 
-    def remove_transaction(self, transaction_id: int) -> None:
+    def remove_transaction(self, transaction_id: int, account_name: str, value: int) -> None:
         """Presenter method that call model to delete transaction."""
+
+        account = self.model.read_account_by_name(account_name)
+        if value >= 0:
+            account.balance -= value
+        else:
+            account.balance += abs(value)
+        self.model.update_account(account)
 
         # Delete
         self.model.delete_transaction(transaction_id)
 
         # Refresh view
         self.view.current_frame.refresh_transactions()
-
-        return
 
     def refresh_category_list(self) -> None:
         return self.model.read_categories()
@@ -281,9 +296,8 @@ class Presenter:
     def handle_remove_user_category(self, subcategory_id: int):
         return self.model.delete_user_subcategory(subcategory_id=subcategory_id)
 
-    def get_month_value(self, month):
-        month_value = MonthEnum[month].value
-        return month_value
+    def get_month(self):
+        return list(MonthEnum.__members__.keys())
 
     def handle_set_username(self):
         if self.model.user is not None:
@@ -313,9 +327,3 @@ class Presenter:
     def run(self) -> None:
         self.view.init_ui(self)
         self.view.mainloop()
-
-    # TODO Delete this after tests
-    def login_dummy_data(self):
-        self.model.user = self.model.read_user_by_id(1)
-        # self.model.create_category("teste45")
-        self.model.create_subcategory(category_id=1, name="str", recurrent=False, recurrence="ONE", include=True)

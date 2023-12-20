@@ -2,7 +2,6 @@
 from .top_view_create_account import CreateAccountPopUp
 from .top_view_create_credit import CreateCreditCardPopup
 from .top_view_create_income import CreateIncomePopUp
-from .top_view_create_transaction import CreateTransactionPopup
 from .view_header import Header
 
 from .view_categories import Categories

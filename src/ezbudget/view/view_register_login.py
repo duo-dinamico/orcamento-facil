@@ -20,16 +20,16 @@ class RegisterLogin(ttk.Frame):
         ttk.Label(frm_login, text="Welcome back!", justify="center", anchor="center", font=("Roboto", 25, "bold")).pack(
             expand=True, fill="x", padx=10, pady=(100, 5)
         )
-        ttk.Label(frm_login, text="Please enter your details", justify="center", anchor="center", font=("Roboto")).pack(
-            expand=True, fill="x", padx=10, pady=5
-        )
+        ttk.Label(
+            frm_login, text="Please enter your details", justify="center", anchor="center", font=("Roboto", 16)
+        ).pack(expand=True, fill="x", padx=10, pady=5)
 
-        lbl_username = ttk.Label(frm_login, text="Username", font=("Roboto"))
+        lbl_username = ttk.Label(frm_login, text="Username", font=("Roboto", 14))
         lbl_username.pack(expand=True, fill="x", padx=10, pady=5)
         ent_username = ttk.Entry(frm_login, textvariable=self.username)
         ent_username.pack(expand=True, fill="x", padx=10, pady=5)
 
-        lbl_password = ttk.Label(frm_login, text="Password", font=("Roboto"))
+        lbl_password = ttk.Label(frm_login, text="Password", font=("Roboto", 14))
         lbl_password.pack(expand=True, fill="x", padx=10, pady=5)
         ent_password = ttk.Entry(frm_login, textvariable=self.password, show="*")
         ent_password.pack(expand=True, fill="x", padx=10, pady=5)

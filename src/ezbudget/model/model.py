@@ -237,6 +237,22 @@ class Model(ModelProtocol):
         except NoResultFound:
             return []
 
+    def update_account(self, account: Account) -> None:
+        """Update an account
+
+        Args:
+            account: the account to update.
+
+        Returns:
+            None: returns nothing
+        """
+        try:
+            self.session.add(account)
+            self.session.commit()
+            self.session.refresh(account)
+        except NoResultFound:
+            return False
+
     def delete_account(self, id: int) -> int:
         """Delete an account in the database.
 

@@ -40,6 +40,16 @@ def test_success_account_incomes_list(db_session, valid_income):
     assert len(income_list) > 0
 
 
+def test_success_account_update(db_session, valid_account):
+    _ = valid_account
+    account = db_session.read_account_by_id(1)
+    assert account.balance == 0
+    account.balance += 100
+    db_session.update_account(account)
+    updated_account = db_session.read_account_by_id(1)
+    assert updated_account.balance == 100
+
+
 #
 # ERROR HANDLING
 #

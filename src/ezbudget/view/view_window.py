@@ -7,7 +7,6 @@ from ezbudget.view import (
     CreateAccountPopUp,
     CreateCreditCardPopup,
     CreateIncomePopUp,
-    CreateTransactionPopup,
     HomePage,
     IncomingOutgoing,
     RegisterLogin,
@@ -15,40 +14,22 @@ from ezbudget.view import (
 )
 
 TITLE = "Ez Budget"
-# WINDOW_WIDTH = 1200
-# WINDOW_HEIGHT = 800
+WINDOW_WIDTH = 2000
+WINDOW_HEIGHT = 1400
 
 
 class RootView(ttk.Window):
     def __init__(self) -> None:
-        super().__init__(
-            themename="flatly",
-            resizable=(False, False),
-            title=TITLE,
-        )
+        super().__init__(themename="flatly", title=TITLE, size=(WINDOW_WIDTH, WINDOW_HEIGHT), resizable=(False, False))
         self.presenter = None
         self.place_window_center()
 
         self.current_frame = None
         self.current_popup = None
 
-        # Put the windows in the center of the screen
-        screen_width = self.winfo_screenwidth()
-        window_width = int(screen_width / 1.5)
-        x_center = screen_width / 2 - window_width / 2
-        screen_height = self.winfo_screenheight()
-        window_height = int(screen_height / 1.5)
-        y_center = self.winfo_screenheight() / 2 - window_height / 2
-        self.geometry(f"{window_width}x{window_height}+{int(x_center)}+{int(y_center)}")
-
     def init_ui(self, presenter) -> None:
         self.presenter = presenter
-
-        # TODO Delete this
-        self.presenter.login_dummy_data()
-
         self.show_register_login()
-        # self.show_transactions()
 
     def error_message_set(self, target: str, message: str) -> None:
         if target == "frame":
@@ -143,12 +124,6 @@ class RootView(ttk.Window):
         if self.current_popup:
             self.current_popup.destroy()
         self.current_popup = CreateCreditCardPopup(self.current_frame, self.presenter)
-
-    def show_create_transaction_popup(self, event=None) -> None:
-        del event  # not used in this function
-        if self.current_popup:
-            self.current_popup.destroy()
-        self.current_popup = CreateTransactionPopup(self.current_frame, self.presenter)
 
     def show_update_transaction_popup(self, event=None) -> None:
         pass

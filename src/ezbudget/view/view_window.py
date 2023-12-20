@@ -21,10 +21,13 @@ TITLE = "Ez Budget"
 
 class RootView(ttk.Window):
     def __init__(self) -> None:
-        super().__init__(themename="flatly")
-        self.title(TITLE)
-        self.resizable(False, False)
+        super().__init__(
+            themename="flatly",
+            resizable=(False, False),
+            title=TITLE,
+        )
         self.presenter = None
+        self.place_window_center()
 
         self.current_frame = None
         self.current_popup = None
@@ -92,30 +95,21 @@ class RootView(ttk.Window):
 
     def get_transaction_data(self):
         # TODO Strong date validation
-
-        # Join date
-        month_value = self.presenter.get_month_value(self.current_popup.cbx_frame_date_month.get())
-        date_str = (
-            self.current_popup.cbx_frame_date_day.get()
-            + "-"
-            + str(month_value)
-            + "-"
-            + self.current_popup.cbx_frame_date_year.get()
-        )
-
         # Get datetime object
-        data_obj = datetime.strptime(date_str, "%m-%d-%Y").date()
+        date_obj = datetime.strptime(self.current_frame.dte_date.entry.get(), "%Y-%m-%d")
 
         # Get account id from the name that comes from Combobox
-        account_id = self.presenter.get_account_id_by_name(self.current_popup.cbx_account.get())
+        account_id = self.presenter.get_account_id_by_name(self.current_frame.cbx_account.get())
+        user_subcategory = self.current_frame.cbx_subcategory.get()
+        split_category_subcategory = user_subcategory.split(" - ")
+        subcategory_id = self.presenter.get_subcategory_id_by_name(split_category_subcategory[1])
 
         return {
             "account_id": account_id,
-            # "subcategory_id": self.current_popup.subcategory_id.get(),
-            "subcategory_id": 1,
-            "date": data_obj,
-            "value": self.current_popup.value.get(),
-            "description": self.current_popup.description.get(),
+            "subcategory_id": subcategory_id,
+            "date": date_obj,
+            "value": self.current_frame.value.get(),
+            "description": self.current_frame.description.get(),
         }
 
     def show_register_login(self) -> None:

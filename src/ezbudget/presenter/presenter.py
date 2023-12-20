@@ -54,6 +54,9 @@ class ModelProtocol(Protocol):
     def delete_user_subcategory(self, id):
         ...
 
+    def read_subcategory_by_name(self, name):
+        ...
+
 
 class ViewProtocol(Protocol):
     def init_ui(self, presenter):
@@ -199,7 +202,6 @@ class Presenter:
         transaction = self.model.create_transaction(**transaction_data)
 
         if transaction:
-            self.view.destroy_current_popup()
             self.view.current_frame.refresh_transactions()
 
     def refresh_account_list(self) -> None:
@@ -250,17 +252,22 @@ class Presenter:
 
         return return_list
 
-    def get_subcategory_list(self):
+    def get_user_subcategory_list(self):
         # Get user subcategory object list
-        # TODO read_subcategory_list
-        subcategory_list = self.model.read_subcategories()
+        user_subcategory_list = self.model.read_user_subcategories_by_user(user_id=self.model.user.id)
 
         # Transform in a list of names of subcategories
-        return_list = [subcategory.name for subcategory in subcategory_list]
+        return_list = [
+            f"{user_subcategory.subcategory.category.name} - {user_subcategory.subcategory.name}"
+            for user_subcategory in user_subcategory_list
+        ]
         return return_list
 
     def get_account_id_by_name(self, account_name):
         return self.model.read_account_by_name(name=account_name).id
+
+    def get_subcategory_id_by_name(self, subcategory_name):
+        return self.model.read_subcategory_by_name(name=subcategory_name).id
 
     def get_recurrence(self):
         return [recurrence.value for recurrence in RecurrenceEnum]
@@ -273,9 +280,6 @@ class Presenter:
 
     def handle_remove_user_category(self, subcategory_id: int):
         return self.model.delete_user_subcategory(subcategory_id=subcategory_id)
-
-    def get_month(self):
-        return list(MonthEnum.__members__.keys())
 
     def get_month_value(self, month):
         month_value = MonthEnum[month].value

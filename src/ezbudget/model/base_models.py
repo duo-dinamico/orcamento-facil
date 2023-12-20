@@ -120,6 +120,7 @@ class SubCategory(Base):
     name: Mapped[str]
     recurrent: Mapped[bool] = mapped_column(default=False)
     recurrence: Mapped[Optional[RecurrenceEnum]]
+    category: Mapped["Category"] = relationship("Category")
     # TODO we can remove this include since we have the connection table
     include: Mapped[bool] = mapped_column(default=True)
 

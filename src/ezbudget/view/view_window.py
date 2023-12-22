@@ -14,8 +14,8 @@ from ezbudget.view import (
 )
 
 TITLE = "Ez Budget"
-WINDOW_WIDTH = 2000
-WINDOW_HEIGHT = 1400
+WINDOW_WIDTH = 1200
+WINDOW_HEIGHT = 800
 
 
 class RootView(ttk.Window):

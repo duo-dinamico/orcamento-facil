@@ -23,7 +23,7 @@ taskipy = "^1.12.0"
 mypy = "^1.7.0"
 
 [tool.taskipy.tasks]
-test = { cmd = "pytest", help = 'run pytest on all files' }
+test = { cmd = "pytest -rP", help = 'run pytest on all files' }
 lint = { cmd = "ruff check .", help = 'ruff all files' }
 sort = { cmd = "isort -vc .", help = 'run isort in all files.' }
 

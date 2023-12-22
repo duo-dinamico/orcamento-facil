@@ -76,9 +76,6 @@ class Account(Base):
     # Relatioships
     transactions: Mapped[List["Transaction"]] = relationship(back_populates="account")
 
-    def __str__(self) -> str:
-        return f"ID: {self.id}, Name: {self.name}"
-
 
 class Income(Base):
     __tablename__ = "incomes"
@@ -92,9 +89,6 @@ class Income(Base):
     income_day: Mapped[Optional[str]] = mapped_column(default="1")  # Saved as a string, need conversion
     income_month: Mapped[Optional[MonthEnum]] = mapped_column(default=MonthEnum.JANUARY)
     recurrence: Mapped[Optional[RecurrenceEnum]] = mapped_column(default=RecurrenceEnum.ONE)
-
-    def __str__(self) -> str:
-        return f"ID: {self.id}, Name: {self.name}, Account ID: {self.account_id}"
 
 
 class Transaction(Base):

@@ -19,6 +19,7 @@ class Transactions(ttk.Frame):
         self.value = tk.StringVar()
         self.description = tk.StringVar()
         self.create_duplicate_btn = tk.StringVar(value="Add Transaction")
+        self.current_selection = ""
 
         # Get the account list
         accounts = presenter.get_account_list_by_user()
@@ -100,7 +101,7 @@ class Transactions(ttk.Frame):
         self.btn_update_transaction: ttk.Button | None = None
         self.btn_update_transaction = ttk.Button(frm_transaction_manage, text="Update Transaction", state="disabled")
         self.btn_update_transaction.pack(padx=5, pady=5, fill="x", expand=True)
-        self.btn_update_transaction.bind("<Button-1>", self.parent.show_update_transaction_popup)
+        self.btn_update_transaction.bind("<Button-1>", self.update_transaction)
 
         self.btn_delete_transaction: ttk.Button | None = None
         self.btn_delete_transaction = ttk.Button(frm_transaction_manage, text="Delete Transaction", state="disabled")
@@ -150,10 +151,12 @@ class Transactions(ttk.Frame):
         if event.widget.selection():
             self.create_duplicate_btn.set("Duplicate Transaction")
             self.btn_clear_selection.configure(state="normal")
+            self.btn_update_transaction.configure(state="normal")
             self.btn_delete_transaction.configure(state="normal")
             tree = event.widget
             item_id = tree.selection()
             item = tree.item(item_id)
+            self.current_selection = item["values"]
             if item["values"]:
                 [account, category, date, value, description] = item["values"]
                 for index, account_name in enumerate(self.cbx_account["values"]):
@@ -171,23 +174,44 @@ class Transactions(ttk.Frame):
         """Delete the selected transaction method."""
 
         # Get selected row
-        selected_entry = self.tvw_transactions.selection()
-        item = self.tvw_transactions.item(selected_entry)
+        item_id = self.tvw_transactions.selection()
 
         # Get the transaction_id of that row
-        transaction_id = int(selected_entry[0])
-        account_name = item["values"][0]
-        value = item["values"][3]
+        transaction_id = int(item_id[0])
+
+        account_name = self.current_selection[0]
+        value = self.current_selection[3]
 
         # Call presenter method to delete transaction
         self.presenter.remove_transaction(transaction_id, account_name, value)
         self.clear_selection(_)
 
+    def update_transaction(self, _):
+        # values before any changes
+        print(self.current_selection)
+
+        # Get the transaction_id of that row
+        item_id = self.tvw_transactions.selection()
+        transaction_id = int(item_id[0])
+        print(transaction_id)
+
+        # values after the change
+        updated_values = [
+            self.cbx_account.get(),
+            self.cbx_subcategory.get(),
+            self.dte_date.entry.get(),
+            int(self.value.get()),
+            self.description.get(),
+        ]
+        print(updated_values)
+
     def clear_selection(self, _):
         self.tvw_transactions.selection_set("")
         self.create_duplicate_btn.set("Add Transaction")
         self.btn_clear_selection.configure(state="disabled")
+        self.btn_update_transaction.configure(state="disabled")
         self.btn_delete_transaction.configure(state="disabled")
+        self.current_selection = ""
         self.cbx_account.current(0)
         self.cbx_subcategory.current(0)
         self.dte_date.entry.delete(0, 10)

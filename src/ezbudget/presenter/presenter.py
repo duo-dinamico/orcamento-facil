@@ -104,17 +104,25 @@ class Presenter:
         self.model = model
         self.view = view
 
+        self.model_account = model.model_account
+        self.model_category = model.model_category
+        self.model_income = model.model_income
+        self.model_subcategory = model.model_subcategory
+        self.model_transaction = model.model_transaction
+        self.model_user_subcategory = model.model_user_subcategory
+        self.model_user = model.model_user
+
     def handle_register_user(self, event=None) -> None:
         del event  # not used in this function
         user_data = self.view.get_user_data()
-        check_user_exists = self.model.read_user_by_name(user_data["username"])
+        check_user_exists = self.model_user.read_user_by_name(user_data["username"])
 
         if check_user_exists:
             self.view.error_message_set("frame", "User already exists")
         else:
             hashed_password = get_hashed_password(user_data["password"])
             try:
-                user = self.model.create_user(username=user_data["username"], password=hashed_password)
+                user = self.model_user.create_user(username=user_data["username"], password=hashed_password)
                 self.model.user = user
                 self.view.show_homepage()
             except Exception as error:  # pylint: disable=broad-exception-caught
@@ -123,16 +131,18 @@ class Presenter:
                 print(error)
 
     def handle_add_user_category(self, subcategory_id) -> None:
-        check_user_subcategory_exists = self.model.read_user_subcategories_multiple_args(
+        check_user_subcategory_exists = self.model_user_subcategory.read_user_subcategories_multiple_args(
             user_id=self.model.user.id, subcategory_id=subcategory_id
         )
         if check_user_subcategory_exists is None:
-            self.model.create_user_subcategory(user_id=self.model.user.id, subcategory_id=subcategory_id)
+            self.model_user_subcategory.create_user_subcategory(
+                user_id=self.model.user.id, subcategory_id=subcategory_id
+            )
 
     def handle_login_user(self, event=None) -> None:
         del event  # not used in this function
         user_data = self.view.get_user_data()
-        user = self.model.read_user_by_name(user_data["username"])
+        user = self.model_user.read_user_by_name(user_data["username"])
 
         if user:
             check_password = verify_password(user_data["password"], user.password)
@@ -147,13 +157,13 @@ class Presenter:
     def handle_create_account(self, event=None):
         del event  # not used in this function
         account_data = self.view.get_account_data()
-        check_account_exists = self.model.read_account_by_name(name=account_data["name"])
+        check_account_exists = self.model_account.read_account_by_name(name=account_data["name"])
 
         if check_account_exists:
             self.view.error_message_set("top", "Account already exists")
         else:
             account_data["user_id"] = self.model.user.id
-            account = self.model.create_account(**account_data)
+            account = self.model_account.create_account(**account_data)
 
             if account:
                 self.view.current_frame.create_account(account)
@@ -162,19 +172,19 @@ class Presenter:
     def handle_create_income(self, event=None):
         del event  # not used in this function
         income_data = self.view.get_income_data()
-        check_income_exists = self.model.read_income_by_name(name=income_data["name"])
+        check_income_exists = self.model_income.read_income_by_name(name=income_data["name"])
 
         if check_income_exists:
             self.view.error_message_set("top", "Income source already exists")
         else:
-            account = self.model.read_account_by_name(name=income_data["account_name"])
+            account = self.model_account.read_account_by_name(name=income_data["account_name"])
             income_data["account_id"] = account.id
             del income_data["account_name"]
             income_data["user_id"] = self.model.user.id
             for recurrence in RecurrenceEnum:
                 if recurrence.value == income_data["recurrence"]:
                     income_data["recurrence"] = recurrence.name
-            income = self.model.create_income(**income_data)
+            income = self.model_income.create_income(**income_data)
 
         if income:
             self.view.current_frame.create_income(income)
@@ -183,13 +193,13 @@ class Presenter:
     def handle_create_credit_card(self, event=None):
         del event  # not used in this function
         credit_card_data = self.view.get_credit_card_data()
-        check_credit_card_exists = self.model.read_account_by_name(name=credit_card_data["name"])
+        check_credit_card_exists = self.model_account.read_account_by_name(name=credit_card_data["name"])
 
         if check_credit_card_exists:
             self.view.error_message_set("top", "Credit card already exists")
         else:
             credit_card_data["user_id"] = self.model.user.id
-            credit_card = self.model.create_account(**credit_card_data)
+            credit_card = self.model_account.create_account(**credit_card_data)
 
             if credit_card:
                 self.view.current_frame.add_credit_card(credit_card)
@@ -202,65 +212,62 @@ class Presenter:
         transaction_data = self.view.get_transaction_data()
 
         # Create the transaction in the model
-        transaction = self.model.create_transaction(**transaction_data)
+        transaction = self.model_transaction.create_transaction(**transaction_data)
 
         if transaction:
-            account = self.model.read_account_by_id(transaction.account_id)
+            account = self.model_account.read_account_by_id(transaction.account_id)
             if transaction.value >= 0:
                 account.balance += transaction.value
             else:
                 account.balance -= abs(transaction.value)
-            self.model.update_account(account)
+            self.model_account.update_account(account)
             self.view.current_frame.clear_selection(_)
             self.view.current_frame.refresh_transactions()
 
     def refresh_account_list(self) -> None:
-        return self.model.read_accounts_by_user(user_id=self.model.user.id, account_type="BANK")
+        return self.model_account.read_accounts_by_user(user_id=self.model.user.id, account_type="BANK")
 
     def refresh_income_list(self) -> None:
-        return self.model.read_incomes_by_user(user_id=self.model.user.id)
+        return self.model_income.read_incomes_by_user(user_id=self.model.user.id)
 
     def refresh_credit_card_list(self) -> None:
-        return self.model.read_accounts_by_user(user_id=self.model.user.id, account_type="CARD")
+        return self.model_account.read_accounts_by_user(user_id=self.model.user.id, account_type="CARD")
 
     def refresh_transactions_list(self) -> None:
         # TODO Account type
-        return self.model.read_transaction_list_by_user(user_id=self.model.user.id)
+        return self.model_transaction.read_transaction_list_by_user(user_id=self.model.user.id)
 
     def remove_transaction(self, transaction_id: int, account_name: str, value: int) -> None:
         """Presenter method that call model to delete transaction."""
 
-        account = self.model.read_account_by_name(account_name)
+        account = self.model_account.read_account_by_name(account_name)
         if value >= 0:
             account.balance -= value
         else:
             account.balance += abs(value)
-        self.model.update_account(account)
+        self.model_account.update_account(account)
 
         # Delete
-        self.model.delete_transaction(transaction_id)
+        self.model_transaction.delete_transaction(transaction_id)
 
         # Refresh view
         self.view.current_frame.refresh_transactions()
 
     def refresh_category_list(self) -> None:
-        return self.model.read_categories()
+        return self.model_category.read_categories()
 
     def refresh_subcategory_list(self) -> None:
-        return self.model.read_subcategories()
+        return self.model_subcategory.read_subcategories()
 
     def refresh_selected_category_list(self) -> None:
-        return self.model.read_user_subcategories_by_user(user_id=self.model.user.id)
+        return self.model_user_subcategory.read_user_subcategories_by_user(user_id=self.model.user.id)
 
     def get_currency(self):
         return list(CurrencyEnum.__members__.keys())
 
     def get_account_list_by_user(self):
-        # TODO define a dummy user
-        self.model.user = self.model.read_user_by_id(id=1)
-
         # Get user account object list
-        accounts_list = self.model.read_accounts_by_user(user_id=self.model.user.id, account_type="BANK")
+        accounts_list = self.model_account.read_accounts_by_user(user_id=self.model.user.id, account_type="BANK")
 
         # Transform in a list of names of accounts
         return_list = [account.name for account in accounts_list]
@@ -269,7 +276,7 @@ class Presenter:
 
     def get_user_subcategory_list(self):
         # Get user subcategory object list
-        user_subcategory_list = self.model.read_user_subcategories_by_user(user_id=self.model.user.id)
+        user_subcategory_list = self.model_user_subcategory.read_user_subcategories_by_user(user_id=self.model.user.id)
 
         # Transform in a list of names of subcategories
         return_list = [
@@ -279,10 +286,10 @@ class Presenter:
         return return_list
 
     def get_account_id_by_name(self, account_name):
-        return self.model.read_account_by_name(name=account_name).id
+        return self.model_account.read_account_by_name(name=account_name).id
 
     def get_subcategory_id_by_name(self, subcategory_name):
-        return self.model.read_subcategory_by_name(name=subcategory_name).id
+        return self.model_subcategory.read_subcategory_by_name(name=subcategory_name).id
 
     def get_recurrence(self):
         return [recurrence.value for recurrence in RecurrenceEnum]
@@ -290,11 +297,11 @@ class Presenter:
     def get_target_accounts(self):
         return [
             account.name
-            for account in self.model.read_accounts_by_user(user_id=self.model.user.id, account_type="BANK")
+            for account in self.model_account.read_accounts_by_user(user_id=self.model.user.id, account_type="BANK")
         ]
 
     def handle_remove_user_category(self, subcategory_id: int):
-        return self.model.delete_user_subcategory(subcategory_id=subcategory_id)
+        return self.model_user_subcategory.delete_user_subcategory(subcategory_id=subcategory_id)
 
     def get_month(self):
         return list(MonthEnum.__members__.keys())
@@ -306,7 +313,9 @@ class Presenter:
 
     def handle_set_total_accounts(self):
         if self.model.user is not None:
-            user_accounts = self.model.read_accounts_by_user(user_id=self.model.user.id, account_type="BANK")
+            user_accounts = (
+                self.model_account.read_accounts_by_user(user_id=self.model.user.id, account_type="BANK") or []
+            )
             if len(user_accounts) > 0:
                 balance = 0
                 for account in user_accounts:
@@ -316,7 +325,7 @@ class Presenter:
 
     def handle_set_total_credit_cards(self):
         if self.model.user is not None:
-            user_cards = self.model.read_accounts_by_user(user_id=self.model.user.id, account_type="CARD")
+            user_cards = self.model_account.read_accounts_by_user(user_id=self.model.user.id, account_type="CARD") or []
             if len(user_cards) > 0:
                 balance = 0
                 for card in user_cards:

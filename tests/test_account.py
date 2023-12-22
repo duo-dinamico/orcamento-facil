@@ -5,7 +5,7 @@
 
 def test_success_account_read_by_id(db_session, valid_account):
     _ = valid_account
-    account = db_session.read_account_by_id(id=1)
+    account = db_session.model_account.read_account_by_id(id=1)
 
     assert account.id == 1
     assert account.name == "validAccount"
@@ -13,14 +13,14 @@ def test_success_account_read_by_id(db_session, valid_account):
 
 def test_success_account_read_by_name(db_session, valid_account):
     _ = valid_account
-    account = db_session.read_account_by_name(name="validAccount")
+    account = db_session.model_account.read_account_by_name(name="validAccount")
 
     assert account.id == 1
 
 
 def test_success_account_creation(db_session, valid_user):
     _ = valid_user
-    account = db_session.create_account(user_id=1, name="accountName")
+    account = db_session.model_account.create_account(user_id=1, name="accountName")
 
     assert isinstance(account.id, int)
     assert account.id == 1
@@ -28,26 +28,26 @@ def test_success_account_creation(db_session, valid_user):
 
 def test_success_account_deletion(db_session, valid_account):
     _ = valid_account
-    result = db_session.delete_account(id=1)
+    result = db_session.model_account.delete_account(id=1)
     assert result == 1
-
-
-def test_success_account_incomes_list(db_session, valid_income):
-    _ = valid_income
-    income_list = db_session.read_incomes_by_account(account_id=1)
-
-    assert isinstance(income_list, list)
-    assert len(income_list) > 0
 
 
 def test_success_account_update(db_session, valid_account):
     _ = valid_account
-    account = db_session.read_account_by_id(1)
+    account = db_session.model_account.read_account_by_id(1)
     assert account.balance == 0
     account.balance += 100
-    db_session.update_account(account)
-    updated_account = db_session.read_account_by_id(1)
+    db_session.model_account.update_account(account)
+    updated_account = db_session.model_account.read_account_by_id(1)
     assert updated_account.balance == 100
+
+
+def test_success_user_accounts_list(db_session, valid_account):
+    _ = valid_account
+    account_list = db_session.model_account.read_accounts_by_user(user_id=1, account_type="BANK")
+
+    assert isinstance(account_list, list)
+    assert len(account_list) > 0
 
 
 #
@@ -57,35 +57,35 @@ def test_success_account_update(db_session, valid_account):
 
 def test_error_account_read_by_id(db_session, valid_account):
     _ = valid_account
-    user = db_session.read_account_by_id(id=5)
+    user = db_session.model_account.read_account_by_id(id=5)
 
     assert user is None
 
 
 def test_error_account_read_by_name(db_session, valid_account):
     _ = valid_account
-    account_id = db_session.read_account_by_name(name="wrongAccount")
+    account_id = db_session.model_account.read_account_by_name(name="wrongAccount")
 
     assert account_id is None
 
 
 def test_error_account_creation_invalid_user(db_session, valid_account):
     _ = valid_account
-    account = db_session.create_account(user_id=20, name="accountName")
+    account = db_session.model_account.create_account(user_id=20, name="accountName")
 
     assert isinstance(account, str) and "User ID does not exist" in account
 
 
 def test_error_account_creation_invalid_name(db_session, valid_account):
     _ = valid_account
-    account = db_session.create_account(user_id=1, name="validAccount")
+    account = db_session.model_account.create_account(user_id=1, name="validAccount")
 
     assert account == "Account name already exists"
 
 
 def test_error_account_creation_invalid_type(db_session, valid_user):
     _ = valid_user
-    account = db_session.create_account(user_id=1, name="validAccount", account_type="STUPID")
+    account = db_session.model_account.create_account(user_id=1, name="validAccount", account_type="STUPID")
 
     assert (
         account
@@ -94,12 +94,12 @@ def test_error_account_creation_invalid_type(db_session, valid_user):
 
 
 def test_error_acccount_delete_wrong_account_id(db_session):
-    result = db_session.delete_account(id=1)
+    result = db_session.model_account.delete_account(id=1)
 
     assert result == 0
 
 
-def test_error_account_income_list_invalid_account(db_session):
-    income_list = db_session.read_incomes_by_account(account_id=1)
+def test_error_accounts_list_invalid_user(db_session):
+    account_list = db_session.model_account.read_accounts_by_user(user_id=1, account_type="BANK")
 
-    assert income_list == list()
+    assert account_list == list()

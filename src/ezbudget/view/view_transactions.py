@@ -180,30 +180,28 @@ class Transactions(ttk.Frame):
         transaction_id = int(item_id[0])
 
         account_name = self.current_selection[0]
+
         value = self.current_selection[3]
+
+        # TODO Apagar depois, quando se forçar um valor por defeito de 0
+        if value == "":
+            value = 0
 
         # Call presenter method to delete transaction
         self.presenter.remove_transaction(transaction_id, account_name, value)
         self.clear_selection(_)
 
     def update_transaction(self, _):
-        # values before any changes
-        print(self.current_selection)
+        """View method to update a transaction."""
 
         # Get the transaction_id of that row
         item_id = self.tvw_transactions.selection()
         transaction_id = int(item_id[0])
-        print(transaction_id)
 
-        # values after the change
-        updated_values = [
-            self.cbx_account.get(),
-            self.cbx_subcategory.get(),
-            self.dte_date.entry.get(),
-            int(self.value.get()),
-            self.description.get(),
-        ]
-        print(updated_values)
+        # Let the presenter handle the update
+        self.presenter.handle_update_transaction(transaction_id)
+
+        self.refresh_transactions()
 
     def clear_selection(self, _):
         self.tvw_transactions.selection_set("")

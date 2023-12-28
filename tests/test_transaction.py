@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from ezbudget.model.base_models import Transaction
+
 #
 # DEFAULT BEHAVIOUR
 #
@@ -54,6 +56,27 @@ def test_success_transaction_read_list_by_user(db_session, valid_user, valid_tra
         assert transaction.account.user_id == 1
 
 
+def test_success_transaction_updated(db_session, valid_transaction):
+    """Tests the success of the update_transaction method."""
+    _ = valid_transaction
+    updated_data = {
+        "account_id": 1,
+        "subcategory_id": 1,
+        "date": datetime(2022, 10, 10),
+        "value": 100,
+        "description": "Desc 2",
+    }
+
+    # Update the database
+    updated_transaction_id = db_session.model_transaction.update_transaction(
+        transaction_id=1, transaction_data=updated_data
+    )
+    # Read from database again
+    transaction = db_session.model_transaction.read_transaction_by_id(transaction_id=updated_transaction_id)
+
+    assert transaction.description == "Desc 2"
+
+
 def test_success_transaction_delete(db_session, valid_transaction):
     """Tests the success of the delete_transaction method."""
     _ = valid_transaction
@@ -93,6 +116,24 @@ def test_error_transaction_read_list_by_user(db_session):
 
     assert isinstance(transaction_list, list)
     assert transaction_list == []
+
+
+def test_error_transaction_updated_wrong_id(db_session):
+    """Tests the error of the update_transaction method, if wrong id is given."""
+
+    updated_data = {
+        "account_id": 1,
+        "subcategory_id": 1,
+        "date": datetime(2022, 10, 10),
+        "value": 100,
+        "description": "Desc 2",
+    }
+
+    updated_transaction_id = db_session.model_transaction.update_transaction(
+        transaction_id=1, transaction_data=updated_data
+    )
+
+    assert updated_transaction_id is None
 
 
 def test_error_transaction_delete(db_session, valid_transaction):

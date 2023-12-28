@@ -224,6 +224,14 @@ class Presenter:
             self.view.current_frame.clear_selection(_)
             self.view.current_frame.refresh_transactions()
 
+    def handle_update_transaction(self, transaction_id: int) -> None:
+        """ " Presenter method that call model to update transaction."""
+        # Get values from the View
+        transaction_data = self.view.get_transaction_data()
+
+        # Send data to model process
+        self.model_transaction.update_transaction(transaction_id, transaction_data)
+
     def refresh_account_list(self) -> None:
         return self.model_account.read_accounts_by_user(user_id=self.model.user.id, account_type="BANK")
 

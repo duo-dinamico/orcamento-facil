@@ -52,6 +52,7 @@ class ModelAccount:
             self.parent.session.refresh(new_account)
             return new_account
         except IntegrityError as e:
+            self.parent.session.rollback()
             if "foreign key constraint" in str(e.orig).lower():
                 return "User ID does not exist"
             elif "unique constraint" in str(e.orig).lower():
@@ -59,6 +60,7 @@ class ModelAccount:
             else:
                 return "An unknown IntegrityError occurred"
         except LookupError as lookup_error:
+            self.parent.session.rollback()
             return f"A LookupError occurred: {lookup_error}"
 
     def read_account_by_id(self, id: int) -> Account | None:
@@ -81,6 +83,7 @@ class ModelAccount:
 
         Args:
             name: the account name.
+            account_type: type of account from the enum
 
         Returns:
             account: if the account exist.
@@ -96,6 +99,7 @@ class ModelAccount:
 
         Args:
             user_id: user id owner of the accounts.
+            account_type: type of account from the enum
 
         Returns:
             account_list: list of the user accounts

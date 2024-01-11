@@ -1,6 +1,5 @@
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm.exc import NoResultFound
 
 from ezbudget.model import User
 
@@ -9,7 +8,7 @@ class ModelUser:
     def __init__(self, parent_model):
         self.parent = parent_model
 
-    def create_user(self, username: str, password: str = "") -> User | None:
+    def create_user(self, username: str, password: str = "") -> User | str:
         """Create a new user in the database, and return the id.
 
         Args:
@@ -28,6 +27,7 @@ class ModelUser:
 
             return user
         except IntegrityError:
+            self.parent.session.rollback()
             return "User already exists"
 
     def read_user_by_name(self, username: str) -> User | None:
@@ -40,10 +40,7 @@ class ModelUser:
             User: if the user exist.
             None: if the username doesn't exist.
         """
-        try:
-            return self.parent.read_first_basequery(select(User).where(User.username == username))
-        except NoResultFound:
-            return None
+        return self.parent.read_first_basequery(select(User).where(User.username == username))
 
     def read_user_by_id(self, id: int) -> User | None:
         """Return a user object that has the given id.
@@ -55,7 +52,7 @@ class ModelUser:
             User: if the user exist.
             None: if the id doesn't exist.
         """
-        try:
-            return self.parent.read_first_basequery(select(User).where(User.id == id))
-        except NoResultFound:
-            return None
+        return self.parent.read_first_basequery(select(User).where(User.id == id))
+
+    def read_users(self) -> list:
+        return self.parent.read_all_basequery(select(User))

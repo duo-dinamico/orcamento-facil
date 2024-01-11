@@ -1,13 +1,9 @@
 # isort:skip_file
-from .top_view_create_account import CreateAccountPopUp
-from .top_view_create_credit import CreateCreditCardPopup
-from .top_view_create_income import CreateIncomePopUp
-from .view_header import Header
+from .login_view import LoginView
+from .header_view import HeaderView
+from .incoming_outgoing_widget_view import IncomingOutgoing
+from .manage_categories_widget_view import Categories
+from .transactions_widget_view import Transactions
+from .homepage_view import HomePageView
 
-from .view_categories import Categories
-from .view_homepage import HomePage
-from .view_incoming_outgoing import IncomingOutgoing
-from .view_register_login import RegisterLogin
-from .view_transactions import Transactions
-
-from .view_window import RootView
+from .main_window_view import MainWindow

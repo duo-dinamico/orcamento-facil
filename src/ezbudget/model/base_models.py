@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import Optional
 
 from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -8,18 +8,6 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 class Base(DeclarativeBase):
     pass
-
-
-class User(Base):
-    __tablename__ = "users"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str] = mapped_column(unique=True)
-    password: Mapped[str]
-    accounts: Mapped["Account"] = relationship("Account", backref="accounts", uselist=False)
-
-    def __str__(self) -> str:
-        return f"ID: {self.id}, Name: {self.username}"
 
 
 # Define an enum type for account types
@@ -37,26 +25,18 @@ class RecurrenceEnum(str, Enum):
     YEAR = "Yearly"
 
 
-# Define an enum type for months
-class MonthEnum(int, Enum):
-    JANUARY = 1
-    FEBRUARY = 2
-    MARCH = 3
-    APRIL = 4
-    MAY = 5
-    JUNE = 6
-    JULY = 7
-    AUGUST = 8
-    SEPTEMBER = 9
-    OCTOBER = 10
-    NOVEMBER = 11
-    DECEMBER = 12
-
-
 class CurrencyEnum(str, Enum):
     EUR = "€"
     GBP = "£"
     USD = "$"
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(unique=True)
+    password: Mapped[str]
 
 
 class Account(Base):
@@ -74,7 +54,7 @@ class Account(Base):
     credit_method: Mapped[Optional[str]]
 
     # Relatioships
-    transactions: Mapped[List["Transaction"]] = relationship(back_populates="account")
+    user: Mapped["User"] = relationship("User")
 
 
 class Income(Base):
@@ -85,10 +65,13 @@ class Income(Base):
     account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id", name="account"))
     name: Mapped[str] = mapped_column(unique=True)
     expected_income_value: Mapped[int] = mapped_column(default=0)  # In cents
-    real_income_value: Mapped[int] = mapped_column(default=0)  # In cents
-    income_day: Mapped[Optional[str]] = mapped_column(default="1")  # Saved as a string, need conversion
-    income_month: Mapped[Optional[MonthEnum]] = mapped_column(default=MonthEnum.JANUARY)
+    income_date: Mapped[datetime]
     recurrence: Mapped[Optional[RecurrenceEnum]] = mapped_column(default=RecurrenceEnum.ONE)
+    currency: Mapped[CurrencyEnum] = mapped_column(default="EUR")
+
+    # Relationships
+    user: Mapped["User"] = relationship("User")
+    account: Mapped["Account"] = relationship("Account")
 
 
 class Transaction(Base):
@@ -102,7 +85,7 @@ class Transaction(Base):
     description: Mapped[Optional[str]]
 
     # Relatioships
-    account: Mapped["Account"] = relationship(back_populates="transactions")
+    account: Mapped["Account"] = relationship("Account")
     subcategory: Mapped["SubCategory"] = relationship("SubCategory")
 
 
@@ -114,9 +97,9 @@ class SubCategory(Base):
     name: Mapped[str]
     recurrent: Mapped[bool] = mapped_column(default=False)
     recurrence: Mapped[Optional[RecurrenceEnum]]
+
+    # Relatioships
     category: Mapped["Category"] = relationship("Category")
-    # TODO we can remove this include since we have the connection table
-    include: Mapped[bool] = mapped_column(default=True)
 
 
 class Category(Base):

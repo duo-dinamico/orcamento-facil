@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import and_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -47,18 +47,21 @@ class ModelSubCategory:
         except LookupError as lookup_error:
             return f"A LookupError occurred: {lookup_error}"
 
-    def read_subcategory_by_name(self, name: str) -> SubCategory | None:
+    def read_subcategory_by_name(self, name: str, category_id: int) -> SubCategory | None:
         """Return a subcategory id that has the given subcategory name.
 
         Args:
             name: the subcategory name.
+            category_id: category id to filter as names are not unique
 
         Returns:
             subcategory: if the subcategory exist.
             None: if the subcategory don't exist.
         """
         try:
-            return self.parent.read_first_basequery(select(SubCategory).where(SubCategory.name == name))
+            return self.parent.read_first_basequery(
+                select(SubCategory).where(and_(SubCategory.name == name, SubCategory.category_id == category_id))
+            )
         except NoResultFound:
             return None
 

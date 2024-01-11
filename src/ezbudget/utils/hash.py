@@ -11,4 +11,4 @@ def verify_password(password: str, hashed_password: str) -> bool:
     if verify_hash == hashed_password:
         return True
     else:
-        return False
+        return "Incorrect username and / or password"

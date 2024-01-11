@@ -5,7 +5,6 @@ from .base_models import (
     Category,
     CurrencyEnum,
     Income,
-    MonthEnum,
     RecurrenceEnum,
     SubCategory,
     Transaction,

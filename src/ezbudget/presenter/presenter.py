@@ -179,18 +179,10 @@ class Presenter:
     # transaction related
     def create_transaction(self, transaction_data) -> None:
         """Create a transaction in Model, when activated in View."""
-        account_id = self.model_account.read_account_by_name(transaction_data["account_name"]).id
-        transaction_data["account_id"] = account_id
-        del transaction_data["account_name"]
-        subcategory_split = transaction_data["subcategory_name"].split(" - ")
-        category_id = self.get_category_id_by_name(subcategory_split[0])
-        subcategory_id = self.model_subcategory.read_subcategory_by_name(subcategory_split[1], category_id).id
-        transaction_data["subcategory_id"] = subcategory_id
-        del transaction_data["subcategory_name"]
-        transaction_data["date"] = datetime.strptime(transaction_data["date"], "%Y/%m/%d").date()
+        updated_transaction = self.update_transaction_dict(transaction_data)
 
         # Create the transaction in the model
-        transaction = self.model_transaction.create_transaction(**transaction_data)
+        transaction = self.model_transaction.create_transaction(**updated_transaction)
 
         if transaction:
             account = self.model_account.read_account_by_id(transaction.account_id)
@@ -202,10 +194,56 @@ class Presenter:
             self.view.homepage_view.transactions.set_transactions_model()
             self.view.homepage_view.incoming_outgoing.set_account_model()
 
-    def update_transaction(self, transaction_data, transaction_id: int) -> None:
+    def update_transaction(self, transaction_id: int, transaction_data, previous_value, previous_account_id) -> None:
         """ " Presenter method that call model to update transaction."""
+
+        # update the transaction from the model with the new values
+        transaction = self.model_transaction.read_transaction_by_id(transaction_id)
+        updated_transaction = self.update_transaction_dict(transaction_data)
+        for key, value in updated_transaction.items():
+            setattr(transaction, key, value)
+
+        # convert to int
+        transaction.value = int(transaction.value)
+        int_previous_value = int(previous_value)
+
+        # update the value in the accounts
+        previous_account = self.model_account.read_account_by_id(previous_account_id)
+        new_account = self.model_account.read_account_by_id(updated_transaction["account_id"])
+
+        direction = -1 if int_previous_value > transaction.value else 1
+        difference = abs(int_previous_value - transaction.value)
+        if previous_account.name != new_account.name:
+            if int_previous_value != transaction.value:
+                if int_previous_value > 0:
+                    previous_account.balance -= abs(int_previous_value)
+                else:
+                    previous_account.balance += abs(int_previous_value)
+                if transaction.value > 0:
+                    new_account.balance += abs(transaction.value)
+                else:
+                    new_account.balance -= abs(transaction.value)
+            else:
+                if transaction.value > 0:
+                    previous_account.balance -= transaction.value
+                    new_account.balance += transaction.value
+                else:
+                    previous_account.balance += abs(transaction.value)
+                    new_account.balance -= abs(transaction.value)
+
+            self.model_account.update_account(previous_account)
+            self.model_account.update_account(new_account)
+
+        elif previous_account.name == new_account.name and int_previous_value != transaction.value:
+            previous_account.balance += difference * direction
+            self.model_account.update_account(previous_account)
+
         # Send data to model process
-        self.model_transaction.update_transaction(transaction_id, transaction_data)
+        self.model_transaction.update_transaction(transaction)
+
+        # update models and tables
+        self.view.homepage_view.transactions.set_transactions_model()
+        self.view.homepage_view.incoming_outgoing.set_account_model()
 
     def get_transactions_list(self) -> None:
         # TODO Account type
@@ -235,3 +273,16 @@ class Presenter:
 
     def get_recurrence(self):
         return [recurrence.value for recurrence in RecurrenceEnum]
+
+    def update_transaction_dict(self, transaction_data):
+        account_id = self.model_account.read_account_by_name(transaction_data["account_name"]).id
+        transaction_data["account_id"] = account_id
+        del transaction_data["account_name"]
+        subcategory_split = transaction_data["subcategory_name"].split(" - ")
+        category_id = self.get_category_id_by_name(subcategory_split[0])
+        subcategory_id = self.model_subcategory.read_subcategory_by_name(subcategory_split[1], category_id).id
+        transaction_data["subcategory_id"] = subcategory_id
+        del transaction_data["subcategory_name"]
+        transaction_data["date"] = datetime.strptime(transaction_data["date"], "%Y/%m/%d").date()
+
+        return transaction_data

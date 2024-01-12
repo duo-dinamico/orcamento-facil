@@ -99,48 +99,28 @@ class ModelTransaction:
         except NoResultFound:
             return None
 
-    def update_transaction(self, transaction_id: int, transaction_data: dict) -> int | None:
+    def update_transaction(self, transaction: Transaction) -> None:
         """Update a transaction in the database, and return the transaction id.
 
         Args:
-            account_id: the id of the account where the transaction will be updated.
-            subcategory_id: the id of the category of the transation updated.
-            date: date of the transaction updated, in datetime format.
-            value: value of the transaction in cents updated, positive if credit, negative if debit.
-            description: short description of the transaction updated.
+            transaction: the transaction to be updated
 
         Returns:
             trasaction id: if the transaction was updated
             None: if the transaction failed to be updated.
         """
         try:
-            # Select the transaction from database
-            transaction = self.parent.session.scalars(
-                select(Transaction).where(Transaction.id == transaction_id)
-            ).first()
-
-            # Change the data of the transaction
-            if transaction:
-                transaction.account_id = transaction_data["account_id"]
-                transaction.subcategory_id = transaction_data["subcategory_id"]
-                transaction.date = transaction_data["date"]
-                transaction.value = transaction_data["value"]
-                transaction.description = transaction_data["description"]
-
-                # Get a select, that automaticaly update and flush, and commit
-                result = (
-                    self.parent.session.scalars(select(Transaction).where(Transaction.id == transaction_id)).first().id
-                )
-                self.parent.session.commit()
-                return result
-            else:
-                return None
+            self.parent.session.add(transaction)
+            self.parent.session.commit()
+            self.parent.session.refresh(transaction)
         except IntegrityError as e:
+            self.parent.session.rollback()
             if "foreign key constraint" in str(e.orig).lower():
                 return "Either Account ID or SubCategory ID does not exist"
             else:
                 return "An unknown IntegrityError occurred"
         except LookupError as lookup_error:
+            self.parent.session.rollback()
             return f"A LookupError occurred: {lookup_error}"
 
     def delete_transaction(self, transaction_id: int) -> int:

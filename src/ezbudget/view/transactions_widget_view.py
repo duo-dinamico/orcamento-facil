@@ -107,7 +107,9 @@ class Transactions(QWidget):
         self.btn_clear.setEnabled(False)
         self.btn_add_transaction.clicked.connect(lambda: self.presenter.create_transaction(self.get_transaction_data()))
         self.btn_edit_transaction.clicked.connect(
-            lambda: self.presenter.update_transaction(self.get_transaction_data(), self.transaction_id)
+            lambda: self.presenter.update_transaction(
+                self.transaction_id, self.get_transaction_data(), self.current_value, self.current_account_id
+            )
         )
         self.btn_delete_transaction.clicked.connect(
             lambda: self.presenter.remove_transaction(self.get_transaction_data(), self.transaction_id)
@@ -125,6 +127,8 @@ class Transactions(QWidget):
         selected_row = index.row()
         transaction = self.transactions_list[selected_row]
         selected_index = self.tbl_transactions.selectionModel().currentIndex()
+        self.current_value = transaction.value
+        self.current_account_id = transaction.account.id
         self.transaction_id = selected_index.siblingAtColumn(0).data(Qt.UserRole)
         self.cbx_target_account.setCurrentText(transaction.account.name)
         self.cbx_subcategories.setCurrentText(

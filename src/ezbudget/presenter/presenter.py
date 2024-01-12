@@ -70,9 +70,7 @@ class Presenter:
         return self.model_account.read_account_by_name(name=account_name).id
 
     def create_account(self, account_data, account_type):
-        check_account_exists = self.model_account.read_account_by_name(
-            name=account_data["name"], account_type=account_type
-        )
+        check_account_exists = self.model_account.read_account_by_name(name=account_data["name"])
 
         if check_account_exists and account_type == "BANK":
             self.view.homepage_view.incoming_outgoing.set_account_error("Account already exists")

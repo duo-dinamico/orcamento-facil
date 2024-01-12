@@ -15,7 +15,6 @@ class ModelSubCategory:
         name: str,
         recurrent: bool = False,
         recurrence: RecurrenceEnum = "ONE",
-        include: bool = True,
     ) -> SubCategory | None:
         """Create a new subcategory in the database, and return the subcategory.
 
@@ -32,7 +31,6 @@ class ModelSubCategory:
                 name=name,
                 recurrent=recurrent,
                 recurrence=recurrence,
-                include=include,
             )
 
             self.parent.session.add(new_subcategory)

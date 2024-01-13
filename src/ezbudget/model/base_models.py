@@ -21,6 +21,7 @@ class AccountTypeEnum(str, Enum):
 class RecurrenceEnum(str, Enum):
     ONE = "One time only"
     DAY = "Daily"
+    WEEK = "Weekly"
     MONTH = "Monthly"
     YEAR = "Yearly"
 
@@ -29,6 +30,13 @@ class CurrencyEnum(str, Enum):
     EUR = "€"
     GBP = "£"
     USD = "$"
+
+
+class CategoryTypeEnum(str, Enum):
+    NEED = "Need"
+    WANT = "Want"
+    SAVINGS = "Savings"
+    DEBT = "Debt"
 
 
 class User(Base):
@@ -107,6 +115,7 @@ class Category(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(unique=True)
+    category_type: Mapped[CategoryTypeEnum]
 
 
 class UserSubCategory(Base):

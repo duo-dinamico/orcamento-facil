@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Protocol
 
-from ezbudget.model import CurrencyEnum, RecurrenceEnum
+from ezbudget.model import CategoryTypeEnum, CurrencyEnum, RecurrenceEnum
 from ezbudget.utils import get_hashed_password, verify_password
 
 
@@ -54,21 +54,6 @@ class Presenter:
                 self.view.show_homepage(response)
 
     # account related
-    def get_account_list(self, account_type) -> None:
-        return self.model_account.read_accounts_by_user(user_id=self.model.user.id, account_type=account_type)
-
-    def get_account_list_by_user(self):
-        # Get user account object list
-        accounts_list = self.model_account.read_accounts_by_user(user_id=1, account_type="BANK")
-
-        # Transform in a list of names of accounts
-        return_list = [account.name for account in accounts_list]
-
-        return return_list
-
-    def get_account_id_by_name(self, account_name):
-        return self.model_account.read_account_by_name(name=account_name).id
-
     def create_account(self, account_data, account_type):
         check_account_exists = self.model_account.read_account_by_name(name=account_data["name"])
 
@@ -85,6 +70,21 @@ class Presenter:
                 self.view.homepage_view.incoming_outgoing.set_account_model()
                 self.view.homepage_view.incoming_outgoing.set_credit_card_model()
                 self.view.homepage_view.transactions.populate_target_accounts()
+
+    def get_account_list(self, account_type) -> None:
+        return self.model_account.read_accounts_by_user(user_id=self.model.user.id, account_type=account_type)
+
+    def get_account_list_by_user(self):
+        # Get user account object list
+        accounts_list = self.model_account.read_accounts_by_user(user_id=1, account_type="BANK")
+
+        # Transform in a list of names of accounts
+        return_list = [account.name for account in accounts_list]
+
+        return return_list
+
+    def get_account_id_by_name(self, account_name):
+        return self.model_account.read_account_by_name(name=account_name).id
 
     def handle_set_total_accounts(self):
         if self.model.user is not None:
@@ -138,6 +138,23 @@ class Presenter:
         return self.model_income.read_incomes_by_user(user_id=self.model.user.id)
 
     # categories related
+    def create_category(self, category_data):
+        for category_type in CategoryTypeEnum:
+            if category_type.value == category_data["category_type"]:
+                category_data["category_type"] = category_type.name
+        self.model_category.create_category(**category_data)
+        self.view.homepage_view.manage_categories.set_categories_and_subcategories()
+
+    def create_subcategory(self, subcategory_data):
+        category_id = self.model_category.read_category_by_name(subcategory_data["category_name"]).id
+        subcategory_data["category_id"] = category_id
+        del subcategory_data["category_name"]
+        for recurrence in RecurrenceEnum:
+            if recurrence.value == subcategory_data["recurrence"]:
+                subcategory_data["recurrence"] = recurrence.name
+        self.model_subcategory.create_subcategory(**subcategory_data)
+        self.view.homepage_view.manage_categories.set_categories_and_subcategories()
+
     def get_category_list(self) -> None:
         return self.model_category.read_categories()
 
@@ -273,6 +290,9 @@ class Presenter:
 
     def get_recurrence(self):
         return [recurrence.value for recurrence in RecurrenceEnum]
+
+    def get_category_type(self):
+        return [category_type.value for category_type in CategoryTypeEnum]
 
     def update_transaction_dict(self, transaction_data):
         account_id = self.model_account.read_account_by_name(transaction_data["account_name"]).id

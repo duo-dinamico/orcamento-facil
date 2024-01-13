@@ -53,10 +53,10 @@ class Model(ModelProtocol):
             data = tomllib.load(doc)
         if len(self.model_category.read_categories()) < 1:
             for item in data["categories"]:
-                self.model_category.create_category(name=item)
+                self.model_category.create_category(**item)
         if len(self.model_subcategory.read_subcategories()) < 1:
             for item in data["subcategories"]:
-                self.model_subcategory.create_subcategory(category_id=item["category_id"], name=item["name"])
+                self.model_subcategory.create_subcategory(**item)
 
     def close_session(self):
         self.session.close()

@@ -2,25 +2,26 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
-from ezbudget.model import Category
+from ezbudget.model import Category, CategoryTypeEnum
 
 
 class ModelCategory:
     def __init__(self, parent_model):
         self.parent = parent_model
 
-    def create_category(self, name: str) -> Category | None:
+    def create_category(self, name: str, category_type: CategoryTypeEnum) -> Category | None:
         """Create a new category in the database, and return the category.
 
         Args:
             name: name of the new category.
+            category_type: type of category, either a Want a Need or a Saving
 
         Returns:
             category: if a new category was created
             None: if the category failed to be created.
         """
         try:
-            category = Category(name=name)
+            category = Category(name=name, category_type=category_type)
             self.parent.session.add(category)
             self.parent.session.commit()
             self.parent.session.refresh(category)

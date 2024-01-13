@@ -3,6 +3,7 @@ from .base_models import (
     AccountTypeEnum,
     Base,
     Category,
+    CategoryTypeEnum,
     CurrencyEnum,
     Income,
     RecurrenceEnum,

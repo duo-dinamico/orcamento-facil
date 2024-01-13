@@ -49,7 +49,7 @@ class Model(ModelProtocol):
 
     def populate_categories(self):
         current_path = os.path.dirname(os.path.realpath(__file__))
-        with open(f"{current_path}/categories_data.toml", mode="rb") as doc:
+        with open(f"{current_path}\\categories_data.toml", mode="rb") as doc:
             data = tomllib.load(doc)
         if len(self.model_category.read_categories()) < 1:
             for item in data["categories"]:

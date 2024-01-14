@@ -1,5 +1,3 @@
-import os
-import tomllib
 from typing import Optional
 
 from sqlalchemy import create_engine, event
@@ -19,7 +17,7 @@ from ezbudget.presenter import ModelProtocol
 
 
 class Model(ModelProtocol):
-    def __init__(self, database_name: str = "of") -> None:
+    def __init__(self, category_data, database_name: str = "of") -> None:
         self.engine = create_engine(f"sqlite:///{database_name}.db")
         # Composition
         self.model_account = ModelAccount(self)
@@ -29,6 +27,7 @@ class Model(ModelProtocol):
         self.model_transaction = ModelTransaction(self)
         self.model_user_subcategory = ModelUserSubCategory(self)
         self.model_user = ModelUser(self)
+        self._category_data = category_data
 
         @event.listens_for(self.engine, "connect")
         def set_sqlite_pragma(dbapi_connection, connection_record):
@@ -48,14 +47,11 @@ class Model(ModelProtocol):
         self.user = None
 
     def populate_categories(self):
-        current_path = os.path.dirname(os.path.realpath(__file__))
-        with open(f"{current_path}\\categories_data.toml", mode="rb") as doc:
-            data = tomllib.load(doc)
         if len(self.model_category.read_categories()) < 1:
-            for item in data["categories"]:
+            for item in self._category_data["categories"]:
                 self.model_category.create_category(**item)
         if len(self.model_subcategory.read_subcategories()) < 1:
-            for item in data["subcategories"]:
+            for item in self._category_data["subcategories"]:
                 self.model_subcategory.create_subcategory(**item)
 
     def close_session(self):

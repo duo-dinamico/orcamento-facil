@@ -3,6 +3,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QComboBox,
     QDateEdit,
+    QDoubleSpinBox,
     QFormLayout,
     QHBoxLayout,
     QHeaderView,
@@ -37,7 +38,7 @@ class TableModel(QAbstractTableModel):
                 date_time = QDateTime.fromString(str(row_data.date), "yyyy-MM-dd hh:mm:ss")
                 return date_time.toString("dd/MM/yyyy")
             elif index.column() == 3:  # Value column
-                return str(row_data.value)
+                return f"{row_data.currency.value} {row_data.value / 100}"
             elif index.column() == 4:  # Description column
                 return str(row_data.description)
 
@@ -60,14 +61,15 @@ class Transactions(QWidget):
         frm_add_edit_transactions = QFormLayout()
         self.cbx_target_account = QComboBox()
         self.cbx_subcategories = QComboBox()
+        self.cbx_currencies = QComboBox()
         self.dte_transaction_date = QDateEdit()
-        self.lne_value = QLineEdit()
         self.lne_description = QLineEdit()
         self.btn_add_transaction = QPushButton("Add transaction")
         self.btn_edit_transaction = QPushButton("Edit transaction")
         self.btn_delete_transaction = QPushButton("Delete transaction")
         self.btn_clear = QPushButton("Clear")
         self.tbl_transactions = QTableView()
+        self.dsp_value = QDoubleSpinBox()
 
         # setup the tables
         self.tbl_transactions.setSelectionMode(QAbstractItemView.SingleSelection)
@@ -88,13 +90,23 @@ class Transactions(QWidget):
         self.dte_transaction_date.setDisplayFormat("dd/MM/yyyy")
         self.dte_transaction_date.setDate(QDate.currentDate())
         self.dte_transaction_date.setDateRange(min_date, max_date)
+        self.dte_transaction_date.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         # setup the frame
         frm_add_edit_transactions.addRow("Account", self.cbx_target_account)
         frm_add_edit_transactions.addRow("Category", self.cbx_subcategories)
         frm_add_edit_transactions.addRow("Date", self.dte_transaction_date)
-        frm_add_edit_transactions.addRow("Value", self.lne_value)
+        frm_add_edit_transactions.addRow("Currency", self.cbx_currencies)
+        frm_add_edit_transactions.addRow("Value", self.dsp_value)
         frm_add_edit_transactions.addRow("Description", self.lne_description)
+
+        # configure entries
+        self.populate_currencies()
+        self.dsp_value.setMaximum(999999.99)
+        self.dsp_value.setMinimum(-999999.99)
+        self.dsp_value.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.dsp_value.setPrefix(f"{self.currency_list[self.cbx_currencies.currentText()].value} ")
+        self.cbx_currencies.currentTextChanged.connect(self.on_currency_change)
 
         # setup the add / edit frame
         vbl_add_edit_transactions.addLayout(frm_add_edit_transactions)
@@ -123,6 +135,11 @@ class Transactions(QWidget):
         # chose the horizontal layout as the main one
         self.setLayout(hbl_transactions)
 
+    def populate_currencies(self):
+        self.currency_list = self.presenter.get_currency()
+        self.cbx_currencies.clear()
+        self.cbx_currencies.addItems([currency.name for currency in self.currency_list])
+
     def on_table_view_selection(self, index):
         selected_row = index.row()
         transaction = self.transactions_list[selected_row]
@@ -135,7 +152,7 @@ class Transactions(QWidget):
             f"{transaction.subcategory.category.name} - {transaction.subcategory.name}"
         )
         self.dte_transaction_date.setDate(transaction.date)
-        self.lne_value.setText(str(transaction.value))
+        self.dsp_value.setValue(transaction.value / 100)
         self.lne_description.setText(transaction.description)
         self.btn_add_transaction.setText("Duplicate transaction")
         self.btn_edit_transaction.setEnabled(True)
@@ -147,7 +164,8 @@ class Transactions(QWidget):
             "account_name": self.cbx_target_account.currentText(),
             "subcategory_name": self.cbx_subcategories.currentText(),
             "date": self.dte_transaction_date.date().toString("yyyy/MM/dd"),
-            "value": self.lne_value.text(),
+            "currency": self.cbx_currencies.currentText(),
+            "value": self.dsp_value.value() * 100,
             "description": self.lne_description.text(),
         }
 
@@ -168,3 +186,6 @@ class Transactions(QWidget):
 
     def clear_fields(self):
         ...
+
+    def on_currency_change(self):
+        self.dsp_value.setPrefix(f"{self.currency_list[self.cbx_currencies.currentText()].value} ")

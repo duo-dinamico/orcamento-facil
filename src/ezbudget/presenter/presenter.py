@@ -57,18 +57,27 @@ class Presenter:
     def create_account(self, account_data, account_type):
         check_account_exists = self.model_account.read_account_by_name(name=account_data["name"])
 
-        if check_account_exists and account_type == "BANK":
-            self.view.homepage_view.incoming_outgoing.set_account_error("Account already exists")
-        if check_account_exists and account_type == "CARD":
-            self.view.homepage_view.incoming_outgoing.set_credit_card_error("Credit card already exists")
+        if account_type == "BANK":
+            error_name = "Account"
+            method_to_call = self.view.homepage_view.incoming_outgoing.set_account_error
+        else:
+            error_name = "Credit card"
+            method_to_call = self.view.homepage_view.incoming_outgoing.set_credit_card_error
+
+        if check_account_exists:
+            method_to_call(f"{error_name} already exists")
         else:
             account_data["user_id"] = self.model.user.id
             account_data["account_type"] = account_type
-            account = self.model_account.create_account(**account_data)
+            response = self.model_account.create_account(**account_data)
 
-            if account:
+            if isinstance(response, str):
+                method_to_call(response)
+            else:
                 self.view.homepage_view.incoming_outgoing.set_account_model()
                 self.view.homepage_view.incoming_outgoing.set_credit_card_model()
+                self.view.homepage_view.incoming_outgoing.clear_account_data()
+                self.view.homepage_view.incoming_outgoing.clear_credit_card_data()
                 self.view.homepage_view.transactions.populate_target_accounts()
 
     def get_account_list(self, account_type) -> None:
@@ -99,10 +108,7 @@ class Presenter:
             return {"balance": 0, "user_accounts": []}
 
     def get_target_accounts(self):
-        return [
-            account.name
-            for account in self.model_account.read_accounts_by_user(user_id=self.model.user.id, account_type="BANK")
-        ]
+        return [account.name for account in self.model_account.read_accounts_by_user(user_id=self.model.user.id)]
 
     def handle_set_total_credit_cards(self):
         if self.model.user is not None:
@@ -129,10 +135,13 @@ class Presenter:
             for recurrence in RecurrenceEnum:
                 if recurrence.value == income_data["recurrence"]:
                     income_data["recurrence"] = recurrence.name
-            income = self.model_income.create_income(**income_data)
+            response = self.model_income.create_income(**income_data)
 
-            if income:
+            if isinstance(response, str):
+                self.view.homepage_view.incoming_outgoing.set_income_error(response)
+            else:
                 self.view.homepage_view.incoming_outgoing.set_incoming_model()
+                self.view.homepage_view.incoming_outgoing.clear_income_data()
 
     def get_income_list(self) -> None:
         return self.model_income.read_incomes_by_user(user_id=self.model.user.id)
@@ -210,6 +219,7 @@ class Presenter:
             self.model_account.update_account(account)
             self.view.homepage_view.transactions.set_transactions_model()
             self.view.homepage_view.incoming_outgoing.set_account_model()
+            self.view.homepage_view.incoming_outgoing.set_credit_card_model()
 
     def update_transaction(self, transaction_id: int, transaction_data, previous_value, previous_account_id) -> None:
         """ " Presenter method that call model to update transaction."""
@@ -261,6 +271,7 @@ class Presenter:
         # update models and tables
         self.view.homepage_view.transactions.set_transactions_model()
         self.view.homepage_view.incoming_outgoing.set_account_model()
+        self.view.homepage_view.incoming_outgoing.set_credit_card_model()
 
     def get_transactions_list(self) -> None:
         # TODO Account type
@@ -283,13 +294,14 @@ class Presenter:
         # Refresh view
         self.view.homepage_view.transactions.set_transactions_model()
         self.view.homepage_view.incoming_outgoing.set_account_model()
+        self.view.homepage_view.incoming_outgoing.set_credit_card_model()
 
     # utils
     def get_currency(self):
-        return list(CurrencyEnum.__members__.keys())
+        return CurrencyEnum
 
     def get_recurrence(self):
-        return [recurrence.value for recurrence in RecurrenceEnum]
+        return RecurrenceEnum
 
     def get_category_type(self):
         return [category_type.value for category_type in CategoryTypeEnum]

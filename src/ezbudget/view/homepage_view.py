@@ -30,7 +30,7 @@ class HomePageView(QWidget):
 
         # place the widgets
         vbl_homepage.addWidget(self.header, 1)
-        vbl_homepage.addWidget(tbl_homepage, 10)
+        vbl_homepage.addWidget(tbl_homepage, 15)
 
         # set the base layout
         self.setLayout(vbl_homepage)

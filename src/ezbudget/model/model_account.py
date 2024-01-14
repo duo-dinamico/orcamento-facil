@@ -1,8 +1,8 @@
-from sqlalchemy import and_, select
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
-from ezbudget.model import Account, AccountTypeEnum
+from ezbudget.model import Account, AccountTypeEnum, CurrencyEnum
 
 
 class ModelAccount:
@@ -13,13 +13,13 @@ class ModelAccount:
         self,
         user_id: int,
         name: str,
-        account_type: AccountTypeEnum = "BANK",
-        currency: str = "EUR",
-        balance: int = 0,
-        credit_limit: int = 0,
-        payment_day: str = "",
-        interest_rate: float = 0.0,
-        credit_method: str = "",
+        account_type: AccountTypeEnum,
+        currency: CurrencyEnum,
+        balance: int,
+        credit_limit: int = None,
+        payment_day: str = None,
+        interest_rate: float = None,
+        credit_method: str = None,
     ) -> Account | None:
         """Create a new account in the database, for a given user and return the new account id.
 
@@ -57,6 +57,8 @@ class ModelAccount:
                 return "User ID does not exist"
             elif "unique constraint" in str(e.orig).lower():
                 return "Account name already exists"
+            elif "non_empty_string_check" in str(e.orig).lower():
+                return "Name is a mandatory field and cannot be empty"
             else:
                 return "An unknown IntegrityError occurred"
         except LookupError as lookup_error:
@@ -94,7 +96,7 @@ class ModelAccount:
         except NoResultFound:
             return None
 
-    def read_accounts_by_user(self, user_id: int, account_type: str) -> list:
+    def read_accounts_by_user(self, user_id: int, account_type: str = None) -> list:
         """Return a list of user accounts.
 
         Args:
@@ -105,9 +107,12 @@ class ModelAccount:
             account_list: list of the user accounts
         """
         try:
-            return self.parent.read_all_basequery(
-                select(Account).where(and_(Account.user_id == user_id), (Account.account_type == account_type))
-            )
+            query = select(Account).where(Account.user_id == user_id)
+
+            if account_type is not None:
+                query = query.where(Account.account_type == account_type)
+
+            return self.parent.read_all_basequery(query)
         except NoResultFound:
             return []
 

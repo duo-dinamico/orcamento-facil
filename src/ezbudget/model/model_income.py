@@ -16,10 +16,10 @@ class ModelIncome:
         user_id: int,
         account_id: int,
         name: str,
-        expected_income_value: int = 0,
-        income_date: date = date.today(),
-        currency: str = "EUR",
-        recurrence: RecurrenceEnum = RecurrenceEnum.ONE,
+        expected_income_value,
+        income_date: date = None,
+        currency: str = None,
+        recurrence: RecurrenceEnum = None,
     ) -> Income:
         """Create a new income, for a given account and return the new income.
 
@@ -55,6 +55,8 @@ class ModelIncome:
                 return "User ID or Account ID does not exist"
             elif "unique constraint" in str(e.orig).lower():
                 return "Income name already exists"
+            elif "non_empty_string_check" in str(e.orig).lower():
+                return "Name is a mandatory field and cannot be empty"
             else:
                 return "An unknown IntegrityError occurred"
         except LookupError as lookup_error:

@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from sqlalchemy import ForeignKey, UniqueConstraint
+from sqlalchemy import CheckConstraint, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -42,57 +42,70 @@ class CategoryTypeEnum(str, Enum):
 class User(Base):
     __tablename__ = "users"
 
+    # mandatory
     id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str] = mapped_column(unique=True)
-    password: Mapped[str]
+    username: Mapped[str] = mapped_column(unique=True, nullable=False)
+    password: Mapped[str] = mapped_column(nullable=False)
 
 
 class Account(Base):
     __tablename__ = "accounts"
 
+    # mandatory
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", name="user"))
-    name: Mapped[str] = mapped_column(unique=True)
-    account_type: Mapped[AccountTypeEnum] = mapped_column(default="BANK")
-    currency: Mapped[CurrencyEnum] = mapped_column(default="EUR")
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", name="user"), nullable=False)
+    name: Mapped[str] = mapped_column(unique=True, nullable=False)
+    account_type: Mapped[AccountTypeEnum] = mapped_column(nullable=False)
+    currency: Mapped[CurrencyEnum] = mapped_column(nullable=False)
     balance: Mapped[int] = mapped_column(default=0)  # In cents
+
+    # optional
     credit_limit: Mapped[Optional[int]]  # In cents
     payment_day: Mapped[Optional[str]]  # Saved as a string, need conversion
     interest_rate: Mapped[Optional[float]]
     credit_method: Mapped[Optional[str]]
 
-    # Relatioships
+    # relatioships
     user: Mapped["User"] = relationship("User")
+    __table_args__ = (CheckConstraint("LENGTH(name) > 0", name="non_empty_string_check"),)
 
 
 class Income(Base):
     __tablename__ = "incomes"
 
+    # mandatory
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", name="user"))
-    account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id", name="account"))
-    name: Mapped[str] = mapped_column(unique=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", name="user"), nullable=False)
+    account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id", name="account"), nullable=False)
+    name: Mapped[str] = mapped_column(unique=True, nullable=False)
     expected_income_value: Mapped[int] = mapped_column(default=0)  # In cents
-    income_date: Mapped[datetime]
-    recurrence: Mapped[Optional[RecurrenceEnum]] = mapped_column(default=RecurrenceEnum.ONE)
-    currency: Mapped[CurrencyEnum] = mapped_column(default="EUR")
+    currency: Mapped[CurrencyEnum] = mapped_column(nullable=False)
+
+    # optional
+    income_date: Mapped[Optional[datetime]]
+    recurrence: Mapped[Optional[RecurrenceEnum]]
 
     # Relationships
     user: Mapped["User"] = relationship("User")
     account: Mapped["Account"] = relationship("Account")
+    __table_args__ = (CheckConstraint("LENGTH(name) > 0", name="non_empty_string_check"),)
 
 
 class Transaction(Base):
     __tablename__ = "transactions"
 
+    # mandatory
     id: Mapped[int] = mapped_column(primary_key=True)
-    account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id", name="account"))
-    subcategory_id: Mapped[int] = mapped_column(ForeignKey("subcategories.id", name="subcategory"))
-    date: Mapped[datetime]
+    account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id", name="account"), nullable=False)
+    subcategory_id: Mapped[int] = mapped_column(ForeignKey("subcategories.id", name="subcategory"), nullable=False)
     value: Mapped[int] = mapped_column(default=0)  # In cents
+    currency: Mapped[CurrencyEnum] = mapped_column(nullable=False)
+
+    # optional
+    date: Mapped[Optional[datetime]]
     description: Mapped[Optional[str]]
 
-    # Relatioships
+    # relatioships
     account: Mapped["Account"] = relationship("Account")
     subcategory: Mapped["SubCategory"] = relationship("SubCategory")
 
@@ -100,29 +113,36 @@ class Transaction(Base):
 class SubCategory(Base):
     __tablename__ = "subcategories"
 
+    # mandatory
     id: Mapped[int] = mapped_column(primary_key=True)
-    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id", name="category"))
-    name: Mapped[str]
+    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id", name="category"), nullable=False)
+    name: Mapped[str] = mapped_column(nullable=False)
     recurrent: Mapped[bool] = mapped_column(default=False)
+
+    # optional
     recurrence: Mapped[Optional[RecurrenceEnum]]
 
-    # Relatioships
+    # relatioships
     category: Mapped["Category"] = relationship("Category")
 
 
 class Category(Base):
     __tablename__ = "categories"
 
+    # mandatory
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(unique=True)
-    category_type: Mapped[CategoryTypeEnum]
+    name: Mapped[str] = mapped_column(unique=True, nullable=False)
+    category_type: Mapped[CategoryTypeEnum] = mapped_column(nullable=False)
 
 
 class UserSubCategory(Base):
     __tablename__ = "usersubcategories"
 
+    # mandatory
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", name="user"))
-    subcategory_id: Mapped[int] = mapped_column(ForeignKey("subcategories.id", name="subcategory"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", name="user"), nullable=False)
+    subcategory_id: Mapped[int] = mapped_column(ForeignKey("subcategories.id", name="subcategory"), nullable=False)
+
+    # relationships
     subcategory: Mapped["SubCategory"] = relationship("SubCategory")
     __table_args__ = (UniqueConstraint("user_id", "subcategory_id", name="uniq_user_subcategory"),)

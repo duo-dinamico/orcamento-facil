@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
-from ezbudget.model import Transaction
+from ezbudget.model import CurrencyEnum, Transaction
 
 
 class ModelTransaction:
@@ -18,7 +18,8 @@ class ModelTransaction:
         subcategory_id: int,
         date: datetime,
         value: int,
-        description: str = "",
+        currency: CurrencyEnum,
+        description: str = None,
     ) -> int | None:
         """Create a new transaction in the database, and return the transaction id.
 
@@ -39,6 +40,7 @@ class ModelTransaction:
                 subcategory_id=subcategory_id,
                 date=date,
                 value=value,
+                currency=currency,
                 description=description,
             )
 

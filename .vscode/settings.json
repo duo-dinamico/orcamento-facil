@@ -10,6 +10,5 @@
   "python.languageServer": "Pylance",
   "editor.rulers": [120],
   "isort.args": ["--profile", "black"],
-  "python.analysis.autoImportCompletions": true,
-  "pylint.args": ["--max-line-length=120"]
+  "python.analysis.autoImportCompletions": true
 }

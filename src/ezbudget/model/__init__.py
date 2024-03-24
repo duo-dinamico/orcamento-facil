@@ -9,6 +9,7 @@ from .base_models import (
     RecurrenceEnum,
     SubCategory,
     Transaction,
+    TransactionTypeEnum,
     User,
     UserSubCategory,
 )

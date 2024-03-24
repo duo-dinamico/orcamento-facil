@@ -30,6 +30,7 @@ class CurrencyEnum(str, Enum):
     EUR = "€"
     GBP = "£"
     USD = "$"
+    JPY = "¥"
 
 
 class CategoryTypeEnum(str, Enum):
@@ -37,6 +38,11 @@ class CategoryTypeEnum(str, Enum):
     WANT = "Want"
     SAVINGS = "Savings"
     DEBT = "Debt"
+
+
+class TransactionTypeEnum(str, Enum):
+    Income = "+"
+    Expense = "-"
 
 
 class User(Base):
@@ -98,6 +104,7 @@ class Transaction(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id", name="account"), nullable=False)
     subcategory_id: Mapped[int] = mapped_column(ForeignKey("subcategories.id", name="subcategory"), nullable=False)
+    transaction_type: Mapped[TransactionTypeEnum] = mapped_column(nullable=False)
     value: Mapped[int] = mapped_column(default=0)  # In cents
     currency: Mapped[CurrencyEnum] = mapped_column(nullable=False)
 
@@ -121,6 +128,8 @@ class SubCategory(Base):
 
     # optional
     recurrence: Mapped[Optional[RecurrenceEnum]]
+    currency: Mapped[Optional[CurrencyEnum]]
+    recurrence_value: Mapped[Optional[int]]
 
     # relatioships
     category: Mapped["Category"] = relationship("Category")

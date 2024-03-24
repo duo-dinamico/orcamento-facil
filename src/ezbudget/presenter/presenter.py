@@ -3,7 +3,12 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Protocol
 
-from ezbudget.model import CategoryTypeEnum, CurrencyEnum, RecurrenceEnum
+from ezbudget.model import (
+    CategoryTypeEnum,
+    CurrencyEnum,
+    RecurrenceEnum,
+    TransactionTypeEnum,
+)
 from ezbudget.utils import get_hashed_password, verify_password
 
 
@@ -197,7 +202,10 @@ class Presenter:
 
         # Transform in a list of names of subcategories
         return_list = [
-            f"{user_subcategory.subcategory.category.name} - {user_subcategory.subcategory.name}"
+            [
+                f"{user_subcategory.subcategory.category.name} - {user_subcategory.subcategory.name}",
+                f"{user_subcategory.subcategory.currency.value if user_subcategory.subcategory.currency is not None else None} {user_subcategory.subcategory.recurrence_value}",
+            ]
             for user_subcategory in user_subcategory_list
         ]
         return return_list
@@ -205,71 +213,89 @@ class Presenter:
     # transaction related
     def create_transaction(self, transaction_data) -> None:
         """Create a transaction in Model, when activated in View."""
-        updated_transaction = self.update_transaction_dict(transaction_data)
+        updated_transaction = self.format_transaction_data(transaction_data)
 
         # Create the transaction in the model
         transaction = self.model_transaction.create_transaction(**updated_transaction)
 
         if transaction:
             account = self.model_account.read_account_by_id(transaction.account_id)
-            if transaction.value >= 0:
+            if transaction.transaction_type == "Income":
                 account.balance += transaction.value
             else:
-                account.balance -= abs(transaction.value)
+                account.balance -= transaction.value
             self.model_account.update_account(account)
             self.view.homepage_view.transactions.set_transactions_model()
+            self.view.homepage_view.transactions.clear_fields()
             self.view.homepage_view.incoming_outgoing.set_account_model()
             self.view.homepage_view.incoming_outgoing.set_credit_card_model()
 
-    def update_transaction(self, transaction_id: int, transaction_data, previous_value, previous_account_id) -> None:
-        """ " Presenter method that call model to update transaction."""
+    def update_transaction(
+        self,
+        transaction_id: int,
+        transaction_data: dict,
+        previous_value: int,
+        previous_account_id: int,
+        previous_transaction_type: TransactionTypeEnum,
+    ) -> None:
+        """Presenter method that call model to update transaction."""
 
         # update the transaction from the model with the new values
-        transaction = self.model_transaction.read_transaction_by_id(transaction_id)
-        updated_transaction = self.update_transaction_dict(transaction_data)
-        for key, value in updated_transaction.items():
-            setattr(transaction, key, value)
+        transaction_to_update = self.model_transaction.read_transaction_by_id(transaction_id)
+        formatted_transaction_data = self.format_transaction_data(transaction_data)
 
-        # convert to int
-        transaction.value = int(transaction.value)
-        int_previous_value = int(previous_value)
+        # we update the values on the transaction to update with the transaction data value
+        for key, value in formatted_transaction_data.items():
+            setattr(transaction_to_update, key, value)
 
         # update the value in the accounts
         previous_account = self.model_account.read_account_by_id(previous_account_id)
-        new_account = self.model_account.read_account_by_id(updated_transaction["account_id"])
+        new_account = self.model_account.read_account_by_id(formatted_transaction_data["account_id"])
 
-        direction = -1 if int_previous_value > transaction.value else 1
-        difference = abs(int_previous_value - transaction.value)
+        # we need to catch everything that might have changed and has an impact on something else:
+        # if account changes we need to use the value to update the balance on both accounts
+        # If account changes together with the type of transaction, we need to adjust it too
+        # if only the value changes, it's a direct change
+        # if only the type of transaction changes, it's a direct change but we have to update the account balance flow
+        # if value and transaction type changes, we need to adjust accordingly
         if previous_account.name != new_account.name:
-            if int_previous_value != transaction.value:
-                if int_previous_value > 0:
-                    previous_account.balance -= abs(int_previous_value)
+            if transaction_to_update.transaction_type != previous_transaction_type.name:
+                if transaction_to_update.transaction_type == "Income":
+                    previous_account.balance += previous_value
+                    new_account.balance += transaction_to_update.value
                 else:
-                    previous_account.balance += abs(int_previous_value)
-                if transaction.value > 0:
-                    new_account.balance += abs(transaction.value)
-                else:
-                    new_account.balance -= abs(transaction.value)
+                    previous_account.balance -= previous_value
+                    new_account.balance -= transaction_to_update.value
             else:
-                if transaction.value > 0:
-                    previous_account.balance -= transaction.value
-                    new_account.balance += transaction.value
+                if transaction_to_update.transaction_type == "Income":
+                    previous_account.balance -= transaction_to_update.value
+                    new_account.balance += transaction_to_update.value
                 else:
-                    previous_account.balance += abs(transaction.value)
-                    new_account.balance -= abs(transaction.value)
+                    previous_account.balance += transaction_to_update.value
+                    new_account.balance -= transaction_to_update.value
+        else:
+            difference = abs(transaction_to_update.value - previous_value)
+            if transaction_to_update.transaction_type != previous_transaction_type.name:
+                if transaction_to_update.transaction_type == "Income":
+                    previous_account.balance += previous_value
+                    previous_account.balance += transaction_to_update.value
+                else:
+                    previous_account.balance -= previous_value
+                    previous_account.balance -= transaction_to_update.value
+            else:
+                previous_account.balance = (
+                    previous_account.balance - difference if difference < 0 else previous_account.balance + difference
+                )
 
-            self.model_account.update_account(previous_account)
-            self.model_account.update_account(new_account)
-
-        elif previous_account.name == new_account.name and int_previous_value != transaction.value:
-            previous_account.balance += difference * direction
-            self.model_account.update_account(previous_account)
+        self.model_account.update_account(previous_account)
+        self.model_account.update_account(new_account)
 
         # Send data to model process
-        self.model_transaction.update_transaction(transaction)
+        self.model_transaction.update_transaction(transaction_to_update)
 
-        # update models and tables
+        # update views and their models
         self.view.homepage_view.transactions.set_transactions_model()
+        self.view.homepage_view.transactions.clear_fields()
         self.view.homepage_view.incoming_outgoing.set_account_model()
         self.view.homepage_view.incoming_outgoing.set_credit_card_model()
 
@@ -277,15 +303,15 @@ class Presenter:
         # TODO Account type
         return self.model_transaction.read_transaction_list_by_user(user_id=self.model.user.id)
 
-    def remove_transaction(self, transaction_data, transaction_id) -> None:
+    def remove_transaction(self, transaction_data, transaction_id, account_id) -> None:
         """Presenter method that call model to delete transaction."""
-        account_id = self.model_account.read_account_by_name(transaction_data["account_name"]).id
         account = self.model_account.read_account_by_id(account_id)
         transaction_value = int(transaction_data["value"])
-        if transaction_value >= 0:
+        if transaction_data["transaction_type"] == "Income":
             account.balance -= transaction_value
         else:
-            account.balance += abs(transaction_value)
+            account.balance += transaction_value
+
         self.model_account.update_account(account)
 
         # Delete
@@ -293,6 +319,7 @@ class Presenter:
 
         # Refresh view
         self.view.homepage_view.transactions.set_transactions_model()
+        self.view.homepage_view.transactions.clear_fields()
         self.view.homepage_view.incoming_outgoing.set_account_model()
         self.view.homepage_view.incoming_outgoing.set_credit_card_model()
 
@@ -300,21 +327,37 @@ class Presenter:
     def get_currency(self):
         return CurrencyEnum
 
+    def get_transaction_types(self):
+        return TransactionTypeEnum
+
     def get_recurrence(self):
         return RecurrenceEnum
 
     def get_category_type(self):
         return [category_type.value for category_type in CategoryTypeEnum]
 
-    def update_transaction_dict(self, transaction_data):
+    def format_transaction_data(self, transaction_data):
+        keys_to_remove = ["account_name", "subcategory_name"]
+        formatted_transaction_data = {**transaction_data}
+
+        # get account id using account name
         account_id = self.model_account.read_account_by_name(transaction_data["account_name"]).id
-        transaction_data["account_id"] = account_id
-        del transaction_data["account_name"]
+        formatted_transaction_data["account_id"] = account_id
+
+        # split the user subcategory to get category and subcatebory id
         subcategory_split = transaction_data["subcategory_name"].split(" - ")
         category_id = self.get_category_id_by_name(subcategory_split[0])
         subcategory_id = self.model_subcategory.read_subcategory_by_name(subcategory_split[1], category_id).id
-        transaction_data["subcategory_id"] = subcategory_id
-        del transaction_data["subcategory_name"]
-        transaction_data["date"] = datetime.strptime(transaction_data["date"], "%Y/%m/%d").date()
+        formatted_transaction_data["subcategory_id"] = subcategory_id
 
-        return transaction_data
+        # update date string to string format
+        formatted_transaction_data["date"] = datetime.strptime(transaction_data["date"], "%Y/%m/%d").date()
+
+        # update the transaction value to int
+        formatted_transaction_data["value"] = int(transaction_data["value"])
+
+        # remove unecessary fields
+        for key in keys_to_remove:
+            del formatted_transaction_data[key]
+
+        return formatted_transaction_data

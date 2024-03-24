@@ -1,6 +1,7 @@
 from PySide6.QtCore import QAbstractListModel, Qt
 from PySide6.QtWidgets import (
     QComboBox,
+    QDoubleSpinBox,
     QFormLayout,
     QGroupBox,
     QHBoxLayout,
@@ -57,6 +58,8 @@ class Categories(QWidget):
         self.cbx_categories = QComboBox()
         self.cbx_recurrent = QComboBox()
         self.cbx_recurrency = QComboBox()
+        self.cbx_currencies = QComboBox()
+        self.dsp_value = QDoubleSpinBox()
 
         # setup the list / tree
         self.trw_categories.setHeaderLabels(["Categories"])
@@ -88,8 +91,18 @@ class Categories(QWidget):
         frm_add_subcategories.addRow("Recurrent", self.cbx_recurrent)
         self.cbx_recurrent.currentIndexChanged.connect(self.on_recurrent_change)
         frm_add_subcategories.addRow("Recurrency", self.cbx_recurrency)
+        frm_add_subcategories.addRow("Recurrency value", self.dsp_value)
+        frm_add_subcategories.addRow("Currency", self.cbx_currencies)
         frm_add_subcategories.addRow(btn_add_subcategory)
         btn_add_subcategory.clicked.connect(lambda: self.presenter.create_subcategory(self.get_subcategory_data()))
+
+        # configure value entry
+        self.populate_currencies()
+        self.dsp_value.setMaximum(999999.99)
+        self.dsp_value.setMinimum(-999999.99)
+        self.dsp_value.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.dsp_value.setPrefix(f"{self.currency_list[self.cbx_currencies.currentText()].value} ")
+        self.cbx_currencies.currentTextChanged.connect(self.on_currency_change)
 
         # setup user categories buttons
         vbl_controls.addWidget(btn_select_users_categories)
@@ -132,8 +145,9 @@ class Categories(QWidget):
                 subcategory.setSelected(True)
 
     def set_categories_model(self):
-        self.user_subcategory_list = self.presenter.get_user_subcategory_list()
-        self.user_subcategory_list_model = CategoryListModel(self.user_subcategory_list)
+        user_subcategory_list = self.presenter.get_user_subcategory_list()
+        category_with_subcategory: list = [user_subcategory[0] for user_subcategory in user_subcategory_list]
+        self.user_subcategory_list_model = CategoryListModel(category_with_subcategory)
         self.lvw_user_categories.setModel(self.user_subcategory_list_model)
 
     def add_user_categories(self):
@@ -163,12 +177,17 @@ class Categories(QWidget):
     def populate_recurrence(self):
         recurrence_list = self.presenter.get_recurrence()
         self.cbx_recurrency.clear()
-        self.cbx_recurrency.addItems(recurrence for recurrence in recurrence_list)
+        self.cbx_recurrency.addItems(recurrence for recurrence in recurrence_list if recurrence.name != "ONE")
 
     def populate_category_type(self):
         category_type_list = self.presenter.get_category_type()
         self.cbx_category_type.clear()
         self.cbx_category_type.addItems(category_type for category_type in category_type_list)
+
+    def populate_currencies(self):
+        self.currency_list = self.presenter.get_currency()
+        self.cbx_currencies.clear()
+        self.cbx_currencies.addItems([currency.name for currency in self.currency_list])
 
     def on_recurrent_change(self, _):
         if self.cbx_recurrent.currentText() == "No":
@@ -182,7 +201,12 @@ class Categories(QWidget):
             "name": self.lne_subcategory_name.text(),
             "recurrent": True if self.cbx_recurrent.currentText() == "Yes" else False,
             "recurrence": self.cbx_recurrency.currentText(),
+            "recurrence_value": self.dsp_value.value() * 100,
+            "currency": self.cbx_currencies.currentText(),
         }
 
     def get_category_data(self):
         return {"name": self.lne_category_name.text(), "category_type": self.cbx_category_type.currentText()}
+
+    def on_currency_change(self):
+        self.dsp_value.setPrefix(f"{self.currency_list[self.cbx_currencies.currentText()].value} ")

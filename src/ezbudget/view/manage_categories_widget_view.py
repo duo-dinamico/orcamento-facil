@@ -130,7 +130,7 @@ class Categories(QWidget):
         self.trw_categories.clear()
 
         for category in self.categories:
-            tree_category = QTreeWidgetItem(self.trw_categories, [category.name])
+            tree_category = QTreeWidgetItem(self.trw_categories, [f"{category.category_type.value} - {category.name}"])
             tree_category.setData(0, Qt.UserRole, f"CAT-{category.id}")
             for subcategory in self.subcategories:
                 if subcategory.category_id == category.id:

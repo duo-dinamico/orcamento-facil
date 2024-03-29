@@ -16,9 +16,10 @@ class ModelIncome:
         user_id: int,
         account_id: int,
         name: str,
-        expected_income_value,
+        recurrence_value,
         income_date: date = None,
         currency: str = None,
+        recurrent: bool = False,
         recurrence: RecurrenceEnum = None,
     ) -> Income:
         """Create a new income, for a given account and return the new income.
@@ -26,7 +27,7 @@ class ModelIncome:
         Args:
             account_id: the account id for the income.
             name: name of the income.
-            expected_income_value: expected value of the income in cents, it's zero by default.
+            recurrence_value: expected value of the income in cents, it's zero by default.
             income_date: the expected date of the income. We will only care about day and month.
             recurrence: recurrence of the income, from an enum, it's ONE by default.
 
@@ -40,9 +41,10 @@ class ModelIncome:
                 user_id=user_id,
                 account_id=account_id,
                 name=name,
-                expected_income_value=expected_income_value,
+                recurrence_value=recurrence_value,
                 income_date=income_date,
                 currency=currency,
+                recurrent=recurrent,
                 recurrence=recurrence,
             )
             self.parent.session.add(income)

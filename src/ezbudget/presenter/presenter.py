@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from calendar import isleap, monthcalendar, monthrange
 from datetime import datetime
 from typing import Protocol
 
@@ -83,7 +84,7 @@ class Presenter:
                 self.view.homepage_view.incoming_outgoing.set_credit_card_model()
                 self.view.homepage_view.incoming_outgoing.clear_account_data()
                 self.view.homepage_view.incoming_outgoing.clear_credit_card_data()
-                self.view.homepage_view.transactions.populate_target_accounts()
+                self.view.homepage_view.transactions.populate_accounts()
 
     def get_account_list(self, account_type) -> None:
         return self.model_account.read_accounts_by_user(user_id=self.model.user.id, account_type=account_type)
@@ -112,7 +113,7 @@ class Presenter:
                 return {"balance": balance, "user_accounts": user_accounts}
             return {"balance": 0, "user_accounts": []}
 
-    def get_target_accounts(self):
+    def get_accounts(self):
         return [account.name for account in self.model_account.read_accounts_by_user(user_id=self.model.user.id)]
 
     def handle_set_total_credit_cards(self):
@@ -147,6 +148,7 @@ class Presenter:
             else:
                 self.view.homepage_view.incoming_outgoing.set_incoming_model()
                 self.view.homepage_view.incoming_outgoing.clear_income_data()
+                self.view.homepage_view.monthly_budget.set_table_selection()
 
     def get_income_list(self) -> None:
         return self.model_income.read_incomes_by_user(user_id=self.model.user.id)
@@ -190,10 +192,13 @@ class Presenter:
                 user_id=self.model.user.id, subcategory_id=subcategory_id
             )
             self.view.homepage_view.transactions.populate_subcategories()
+            self.view.homepage_view.monthly_budget.total_budgeted()
+            self.view.homepage_view.monthly_budget.set_table_selection()
 
     def remove_user_category(self, subcategory_id: int):
         removed_user_category = self.model_user_subcategory.delete_user_subcategory(subcategory_id=subcategory_id)
         self.view.homepage_view.transactions.populate_subcategories()
+        self.view.homepage_view.monthly_budget.set_table_selection()
         return removed_user_category
 
     def get_user_subcategory_list(self):
@@ -210,6 +215,42 @@ class Presenter:
         ]
         return return_list
 
+    def get_total_budgeted(self):
+        user_subcategory_list = self.model_user_subcategory.read_user_subcategories_by_user(user_id=self.model.user.id)
+        income_sources_list = self.model_income.read_incomes_by_user(user_id=self.model.user.id)
+        budgeted_income = 0
+        budgeted_expenses = 0
+        current_year = datetime.now().year
+        current_month = datetime.now().month
+        number_of_weeks = len(monthcalendar(current_year, current_month))
+        number_of_days = monthrange(current_year, current_month)[1]
+        for expense in user_subcategory_list:
+            if expense.subcategory.recurrent:
+                budgeted_expenses += self.monthly_recurrence_balance(
+                    expense.subcategory, number_of_days, number_of_weeks
+                )
+        for income in income_sources_list:
+            if income.recurrent:
+                budgeted_income += self.monthly_recurrence_balance(income, number_of_days, number_of_weeks)
+
+        return {"budgeted_income": budgeted_income, "budgeted_expenses": budgeted_expenses}
+
+    def get_total_real(self):
+        transaction_list = self.model_transaction.read_transaction_list_by_user(user_id=self.model.user.id)
+        total_income = 0
+        total_expenses = 0
+        current_year = datetime.now().year
+        current_month = datetime.now().month
+        for x in transaction_list:
+            transaction_date: datetime = x.date
+            if transaction_date.year == current_year and transaction_date.month == current_month:
+                if x.transaction_type == TransactionTypeEnum.Income:
+                    total_income += x.value
+                if x.transaction_type == TransactionTypeEnum.Expense:
+                    total_expenses += x.value
+
+        return {"total_income": total_income, "total_expenses": total_expenses}
+
     # transaction related
     def create_transaction(self, transaction_data) -> None:
         """Create a transaction in Model, when activated in View."""
@@ -220,15 +261,21 @@ class Presenter:
 
         if transaction:
             account = self.model_account.read_account_by_id(transaction.account_id)
-            if transaction.transaction_type == "Income":
+            if transaction.transaction_type == TransactionTypeEnum.Income:
                 account.balance += transaction.value
-            else:
+            elif transaction.transaction_type == TransactionTypeEnum.Expense:
                 account.balance -= transaction.value
+            elif transaction.transaction_type == TransactionTypeEnum.Transfer:
+                transfer_account = self.model_account.read_account_by_id(transaction.target_account_id)
+                account.balance -= transaction.value
+                transfer_account.balance += transaction.value
+                self.model_account.update_account(transfer_account)
             self.model_account.update_account(account)
             self.view.homepage_view.transactions.set_transactions_model()
             self.view.homepage_view.transactions.clear_fields()
             self.view.homepage_view.incoming_outgoing.set_account_model()
             self.view.homepage_view.incoming_outgoing.set_credit_card_model()
+            self.view.homepage_view.monthly_budget.set_table_selection()
 
     def update_transaction(
         self,
@@ -252,12 +299,6 @@ class Presenter:
         previous_account = self.model_account.read_account_by_id(previous_account_id)
         new_account = self.model_account.read_account_by_id(formatted_transaction_data["account_id"])
 
-        # we need to catch everything that might have changed and has an impact on something else:
-        # if account changes we need to use the value to update the balance on both accounts
-        # If account changes together with the type of transaction, we need to adjust it too
-        # if only the value changes, it's a direct change
-        # if only the type of transaction changes, it's a direct change but we have to update the account balance flow
-        # if value and transaction type changes, we need to adjust accordingly
         if previous_account.name != new_account.name:
             if transaction_to_update.transaction_type != previous_transaction_type.name:
                 if transaction_to_update.transaction_type == "Income":
@@ -274,17 +315,29 @@ class Presenter:
                     previous_account.balance += transaction_to_update.value
                     new_account.balance -= transaction_to_update.value
         else:
-            difference = abs(transaction_to_update.value - previous_value)
+            difference = transaction_to_update.value - previous_value
             if transaction_to_update.transaction_type != previous_transaction_type.name:
                 if transaction_to_update.transaction_type == "Income":
                     previous_account.balance += previous_value
                     previous_account.balance += transaction_to_update.value
-                else:
+                if transaction_to_update.transaction_type == "Expense":
                     previous_account.balance -= previous_value
                     previous_account.balance -= transaction_to_update.value
             else:
+                if transaction_to_update.transaction_type == "Transfer":
+                    target_account = self.model_account.read_account_by_id(
+                        formatted_transaction_data["target_account_id"]
+                    )
+                    target_account.balance = (
+                        target_account.balance - abs(difference)
+                        if difference < 0
+                        else target_account.balance + abs(difference)
+                    )
+                    self.model_account.update_account(target_account)
                 previous_account.balance = (
-                    previous_account.balance - difference if difference < 0 else previous_account.balance + difference
+                    previous_account.balance + abs(difference)
+                    if difference < 0
+                    else previous_account.balance - abs(difference)
                 )
 
         self.model_account.update_account(previous_account)
@@ -298,19 +351,27 @@ class Presenter:
         self.view.homepage_view.transactions.clear_fields()
         self.view.homepage_view.incoming_outgoing.set_account_model()
         self.view.homepage_view.incoming_outgoing.set_credit_card_model()
+        self.view.homepage_view.monthly_budget.set_table_selection()
 
     def get_transactions_list(self) -> None:
         # TODO Account type
         return self.model_transaction.read_transaction_list_by_user(user_id=self.model.user.id)
 
-    def remove_transaction(self, transaction_data, transaction_id, account_id) -> None:
+    def remove_transaction(
+        self, transaction_data, transaction_id: int, account_id: int, target_account_id: int
+    ) -> None:
         """Presenter method that call model to delete transaction."""
         account = self.model_account.read_account_by_id(account_id)
         transaction_value = int(transaction_data["value"])
         if transaction_data["transaction_type"] == "Income":
             account.balance -= transaction_value
-        else:
+        elif transaction_data["transaction_type"] == "Expense":
             account.balance += transaction_value
+        elif transaction_data["transaction_type"] == "Transfer":
+            target_account = self.model_account.read_account_by_id(target_account_id)
+            account.balance += transaction_value
+            target_account.balance -= transaction_value
+            self.model_account.update_account(target_account)
 
         self.model_account.update_account(account)
 
@@ -322,6 +383,38 @@ class Presenter:
         self.view.homepage_view.transactions.clear_fields()
         self.view.homepage_view.incoming_outgoing.set_account_model()
         self.view.homepage_view.incoming_outgoing.set_credit_card_model()
+        self.view.homepage_view.monthly_budget.set_table_selection()
+
+    def get_month_summary(self):
+        user_categories_list = self.model_user_subcategory.read_user_subcategories_by_user(user_id=self.model.user.id)
+        month_summary = []
+        current_year = datetime.now().year
+        current_month = datetime.now().month
+        number_of_weeks = len(monthcalendar(current_year, current_month))
+        number_of_days = monthrange(current_year, current_month)[1]
+        for x in user_categories_list:
+            transaction_summary = []
+            if x.subcategory.recurrent:
+                category_subcategory_name = f"{x.subcategory.category.name} - {x.subcategory.name}"
+                transaction_summary.append(category_subcategory_name)
+                anual_budget = self.yearly_recurrence_balance(x.subcategory) / 100
+                transaction_summary.append(anual_budget)
+                recurrent_value = self.monthly_recurrence_balance(x.subcategory, number_of_days, number_of_weeks) / 100
+                transaction_summary.append(recurrent_value)
+                transaction_summary.append(x.subcategory.recurrence.value)
+                subcategory_transactions = self.model_transaction.read_transaction_list_by_subcategory(
+                    subcategory_id=x.subcategory_id
+                )
+                current_month_transactions_value = 0
+                for y in subcategory_transactions:
+                    transaction_date: datetime = y.date
+                    if transaction_date.year == current_year and transaction_date.month == current_month:
+                        current_month_transactions_value += y.value / 100
+                transaction_summary.append(current_month_transactions_value)
+                transaction_summary.append(recurrent_value - current_month_transactions_value)
+
+                month_summary.append(transaction_summary)
+        return month_summary
 
     # utils
     def get_currency(self):
@@ -337,12 +430,17 @@ class Presenter:
         return [category_type.value for category_type in CategoryTypeEnum]
 
     def format_transaction_data(self, transaction_data):
-        keys_to_remove = ["account_name", "subcategory_name"]
+        keys_to_remove = ["account_name", "subcategory_name", "target_account_name"]
         formatted_transaction_data = {**transaction_data}
 
         # get account id using account name
         account_id = self.model_account.read_account_by_name(transaction_data["account_name"]).id
         formatted_transaction_data["account_id"] = account_id
+
+        # get targret account id using account name
+        if transaction_data["target_account_name"]:
+            target_account_id = self.model_account.read_account_by_name(transaction_data["target_account_name"]).id
+            formatted_transaction_data["target_account_id"] = target_account_id
 
         # split the user subcategory to get category and subcatebory id
         subcategory_split = transaction_data["subcategory_name"].split(" - ")
@@ -361,3 +459,32 @@ class Presenter:
             del formatted_transaction_data[key]
 
         return formatted_transaction_data
+
+    def monthly_recurrence_balance(self, recurrence, number_of_days: int, number_of_weeks: int) -> int:
+        monthly_balance = 0
+        if recurrence.recurrence == RecurrenceEnum.DAY:
+            monthly_balance += recurrence.recurrence_value * number_of_days
+        if recurrence.recurrence == RecurrenceEnum.WEEK:
+            monthly_balance += recurrence.recurrence_value * number_of_weeks
+        if recurrence.recurrence == RecurrenceEnum.MONTH:
+            monthly_balance += recurrence.recurrence_value
+        if recurrence.recurrence == RecurrenceEnum.YEAR:
+            monthly_balance += recurrence.recurrence_value / 12
+        return monthly_balance
+
+    def yearly_recurrence_balance(self, recurrence) -> int:
+        yearly_balance = 0
+        current_year = datetime.now().year
+        number_of_days = 366 if isleap(current_year) else 365
+        number_of_weeks = 52
+        number_of_months = 12
+        if recurrence.recurrence == RecurrenceEnum.DAY:
+            yearly_balance += recurrence.recurrence_value * number_of_days
+        if recurrence.recurrence == RecurrenceEnum.WEEK:
+            yearly_balance += recurrence.recurrence_value * number_of_weeks
+        if recurrence.recurrence == RecurrenceEnum.MONTH:
+            yearly_balance += recurrence.recurrence_value * number_of_months
+        if recurrence.recurrence == RecurrenceEnum.YEAR:
+            yearly_balance += recurrence.recurrence_value
+
+        return yearly_balance

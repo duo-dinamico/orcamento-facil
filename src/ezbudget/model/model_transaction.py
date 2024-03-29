@@ -21,6 +21,7 @@ class ModelTransaction:
         value: int,
         currency: CurrencyEnum,
         description: str = None,
+        target_account_id: int = None,
     ) -> int | None:
         """Create a new transaction in the database, and return the transaction id.
 
@@ -44,6 +45,7 @@ class ModelTransaction:
                 value=value,
                 currency=currency,
                 description=description,
+                target_account_id=target_account_id,
             )
 
             self.parent.session.add(new_transaction)
@@ -100,6 +102,19 @@ class ModelTransaction:
         """
         try:
             return self.parent.read_all_basequery(select(Transaction).where(Transaction.account_id == account_id))
+        except NoResultFound:
+            return None
+
+    def read_transaction_list_by_subcategory(self, subcategory_id: int) -> list:
+        """Return a list of all transaction objects of a given subcategory.
+
+        Args:
+            subcategory_id: the subcategory id.
+        """
+        try:
+            return self.parent.read_all_basequery(
+                select(Transaction).where(Transaction.subcategory_id == subcategory_id)
+            )
         except NoResultFound:
             return None
 

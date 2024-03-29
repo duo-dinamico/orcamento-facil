@@ -43,6 +43,7 @@ class CategoryTypeEnum(str, Enum):
 class TransactionTypeEnum(str, Enum):
     Income = "+"
     Expense = "-"
+    Transfer = "<- ->"
 
 
 class User(Base):
@@ -84,8 +85,9 @@ class Income(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", name="user"), nullable=False)
     account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id", name="account"), nullable=False)
     name: Mapped[str] = mapped_column(unique=True, nullable=False)
-    expected_income_value: Mapped[int] = mapped_column(default=0)  # In cents
+    recurrence_value: Mapped[int] = mapped_column(default=0)  # In cents
     currency: Mapped[CurrencyEnum] = mapped_column(nullable=False)
+    recurrent: Mapped[bool] = mapped_column(default=False)
 
     # optional
     income_date: Mapped[Optional[datetime]]
@@ -102,18 +104,20 @@ class Transaction(Base):
 
     # mandatory
     id: Mapped[int] = mapped_column(primary_key=True)
-    account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id", name="account"), nullable=False)
+    account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), nullable=False)
     subcategory_id: Mapped[int] = mapped_column(ForeignKey("subcategories.id", name="subcategory"), nullable=False)
     transaction_type: Mapped[TransactionTypeEnum] = mapped_column(nullable=False)
     value: Mapped[int] = mapped_column(default=0)  # In cents
     currency: Mapped[CurrencyEnum] = mapped_column(nullable=False)
+    date: Mapped[datetime]
 
     # optional
-    date: Mapped[Optional[datetime]]
     description: Mapped[Optional[str]]
+    target_account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), nullable=True)
 
     # relatioships
-    account: Mapped["Account"] = relationship("Account")
+    account: Mapped["Account"] = relationship("Account", foreign_keys=[account_id])
+    target_account: Mapped["Account"] = relationship("Account", foreign_keys=[target_account_id])
     subcategory: Mapped["SubCategory"] = relationship("SubCategory")
 
 

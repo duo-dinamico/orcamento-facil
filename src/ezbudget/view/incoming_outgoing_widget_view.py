@@ -68,6 +68,7 @@ class IncomingOutgoing(QWidget):
         self.cbx_incoming_account = QComboBox()
         self.cbx_incoming_currency = QComboBox()
         self.cbx_incoming_recurrence = QComboBox()
+        self.cbx_incoming_recurrent = QComboBox()
         self.cbx_credit_card_currency = QComboBox()
         self.lbl_account_error_message = QLabel("")
         self.lbl_income_error_message = QLabel("")
@@ -164,6 +165,9 @@ class IncomingOutgoing(QWidget):
         frm_add_edit_incomings.addRow("Currency (*)", self.cbx_incoming_currency)
         frm_add_edit_incomings.addRow("Expected income", self.dsp_incoming_expected)
         frm_add_edit_incomings.addRow("Expected date", self.dte_incoming_date)
+        self.cbx_incoming_recurrent.addItems(["Yes", "No"])
+        frm_add_edit_incomings.addRow("Recurrent", self.cbx_incoming_recurrent)
+        self.cbx_incoming_recurrent.currentIndexChanged.connect(self.on_recurrent_change)
         frm_add_edit_incomings.addRow("Recurrence", self.cbx_incoming_recurrence)
 
         frm_add_edit_credit_cards.addRow("Name (*)", self.lne_credit_card_name)
@@ -261,10 +265,15 @@ class IncomingOutgoing(QWidget):
         return {
             "name": self.lne_incoming_name.text(),
             "account_name": self.cbx_incoming_account.currentText(),
-            "expected_income_value": self.dsp_incoming_expected.value() * 100,
+            "recurrence_value": self.dsp_incoming_expected.value() * 100,
             "income_date": self.dte_incoming_date.date().toString("yyyy/MM/dd"),
             "currency": self.cbx_incoming_currency.currentText(),
-            "recurrence": self.cbx_incoming_recurrence.currentText(),
+            "recurrent": True if self.cbx_incoming_recurrent.currentText() == "Yes" else False,
+            "recurrence": (
+                self.cbx_incoming_recurrence.currentText()
+                if self.cbx_incoming_recurrent.currentText() == "Yes"
+                else None
+            ),
         }
 
     def get_credit_card_data(self):
@@ -285,7 +294,7 @@ class IncomingOutgoing(QWidget):
         self.cbx_credit_card_currency.addItems([currency.name for currency in self.currency_list])
 
     def populate_target_accounts(self):
-        self.target_accounts = self.presenter.get_target_accounts()
+        self.target_accounts = self.presenter.get_accounts()
         if len(self.target_accounts) > 0:
             self.btn_incoming_add.setEnabled(True)
         else:
@@ -311,7 +320,7 @@ class IncomingOutgoing(QWidget):
         self.incoming_list = self.presenter.get_income_list()
         self.incoming_list_model = TableModel(
             [
-                (income_source.name, f"{income_source.expected_income_value / 100} {income_source.currency.value}")
+                (income_source.name, f"{income_source.recurrence_value / 100} {income_source.currency.value}")
                 for income_source in self.incoming_list
             ],
             ["Name", "Balance"],
@@ -341,7 +350,7 @@ class IncomingOutgoing(QWidget):
         income_source = self.incoming_list[selected_row]
         self.lne_incoming_name.setText(income_source.name)
         self.cbx_incoming_account.setCurrentText(income_source.account.name)
-        self.dsp_incoming_expected.setValue(income_source.expected_income_value / 100)
+        self.dsp_incoming_expected.setValue(income_source.recurrence_value / 100)
         self.dte_incoming_date.setDate(income_source.income_date)
         self.cbx_incoming_currency.setCurrentText(income_source.currency.name)
         self.cbx_incoming_recurrence.setCurrentText(income_source.recurrence.value)
@@ -353,6 +362,12 @@ class IncomingOutgoing(QWidget):
         self.dsp_credit_card_balance.setValue(credit_card.balance / 100)
         self.cbx_credit_card_currency.setCurrentText(credit_card.currency.name)
         self.dsp_credit_card_limit.setValue(credit_card.credit_limit / 100)
+
+    def on_recurrent_change(self):
+        if self.cbx_incoming_recurrent.currentText() == "No":
+            self.cbx_incoming_recurrence.setDisabled(True)
+        else:
+            self.cbx_incoming_recurrence.setDisabled(False)
 
     def set_account_error(self, message):
         self.lbl_account_error_message.setText(message)

@@ -1,6 +1,7 @@
 from PySide6.QtCore import QAbstractTableModel, QDate, QDateTime, QModelIndex, Qt
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QCheckBox,
     QComboBox,
     QDateEdit,
     QDoubleSpinBox,
@@ -61,10 +62,12 @@ class Transactions(QWidget):
         hbl_transactions = QHBoxLayout()
         vbl_add_edit_transactions = QVBoxLayout()
         frm_add_edit_transactions = QFormLayout()
-        self.cbx_target_account = QComboBox()
+        self.cbx_account = QComboBox()
         self.cbx_subcategories = QComboBox()
         self.cbx_currencies = QComboBox()
         self.cbx_transaction_type = QComboBox()
+        self.cbx_target_account = QComboBox()
+        self.chk_transfer_account_toggle = QCheckBox()
         self.dte_transaction_date = QDateEdit()
         self.lne_description = QLineEdit()
         self.btn_add_transaction = QPushButton("Add transaction")
@@ -83,11 +86,16 @@ class Transactions(QWidget):
         table_header.setSectionResizeMode(QHeaderView.Stretch)
 
         # get the data and set it to the models
-        self.populate_target_accounts()
+        self.populate_accounts()
         self.populate_subcategories()
         self.populate_transaction_types()
         self.on_subcategory_change()
         self.set_transactions_model()
+
+        # target accounts setup
+        self.cbx_target_account.setEnabled(False)
+        self.cbx_account.currentTextChanged.connect(self.on_transfer_account_toggle)
+        self.chk_transfer_account_toggle.stateChanged.connect(self.on_transfer_account_toggle)
 
         # setup of calendar
         min_date = QDate(QDate.currentDate().year(), QDate.currentDate().month(), 1)
@@ -99,7 +107,9 @@ class Transactions(QWidget):
         self.dte_transaction_date.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         # setup the frame
-        frm_add_edit_transactions.addRow("Account", self.cbx_target_account)
+        frm_add_edit_transactions.addRow("Account", self.cbx_account)
+        frm_add_edit_transactions.addRow("Is account transfer", self.chk_transfer_account_toggle)
+        frm_add_edit_transactions.addRow("Target account", self.cbx_target_account)
         frm_add_edit_transactions.addRow("Category", self.cbx_subcategories)
         frm_add_edit_transactions.addRow("Recurring value", self.dsp_recurring_value)
         frm_add_edit_transactions.addRow("Date", self.dte_transaction_date)
@@ -139,7 +149,7 @@ class Transactions(QWidget):
         )
         self.btn_delete_transaction.clicked.connect(
             lambda: self.presenter.remove_transaction(
-                self.get_transaction_data(), self.transaction_id, self.current_account_id
+                self.get_transaction_data(), self.transaction_id, self.current_account_id, self.target_account_id
             )
         )
         self.btn_clear.clicked.connect(self.clear_fields)
@@ -170,11 +180,12 @@ class Transactions(QWidget):
         self.current_account_id = transaction.account.id
         self.transaction_type = transaction.transaction_type
         self.transaction_id = selected_index.siblingAtColumn(0).data(Qt.UserRole)
-        self.cbx_target_account.setCurrentText(transaction.account.name)
+        self.cbx_account.setCurrentText(transaction.account.name)
         self.cbx_subcategories.setCurrentText(
             f"{transaction.subcategory.category.name} - {transaction.subcategory.name}"
         )
         self.cbx_transaction_type.setCurrentText(transaction.transaction_type.name)
+        self.cbx_currencies.setCurrentText(transaction.currency.name)
         self.dte_transaction_date.setDate(transaction.date)
         self.dsp_value.setValue(transaction.value / 100)
         self.lne_description.setText(transaction.description)
@@ -182,10 +193,17 @@ class Transactions(QWidget):
         self.btn_edit_transaction.setEnabled(True)
         self.btn_delete_transaction.setEnabled(True)
         self.btn_clear.setEnabled(True)
+        if transaction.transaction_type.name == "Transfer":
+            self.chk_transfer_account_toggle.setChecked(True)
+            self.cbx_target_account.setCurrentText(transaction.target_account.name)
+            self.target_account_id = transaction.target_account.id
+        else:
+            self.chk_transfer_account_toggle.setChecked(False)
 
     def get_transaction_data(self):
-        return {
-            "account_name": self.cbx_target_account.currentText(),
+        data = {
+            "account_name": self.cbx_account.currentText(),
+            "target_account_name": self.cbx_target_account.currentText(),
             "subcategory_name": self.cbx_subcategories.currentText(),
             "date": self.dte_transaction_date.date().toString("yyyy/MM/dd"),
             "currency": self.cbx_currencies.currentText(),
@@ -193,11 +211,32 @@ class Transactions(QWidget):
             "value": self.dsp_value.value() * 100,
             "description": self.lne_description.text(),
         }
+        return data
+
+    def populate_accounts(self):
+        self.accounts = self.presenter.get_accounts()
+        self.cbx_account.clear()
+        self.cbx_account.addItems(self.accounts)
 
     def populate_target_accounts(self):
-        self.target_accounts = self.presenter.get_target_accounts()
+        self.target_accounts = self.presenter.get_accounts()
+        accounts_without_origin = []
+        for account in self.target_accounts:
+            if self.cbx_account.currentText() != account:
+                accounts_without_origin.append(account)
         self.cbx_target_account.clear()
-        self.cbx_target_account.addItems(self.target_accounts)
+        self.cbx_target_account.addItems(accounts_without_origin)
+
+    def on_transfer_account_toggle(self):
+        if self.chk_transfer_account_toggle.isChecked():
+            self.cbx_target_account.setEnabled(True)
+            self.cbx_transaction_type.setEnabled(False)
+            self.cbx_transaction_type.setCurrentText("Transfer")
+            self.populate_target_accounts()
+        else:
+            self.cbx_target_account.clear()
+            self.cbx_transaction_type.setEnabled(True)
+            self.populate_transaction_types()
 
     def populate_subcategories(self):
         self.subcategories = self.presenter.get_user_subcategory_list()
@@ -212,14 +251,17 @@ class Transactions(QWidget):
 
     def clear_fields(self):
         # call on delete as well to reset
+        self.on_transfer_account_toggle()
         self.tbl_transactions.clearSelection()
         self.current_value = None
         self.current_account_id = None
         self.transaction_type = None
         self.transaction_id = None
-        self.cbx_target_account.setCurrentIndex(0)
+        self.cbx_account.setCurrentIndex(0)
         self.cbx_subcategories.setCurrentIndex(0)
         self.cbx_transaction_type.setCurrentIndex(0)
+        self.cbx_target_account.clear()
+        self.chk_transfer_account_toggle.setChecked(False)
         self.dte_transaction_date.setDate(QDate.currentDate())
         self.dsp_value.setValue(0)
         self.lne_description.setText("")

@@ -31,6 +31,7 @@ class ModelUserSubCategory:
             self.parent.session.refresh(new_user_subcategory)
             return new_user_subcategory
         except IntegrityError as e:
+            self.parent.session.rollback()
             if "foreign key constraint" in str(e.orig).lower():
                 return "Either User ID or SubCategory ID does not exist"
             # TODO create unique constraint of the columns and test it
@@ -89,18 +90,16 @@ class ModelUserSubCategory:
         """
         return self.parent.read_all_basequery(select(UserSubCategory).where(UserSubCategory.user_id == user_id))
 
-    def delete_user_subcategory(self, subcategory_id: int) -> int:
-        """Removes a user subcategory relationship for a given subcategory id.
+    def delete_user_subcategory(self, id: int) -> int:
+        """Removes a user subcategory relationship for a given id.
 
         Args:
-            subcategory_id: the id of the subcategory.
+            id: the id of the subcategory.
 
         Returns:
             int: the number of deleted rows
         """
         # TODO Delete and update are under consideration due to the risk of permanent changes
-        deleted_row = (
-            self.parent.session.query(UserSubCategory).where(UserSubCategory.subcategory_id == subcategory_id).delete()
-        )
+        deleted_row = self.parent.session.query(UserSubCategory).where(UserSubCategory.id == id).delete()
         self.parent.session.commit()
         return deleted_row

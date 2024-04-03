@@ -53,11 +53,13 @@ class ModelTransaction:
             self.parent.session.refresh(new_transaction)
             return new_transaction
         except IntegrityError as e:
+            self.parent.session.rollback()
             if "foreign key constraint" in str(e.orig).lower():
                 return "Either Account ID or SubCategory ID does not exist"
             else:
                 return "An unknown IntegrityError occurred"
         except LookupError as lookup_error:
+            self.parent.session.rollback()
             return f"A LookupError occurred: {lookup_error}"
 
     def read_transaction_by_id(self, transaction_id: int) -> Transaction | None:
@@ -132,6 +134,7 @@ class ModelTransaction:
             self.parent.session.add(transaction)
             self.parent.session.commit()
             self.parent.session.refresh(transaction)
+            return transaction
         except IntegrityError as e:
             self.parent.session.rollback()
             if "foreign key constraint" in str(e.orig).lower():

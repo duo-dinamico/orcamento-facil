@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from sqlalchemy import CheckConstraint, ForeignKey, UniqueConstraint
+from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -74,7 +74,6 @@ class Account(Base):
 
     # relatioships
     user: Mapped["User"] = relationship("User")
-    __table_args__ = (CheckConstraint("LENGTH(name) > 0", name="non_empty_string_check"),)
 
 
 class Income(Base):
@@ -96,7 +95,6 @@ class Income(Base):
     # Relationships
     user: Mapped["User"] = relationship("User")
     account: Mapped["Account"] = relationship("Account")
-    __table_args__ = (CheckConstraint("LENGTH(name) > 0", name="non_empty_string_check"),)
 
 
 class Transaction(Base):

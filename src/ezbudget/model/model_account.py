@@ -57,7 +57,7 @@ class ModelAccount:
                 return "User ID does not exist"
             elif "unique constraint" in str(e.orig).lower():
                 return "Account name already exists"
-            elif "non_empty_string_check" in str(e.orig).lower():
+            elif "not null constraint failed" in str(e.orig).lower():
                 return "Name is a mandatory field and cannot be empty"
             else:
                 return "An unknown IntegrityError occurred"

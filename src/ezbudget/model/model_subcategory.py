@@ -42,11 +42,15 @@ class ModelSubCategory:
             self.parent.session.refresh(new_subcategory)
             return new_subcategory
         except IntegrityError as e:
+            self.parent.session.rollback()
             if "foreign key constraint" in str(e.orig).lower():
                 return "Category ID does not exist"
+            elif "not null constraint failed" in str(e.orig).lower():
+                return "Name is a mandatory field and cannot be empty"
             else:
                 return "An unknown IntegrityError occurred"
         except LookupError as lookup_error:
+            self.parent.session.rollback()
             return f"A LookupError occurred: {lookup_error}"
 
     def read_subcategory_by_name(self, name: str, category_id: int) -> SubCategory | None:

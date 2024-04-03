@@ -24,9 +24,9 @@ class HomePageView(QWidget):
 
         # setup table view for accounts
         self.summary = Summary(self.presenter)
-        self.incoming_outgoing = IncomingOutgoing(self.presenter)
+        self.incoming_outgoing = IncomingOutgoing(self, self.presenter)
         self.manage_categories = Categories(self.presenter)
-        self.transactions = Transactions(self.presenter)
+        self.transactions = Transactions(self, self.presenter)
         self.monthly_budget = MonthlyBudget(self.presenter)
 
         # setup the stacked layout

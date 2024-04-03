@@ -27,8 +27,14 @@ class ModelCategory:
             self.parent.session.refresh(category)
 
             return category
-        except IntegrityError:
-            return "Category already exists"
+        except IntegrityError as e:
+            self.parent.session.rollback()
+            if "unique constraint" in str(e.orig).lower():
+                return "Category already exists"
+            elif "not null constraint failed" in str(e.orig).lower():
+                return "Name is a mandatory field and cannot be empty"
+            else:
+                return "An unknown IntegrityError occurred"
 
     def read_category_by_name(self, name: str) -> Category | None:
         """Return a category id that has the given name.

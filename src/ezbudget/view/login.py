@@ -8,6 +8,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from ezbudget.view.styles import MainTitle
+
 
 class LoginView(QWidget):
     def __init__(self, presenter):
@@ -17,19 +19,13 @@ class LoginView(QWidget):
         # widgets
         hbl_base_layout = QHBoxLayout()
         frm_layout = QFormLayout()
-        lbl_welcome = QLabel("Welcome!")
         self.lbl_error_message = QLabel("")
         self.lne_password = QLineEdit()
         self.lne_username = QLineEdit()
         btn_login = QPushButton("Login")
         btn_register = QPushButton("Register")
 
-        # welcome font setup
-        fnt_welcome = lbl_welcome.font()
-        fnt_welcome.setPointSize(30)
-        fnt_welcome.setBold(True)
-        lbl_welcome.setFont(fnt_welcome)
-        lbl_welcome.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
+        lbl_welcome = MainTitle("Welcome!")
 
         # layout configuration
         hbl_base_layout.insertStretch(0, 2)

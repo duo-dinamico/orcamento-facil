@@ -30,10 +30,8 @@ test = { cmd = "pytest -rP", help = 'run pytest on all files' }
 lint = { cmd = "ruff check .", help = 'ruff all files' }
 sort = { cmd = "isort -vc .", help = 'run isort in all files.' }
 
-
 [tool.black]
 line-length = 120
-indent-width = 4
 target-version = ['py311']
 include = '(src\/scripts\/.*$|\.pyi?$)'
 exclude = '''

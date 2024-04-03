@@ -61,30 +61,12 @@ class Presenter:
 
     # account related
     def create_account(self, account_data, account_type):
-        check_account_exists = self.model_account.read_account_by_name(name=account_data["name"])
+        account_data["name"] = self.check_mandatory_fields(account_data["name"])
+        account_data["user_id"] = self.model.user.id
+        account_data["account_type"] = account_type
+        response = self.model_account.create_account(**account_data)
 
-        if account_type == "BANK":
-            error_name = "Account"
-            method_to_call = self.view.homepage_view.incoming_outgoing.set_account_error
-        else:
-            error_name = "Credit card"
-            method_to_call = self.view.homepage_view.incoming_outgoing.set_credit_card_error
-
-        if check_account_exists:
-            method_to_call(f"{error_name} already exists")
-        else:
-            account_data["user_id"] = self.model.user.id
-            account_data["account_type"] = account_type
-            response = self.model_account.create_account(**account_data)
-
-            if isinstance(response, str):
-                method_to_call(response)
-            else:
-                self.view.homepage_view.incoming_outgoing.set_account_model()
-                self.view.homepage_view.incoming_outgoing.set_credit_card_model()
-                self.view.homepage_view.incoming_outgoing.clear_account_data()
-                self.view.homepage_view.incoming_outgoing.clear_credit_card_data()
-                self.view.homepage_view.transactions.populate_accounts()
+        return response
 
     def get_account_list(self, account_type) -> None:
         return self.model_account.read_accounts_by_user(user_id=self.model.user.id, account_type=account_type)
@@ -101,6 +83,9 @@ class Presenter:
     def get_account_id_by_name(self, account_name):
         return self.model_account.read_account_by_name(name=account_name).id
 
+    def get_account_by_id(self, account_id):
+        return self.model_account.read_account_by_id(id=account_id)
+
     def handle_set_total_accounts(self):
         if self.model.user is not None:
             user_accounts = (
@@ -116,6 +101,11 @@ class Presenter:
     def get_accounts(self):
         return [account.name for account in self.model_account.read_accounts_by_user(user_id=self.model.user.id)]
 
+    def update_accounts_from_transaction(self):
+        self.view.homepage_view.incoming_outgoing.account_list_model.updateAccounts()
+        self.view.homepage_view.incoming_outgoing.incoming_list_model.updateAccounts()
+        self.view.homepage_view.incoming_outgoing.credit_card_list_model.updateAccounts()
+
     def handle_set_total_credit_cards(self):
         if self.model.user is not None:
             user_cards = self.model_account.read_accounts_by_user(user_id=self.model.user.id, account_type="CARD") or []
@@ -128,54 +118,57 @@ class Presenter:
 
     # incoming related
     def create_income(self, income_data):
-        check_income_exists = self.model_income.read_income_by_name(name=income_data["name"])
+        income_data["name"] = self.check_mandatory_fields(income_data["name"])
+        account = self.model_account.read_account_by_name(name=income_data["account_name"])
+        income_data["account_id"] = account.id
+        del income_data["account_name"]
+        income_data["user_id"] = self.model.user.id
+        income_data["income_date"] = datetime.strptime(income_data["income_date"], "%Y/%m/%d").date()
+        for recurrence in RecurrenceEnum:
+            if recurrence.value == income_data["recurrence"]:
+                income_data["recurrence"] = recurrence.name
 
-        if check_income_exists:
-            self.view.homepage_view.incoming_outgoing.set_income_error("Income source name already exists")
-        else:
-            account = self.model_account.read_account_by_name(name=income_data["account_name"])
-            income_data["account_id"] = account.id
-            del income_data["account_name"]
-            income_data["user_id"] = self.model.user.id
-            income_data["income_date"] = datetime.strptime(income_data["income_date"], "%Y/%m/%d").date()
-            for recurrence in RecurrenceEnum:
-                if recurrence.value == income_data["recurrence"]:
-                    income_data["recurrence"] = recurrence.name
-            response = self.model_income.create_income(**income_data)
-
-            if isinstance(response, str):
-                self.view.homepage_view.incoming_outgoing.set_income_error(response)
-            else:
-                self.view.homepage_view.incoming_outgoing.set_incoming_model()
-                self.view.homepage_view.incoming_outgoing.clear_income_data()
-                self.view.homepage_view.monthly_budget.set_table_selection()
+        return self.model_income.create_income(**income_data)
 
     def get_income_list(self) -> None:
         return self.model_income.read_incomes_by_user(user_id=self.model.user.id)
 
     # categories related
     def create_category(self, category_data):
+        category_data["name"] = self.check_mandatory_fields(category_data["name"])
         for category_type in CategoryTypeEnum:
             if category_type.value == category_data["category_type"]:
                 category_data["category_type"] = category_type.name
-        self.model_category.create_category(**category_data)
-        self.view.homepage_view.manage_categories.set_categories_and_subcategories()
+        return self.model_category.create_category(**category_data)
 
     def create_subcategory(self, subcategory_data):
-        category_id = self.model_category.read_category_by_name(subcategory_data["category_name"]).id
+        category_name = subcategory_data["category_name"].split(" - ")[1]
+        subcategory_data["name"] = self.check_mandatory_fields(subcategory_data["name"])
+        category_id = self.model_category.read_category_by_name(category_name).id
         subcategory_data["category_id"] = category_id
         del subcategory_data["category_name"]
         for recurrence in RecurrenceEnum:
             if recurrence.value == subcategory_data["recurrence"]:
                 subcategory_data["recurrence"] = recurrence.name
-        self.model_subcategory.create_subcategory(**subcategory_data)
-        self.view.homepage_view.manage_categories.set_categories_and_subcategories()
+        return self.model_subcategory.create_subcategory(**subcategory_data)
 
     def get_category_list(self) -> None:
         return self.model_category.read_categories()
 
     def get_subcategory_list(self) -> None:
         return self.model_subcategory.read_subcategories()
+
+    def get_category_subcategory_list(self) -> None:
+        categories: list = []
+        model_categories = self.model_category.read_categories()
+        subcategories = self.model_subcategory.read_subcategories()
+        for category in model_categories:
+            category_with_children = {"id": category.id, "name": category.name, "children": []}
+            for subcategory in subcategories:
+                if subcategory.category_id == category.id:
+                    category_with_children["children"].append({"id": subcategory.id, "name": subcategory.name})
+            categories.append(category_with_children)
+        return categories
 
     def get_subcategory_id_by_name_and_category(self, subcategory_name, category_id):
         return self.model_subcategory.read_subcategory_by_name(name=subcategory_name, category_id=category_id).id
@@ -184,36 +177,17 @@ class Presenter:
         return self.model_category.read_category_by_name(category_name).id
 
     def add_user_category(self, subcategory_id) -> None:
-        check_user_subcategory_exists = self.model_user_subcategory.read_user_subcategories_multiple_args(
+        # TODO if there's an error on the response, we need to use it to show the user
+        return self.model_user_subcategory.create_user_subcategory(
             user_id=self.model.user.id, subcategory_id=subcategory_id
         )
-        if check_user_subcategory_exists is None:
-            self.model_user_subcategory.create_user_subcategory(
-                user_id=self.model.user.id, subcategory_id=subcategory_id
-            )
-            self.view.homepage_view.transactions.populate_subcategories()
-            self.view.homepage_view.monthly_budget.total_budgeted()
-            self.view.homepage_view.monthly_budget.set_table_selection()
 
-    def remove_user_category(self, subcategory_id: int):
-        removed_user_category = self.model_user_subcategory.delete_user_subcategory(subcategory_id=subcategory_id)
-        self.view.homepage_view.transactions.populate_subcategories()
-        self.view.homepage_view.monthly_budget.set_table_selection()
-        return removed_user_category
+    def remove_user_category(self, user_category_id: int):
+        self.model_user_subcategory.delete_user_subcategory(id=user_category_id)
 
     def get_user_subcategory_list(self):
         # Get user subcategory object list
-        user_subcategory_list = self.model_user_subcategory.read_user_subcategories_by_user(user_id=self.model.user.id)
-
-        # Transform in a list of names of subcategories
-        return_list = [
-            [
-                f"{user_subcategory.subcategory.category.name} - {user_subcategory.subcategory.name}",
-                f"{user_subcategory.subcategory.currency.value if user_subcategory.subcategory.currency is not None else None} {user_subcategory.subcategory.recurrence_value}",
-            ]
-            for user_subcategory in user_subcategory_list
-        ]
-        return return_list
+        return self.model_user_subcategory.read_user_subcategories_by_user(user_id=self.model.user.id)
 
     def get_total_budgeted(self):
         user_subcategory_list = self.model_user_subcategory.read_user_subcategories_by_user(user_id=self.model.user.id)
@@ -257,38 +231,34 @@ class Presenter:
         updated_transaction = self.format_transaction_data(transaction_data)
 
         # Create the transaction in the model
-        transaction = self.model_transaction.create_transaction(**updated_transaction)
+        new_transaction = self.model_transaction.create_transaction(**updated_transaction)
 
-        if transaction:
-            account = self.model_account.read_account_by_id(transaction.account_id)
-            if transaction.transaction_type == TransactionTypeEnum.Income:
-                account.balance += transaction.value
-            elif transaction.transaction_type == TransactionTypeEnum.Expense:
-                account.balance -= transaction.value
-            elif transaction.transaction_type == TransactionTypeEnum.Transfer:
-                transfer_account = self.model_account.read_account_by_id(transaction.target_account_id)
-                account.balance -= transaction.value
-                transfer_account.balance += transaction.value
+        if new_transaction:
+            account = self.model_account.read_account_by_id(new_transaction.account_id)
+            if new_transaction.transaction_type == TransactionTypeEnum.Income:
+                account.balance += new_transaction.value
+            elif new_transaction.transaction_type == TransactionTypeEnum.Expense:
+                account.balance -= new_transaction.value
+            elif new_transaction.transaction_type == TransactionTypeEnum.Transfer:
+                transfer_account = self.model_account.read_account_by_id(new_transaction.target_account_id)
+                account.balance -= new_transaction.value
+                transfer_account.balance += new_transaction.value
                 self.model_account.update_account(transfer_account)
             self.model_account.update_account(account)
-            self.view.homepage_view.transactions.set_transactions_model()
-            self.view.homepage_view.transactions.clear_fields()
-            self.view.homepage_view.incoming_outgoing.set_account_model()
-            self.view.homepage_view.incoming_outgoing.set_credit_card_model()
-            self.view.homepage_view.monthly_budget.set_table_selection()
+            return new_transaction
 
     def update_transaction(
         self,
-        transaction_id: int,
+        transaction_item,
         transaction_data: dict,
-        previous_value: int,
-        previous_account_id: int,
-        previous_transaction_type: TransactionTypeEnum,
-    ) -> None:
+    ):
         """Presenter method that call model to update transaction."""
 
         # update the transaction from the model with the new values
-        transaction_to_update = self.model_transaction.read_transaction_by_id(transaction_id)
+        transaction_to_update = self.model_transaction.read_transaction_by_id(transaction_item.id())
+        previous_value: int = transaction_item._value
+        previous_account_id: int = transaction_item.account_id
+        previous_transaction_type: TransactionTypeEnum = transaction_item.transaction_type
         formatted_transaction_data = self.format_transaction_data(transaction_data)
 
         # we update the values on the transaction to update with the transaction data value
@@ -347,43 +317,30 @@ class Presenter:
         self.model_transaction.update_transaction(transaction_to_update)
 
         # update views and their models
-        self.view.homepage_view.transactions.set_transactions_model()
-        self.view.homepage_view.transactions.clear_fields()
-        self.view.homepage_view.incoming_outgoing.set_account_model()
-        self.view.homepage_view.incoming_outgoing.set_credit_card_model()
-        self.view.homepage_view.monthly_budget.set_table_selection()
+        self.update_view_models()
+
+        return transaction_to_update
 
     def get_transactions_list(self) -> None:
         # TODO Account type
         return self.model_transaction.read_transaction_list_by_user(user_id=self.model.user.id)
 
-    def remove_transaction(
-        self, transaction_data, transaction_id: int, account_id: int, target_account_id: int
-    ) -> None:
+    def remove_transaction(self, transaction_item) -> None:
         """Presenter method that call model to delete transaction."""
-        account = self.model_account.read_account_by_id(account_id)
-        transaction_value = int(transaction_data["value"])
-        if transaction_data["transaction_type"] == "Income":
-            account.balance -= transaction_value
-        elif transaction_data["transaction_type"] == "Expense":
-            account.balance += transaction_value
-        elif transaction_data["transaction_type"] == "Transfer":
-            target_account = self.model_account.read_account_by_id(target_account_id)
-            account.balance += transaction_value
-            target_account.balance -= transaction_value
+        account = self.model_account.read_account_by_id(transaction_item.accountId())
+        if transaction_item.transactionTypeName() == "Income":
+            account.balance -= transaction_item._value
+        elif transaction_item.transactionTypeName() == "Expense":
+            account.balance += transaction_item._value
+        elif transaction_item.transactionTypeName() == "Transfer":
+            target_account = self.model_account.read_account_by_id(transaction_item.targetAccountId())
+            account.balance += transaction_item._value
+            target_account.balance -= transaction_item._value
             self.model_account.update_account(target_account)
 
         self.model_account.update_account(account)
 
-        # Delete
-        self.model_transaction.delete_transaction(transaction_id)
-
-        # Refresh view
-        self.view.homepage_view.transactions.set_transactions_model()
-        self.view.homepage_view.transactions.clear_fields()
-        self.view.homepage_view.incoming_outgoing.set_account_model()
-        self.view.homepage_view.incoming_outgoing.set_credit_card_model()
-        self.view.homepage_view.monthly_budget.set_table_selection()
+        self.model_transaction.delete_transaction(transaction_item.id())
 
     def get_month_summary(self):
         user_categories_list = self.model_user_subcategory.read_user_subcategories_by_user(user_id=self.model.user.id)
@@ -488,3 +445,15 @@ class Presenter:
             yearly_balance += recurrence.recurrence_value
 
         return yearly_balance
+
+    def update_view_models(self):
+        self.view.homepage_view.monthly_budget.set_table_selection()
+        self.view.homepage_view.monthly_budget.total_budgeted()
+
+    def check_mandatory_fields(self, field: str):
+        self.checked_field = None
+        no_whitespaces = field.replace(" ", "")
+        if len(no_whitespaces) > 0:
+            self.checked_field = field
+
+        return self.checked_field

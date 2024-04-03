@@ -5,12 +5,13 @@ from PySide6.QtWidgets import (
     QGroupBox,
     QHBoxLayout,
     QHeaderView,
-    QLabel,
     QLineEdit,
     QTableView,
     QVBoxLayout,
     QWidget,
 )
+
+from ezbudget.view.styles import MainTitle
 
 
 class SummaryModel(QAbstractTableModel):
@@ -54,7 +55,6 @@ class MonthlyBudget(QWidget):
         frm_expenses_summary = QFormLayout()
 
         # setup other widgets
-        lbl_account_summary = QLabel("Monthly Budget")
         grb_income_summary = QGroupBox("Income Summary")
         grb_expenses_summary = QGroupBox("Expenses Summary")
         self.lne_budgeted_income = QLineEdit()
@@ -63,18 +63,13 @@ class MonthlyBudget(QWidget):
         self.lne_month_expenses = QLineEdit()
         self.tbl_summary = QTableView()
 
+        lbl_account_summary = MainTitle("Monthly Budget")
+
         # setup line edits
         self.lne_budgeted_income.setReadOnly(True)
         self.lne_budgeted_expenses.setReadOnly(True)
         self.lne_month_income.setReadOnly(True)
         self.lne_month_expenses.setReadOnly(True)
-
-        # title font setup
-        fnt_summary_title = lbl_account_summary.font()
-        fnt_summary_title.setPointSize(24)
-        fnt_summary_title.setBold(True)
-        lbl_account_summary.setFont(fnt_summary_title)
-        lbl_account_summary.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
 
         # add rows to form layout
         frm_income_summary.addRow("Monthly income", self.lne_month_income)

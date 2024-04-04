@@ -1,9 +1,9 @@
 [tool.poetry]
 name = "orcamento-facil"
-version = "0.1.0"
-description = "Programa de orçamentação pessoal."
+version = "0.1.1"
+description = "Budget management application"
 authors = ["DuoDinamico"]
-license = "GNU"
+license = "LICENSE"
 readme = "README.md"
 packages = [{ include = "ezbudget", from = "src" }]
 include = [{ path = "tests", format = "sdist" }]
@@ -12,8 +12,9 @@ include = [{ path = "tests", format = "sdist" }]
 python = ">=3.11,<3.13"
 black = "^23.9.1"
 sqlalchemy = "^2.0.22"
-ttkbootstrap = "^1.10.1"
 pyside6 = "^6.6.1"
+cryptography = "^42.0.5"
+toml = "^0.10.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"

@@ -17,7 +17,7 @@ class HomePageView(QWidget):
         self.user = user
 
         # attributes
-        self.header = HeaderView(self.user)
+        self.header = HeaderView(self.presenter, self.user)
 
         # setup the layout
         vbl_homepage = QVBoxLayout()

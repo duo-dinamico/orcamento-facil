@@ -8,7 +8,7 @@ class ModelUser:
     def __init__(self, parent_model):
         self.parent = parent_model
 
-    def create_user(self, username: str, password: str = "") -> User | str:
+    def create_user(self, username: str, password: str, personal_key: bytes) -> User | str:
         """Create a new user in the database, and return the id.
 
         Args:
@@ -20,7 +20,7 @@ class ModelUser:
             None: if the username already exists
         """
         try:
-            user = User(username=username, password=password)
+            user = User(username=username, password=password, personal_key=personal_key)
             self.parent.session.add(user)
             self.parent.session.commit()
             self.parent.session.refresh(user)

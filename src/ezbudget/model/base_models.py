@@ -12,8 +12,8 @@ class Base(DeclarativeBase):
 
 # Define an enum type for account types
 class AccountTypeEnum(str, Enum):
-    BANK = "Bank"
-    CARD = "Credit Card"
+    DEBIT = "Debit"
+    CARD = "Credit"
     CASH = "Cash"
 
 
@@ -24,13 +24,6 @@ class RecurrenceEnum(str, Enum):
     WEEK = "Weekly"
     MONTH = "Monthly"
     YEAR = "Yearly"
-
-
-class CurrencyEnum(str, Enum):
-    EUR = "€"
-    GBP = "£"
-    USD = "$"
-    JPY = "¥"
 
 
 class CategoryTypeEnum(str, Enum):
@@ -53,6 +46,18 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(unique=True, nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
+    personal_key: Mapped[bytes] = mapped_column(nullable=False)
+
+
+class Currency(Base):
+    __tablename__ = "currencies"
+
+    # mandatory
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(unique=True, nullable=False)
+    symbol: Mapped[str] = mapped_column(unique=True, nullable=False)
+    code: Mapped[str] = mapped_column(unique=True, nullable=False)
+    symbol_position: Mapped[str] = mapped_column(nullable=False)
 
 
 class Account(Base):
@@ -63,7 +68,7 @@ class Account(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", name="user"), nullable=False)
     name: Mapped[str] = mapped_column(unique=True, nullable=False)
     account_type: Mapped[AccountTypeEnum] = mapped_column(nullable=False)
-    currency: Mapped[CurrencyEnum] = mapped_column(nullable=False)
+    currency_id: Mapped[int] = mapped_column(ForeignKey("currencies.id", name="currency"), nullable=False)
     balance: Mapped[int] = mapped_column(default=0)  # In cents
 
     # optional
@@ -74,6 +79,7 @@ class Account(Base):
 
     # relatioships
     user: Mapped["User"] = relationship("User")
+    currency: Mapped["Currency"] = relationship("Currency")
 
 
 class Income(Base):
@@ -85,7 +91,7 @@ class Income(Base):
     account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id", name="account"), nullable=False)
     name: Mapped[str] = mapped_column(unique=True, nullable=False)
     recurrence_value: Mapped[int] = mapped_column(default=0)  # In cents
-    currency: Mapped[CurrencyEnum] = mapped_column(nullable=False)
+    currency_id: Mapped[int] = mapped_column(ForeignKey("currencies.id", name="currency"), nullable=False)
     recurrent: Mapped[bool] = mapped_column(default=False)
 
     # optional
@@ -95,6 +101,7 @@ class Income(Base):
     # Relationships
     user: Mapped["User"] = relationship("User")
     account: Mapped["Account"] = relationship("Account")
+    currency: Mapped["Currency"] = relationship("Currency")
 
 
 class Transaction(Base):
@@ -106,7 +113,7 @@ class Transaction(Base):
     subcategory_id: Mapped[int] = mapped_column(ForeignKey("subcategories.id", name="subcategory"), nullable=False)
     transaction_type: Mapped[TransactionTypeEnum] = mapped_column(nullable=False)
     value: Mapped[int] = mapped_column(default=0)  # In cents
-    currency: Mapped[CurrencyEnum] = mapped_column(nullable=False)
+    currency_id: Mapped[int] = mapped_column(ForeignKey("currencies.id", name="currency"), nullable=False)
     date: Mapped[datetime]
 
     # optional
@@ -117,6 +124,7 @@ class Transaction(Base):
     account: Mapped["Account"] = relationship("Account", foreign_keys=[account_id])
     target_account: Mapped["Account"] = relationship("Account", foreign_keys=[target_account_id])
     subcategory: Mapped["SubCategory"] = relationship("SubCategory")
+    currency: Mapped["Currency"] = relationship("Currency")
 
 
 class SubCategory(Base):
@@ -130,11 +138,12 @@ class SubCategory(Base):
 
     # optional
     recurrence: Mapped[Optional[RecurrenceEnum]]
-    currency: Mapped[Optional[CurrencyEnum]]
+    currency_id: Mapped[int] = mapped_column(ForeignKey("currencies.id", name="currency"), nullable=True)
     recurrence_value: Mapped[Optional[int]]
 
     # relatioships
     category: Mapped["Category"] = relationship("Category")
+    currency: Mapped["Currency"] = relationship("Currency")
 
 
 class Category(Base):

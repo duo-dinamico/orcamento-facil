@@ -16,6 +16,7 @@ from ezbudget.view.models import (
     CategoryItem,
     CategoryListModel,
     CategoryModel,
+    CurrencyItem,
     UserCategoryItem,
 )
 from ezbudget.view.styles import DoubleSpinBox, ErrorMessage, MainTitle, SecondaryTitle
@@ -54,18 +55,6 @@ class Categories(QWidget):
         self.cbx_currencies = QComboBox()
         self.trw_categories = QTreeView()
 
-        # currencies setup
-        self.populate_currencies()
-        self.cbx_currencies.currentTextChanged.connect(self.on_currency_change)
-
-        # widgets with styles
-        lbl_title_manage_categories = MainTitle("Manage expense categories")
-        lbl_categories = SecondaryTitle("Category list")
-        lbl_user_categories = SecondaryTitle("User categories")
-        self.lbl_category_error_message = ErrorMessage("")
-        self.lbl_subcategory_error_message = ErrorMessage("")
-        self.dsp_value = DoubleSpinBox(f"{self.currency_list[self.cbx_currencies.currentText()].value} ")
-
         # setup the tree and model for categories
         # fetch categories and subcategories from model
         self.categories_list = self.presenter.get_category_list()
@@ -99,12 +88,21 @@ class Categories(QWidget):
         self.user_subcategory_list_model = CategoryListModel(user_category_items)
         self.lvw_user_categories.setModel(self.user_subcategory_list_model)
 
-        # setup the categories for subcategory form
-        self.populate_categories()
-        # setup the category types for category form
-        self.populate_category_type()
-        # setup the recurrences for the subcategory form
-        self.populate_recurrence()
+        self.starting_setup()
+
+        # currencies setup
+        self.cbx_currencies.currentTextChanged.connect(self.on_currency_change)
+
+        # widgets with styles
+        lbl_title_manage_categories = MainTitle("Manage expense categories")
+        lbl_categories = SecondaryTitle("Category list")
+        lbl_user_categories = SecondaryTitle("User categories")
+        self.lbl_category_error_message = ErrorMessage("")
+        self.lbl_subcategory_error_message = ErrorMessage("")
+        current_currency = self.cbx_currencies.currentText()
+        for currency in self.currency_list:
+            if currency.getName() == current_currency:
+                self.dsp_value = DoubleSpinBox(currency.getSymbol())
 
         # setup categories layout
         vbl_categories.addWidget(lbl_categories)
@@ -156,6 +154,15 @@ class Categories(QWidget):
 
         # chose the horizontal layout as the main one
         self.setLayout(vbl_main_layout)
+
+    def starting_setup(self):
+        self.populate_currencies()
+        # setup the categories for subcategory form
+        self.populate_categories()
+        # setup the category types for category form
+        self.populate_category_type()
+        # setup the recurrences for the subcategory form
+        self.populate_recurrence()
 
     def add_category(self):
         data = self.get_category_data()
@@ -251,9 +258,10 @@ class Categories(QWidget):
         self.cbx_category_type.addItems(category_type for category_type in category_type_list)
 
     def populate_currencies(self):
-        self.currency_list = self.presenter.get_currency()
+        all_currencies = self.presenter.get_currency()
+        self.currency_list = [CurrencyItem(currency) for currency in all_currencies]
         self.cbx_currencies.clear()
-        self.cbx_currencies.addItems([currency.name for currency in self.currency_list])
+        self.cbx_currencies.addItems([currency.getName() for currency in self.currency_list])
 
     def on_recurrent_change(self, _):
         if self.cbx_recurrent.currentText() == "No":

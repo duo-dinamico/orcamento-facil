@@ -4,30 +4,26 @@ from calendar import isleap, monthcalendar, monthrange
 from datetime import datetime
 from typing import Protocol
 
-from ezbudget.model import (
-    CategoryTypeEnum,
-    CurrencyEnum,
-    RecurrenceEnum,
-    TransactionTypeEnum,
-)
+from cryptography.fernet import Fernet
+
+from ezbudget.model import CategoryTypeEnum, RecurrenceEnum, TransactionTypeEnum
 from ezbudget.utils import get_hashed_password, verify_password
 
 
-class ModelProtocol(Protocol):
-    ...
+class ModelProtocol(Protocol): ...
 
 
-class ViewProtocol(Protocol):
-    ...
+class ViewProtocol(Protocol): ...
 
 
 class Presenter:
-    def __init__(self, model: ModelProtocol, view: ViewProtocol) -> None:
+    def __init__(self, model: ModelProtocol) -> None:
         self.model = model
-        self.view = view
+        self.view = None
 
         self.model_account = model.model_account
         self.model_category = model.model_category
+        self.model_currency = model.model_currency
         self.model_income = model.model_income
         self.model_subcategory = model.model_subcategory
         self.model_transaction = model.model_transaction
@@ -37,8 +33,11 @@ class Presenter:
     # user login and register
     def register(self, user_data) -> None:
         hashed_password = get_hashed_password(user_data["password"])
+        personal_key = Fernet.generate_key()
 
-        response = self.model_user.create_user(username=user_data["username"], password=hashed_password)
+        response = self.model_user.create_user(
+            username=user_data["username"], password=hashed_password, personal_key=personal_key
+        )
         if isinstance(response, str):  # check no error was returned (like existing user)
             self.view.login_view.set_error(response)
             print(response)  # TODO replace this with the log
@@ -60,20 +59,19 @@ class Presenter:
                 self.view.show_homepage(response)
 
     # account related
-    def create_account(self, account_data, account_type):
+    def create_account(self, account_data):
         account_data["name"] = self.check_mandatory_fields(account_data["name"])
         account_data["user_id"] = self.model.user.id
-        account_data["account_type"] = account_type
         response = self.model_account.create_account(**account_data)
 
         return response
 
-    def get_account_list(self, account_type) -> None:
-        return self.model_account.read_accounts_by_user(user_id=self.model.user.id, account_type=account_type)
+    def get_account_list(self) -> None:
+        return self.model_account.read_accounts_by_user(user_id=self.model.user.id)
 
     def get_account_list_by_user(self):
         # Get user account object list
-        accounts_list = self.model_account.read_accounts_by_user(user_id=1, account_type="BANK")
+        accounts_list = self.model_account.read_accounts_by_user(user_id=1, account_type="DEBIT")
 
         # Transform in a list of names of accounts
         return_list = [account.name for account in accounts_list]
@@ -89,7 +87,7 @@ class Presenter:
     def handle_set_total_accounts(self):
         if self.model.user is not None:
             user_accounts = (
-                self.model_account.read_accounts_by_user(user_id=self.model.user.id, account_type="BANK") or []
+                self.model_account.read_accounts_by_user(user_id=self.model.user.id, account_type="DEBIT") or []
             )
             if len(user_accounts) > 0:
                 balance = 0
@@ -103,7 +101,8 @@ class Presenter:
 
     def update_accounts_from_transaction(self):
         self.view.homepage_view.incoming_outgoing.account_list_model.updateAccounts()
-        self.view.homepage_view.incoming_outgoing.incoming_list_model.updateAccounts()
+        # TODO should we be updating the income since it is meant to be a prediction?
+        # self.view.homepage_view.incoming_outgoing.incoming_list_model.updateAccounts()
         self.view.homepage_view.incoming_outgoing.credit_card_list_model.updateAccounts()
 
     def handle_set_total_credit_cards(self):
@@ -375,7 +374,7 @@ class Presenter:
 
     # utils
     def get_currency(self):
-        return CurrencyEnum
+        return self.model_currency.read_currencies()
 
     def get_transaction_types(self):
         return TransactionTypeEnum
@@ -457,3 +456,9 @@ class Presenter:
             self.checked_field = field
 
         return self.checked_field
+
+    def open_settings_view(self):
+        self.view.show_settings(self.model.user)
+
+    def close_settings_view(self):
+        self.view.stacked_widget.setCurrentIndex(1)

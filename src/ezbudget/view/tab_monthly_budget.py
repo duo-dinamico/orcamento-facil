@@ -94,12 +94,15 @@ class MonthlyBudget(QWidget):
         hbl_top_layout.addWidget(grb_expenses_summary, 1)
         hbl_bottom_layout.addWidget(self.tbl_summary, 1)
 
-        # load methods to populate
-        self.total_budgeted()
-        self.set_table_selection()
+        self.starting_setup()
 
         # set main layout
         self.setLayout(vbl_summary_layout)
+
+    def starting_setup(self):
+        # load methods to populate
+        self.total_budgeted()
+        self.set_table_selection()
 
     def total_budgeted(self):
         total_budgeted = self.presenter.get_total_budgeted()
@@ -109,8 +112,7 @@ class MonthlyBudget(QWidget):
         self.lne_month_income.setText(f'{total["total_income"] / 100}')
         self.lne_month_expenses.setText(f'{total["total_expenses"] / 100}')
 
-    def on_table_selection(self):
-        ...
+    def on_table_selection(self): ...
 
     def set_table_selection(self):
         self.summary = self.presenter.get_month_summary()

@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
-from ezbudget.model import CurrencyEnum, Transaction, TransactionTypeEnum
+from ezbudget.model import Transaction, TransactionTypeEnum
 
 
 class ModelTransaction:
@@ -19,7 +19,7 @@ class ModelTransaction:
         date: datetime,
         transaction_type: TransactionTypeEnum,
         value: int,
-        currency: CurrencyEnum,
+        currency_id: int,
         description: str = None,
         target_account_id: int = None,
     ) -> int | None:
@@ -43,7 +43,7 @@ class ModelTransaction:
                 date=date,
                 transaction_type=transaction_type,
                 value=value,
-                currency=currency,
+                currency_id=currency_id,
                 description=description,
                 target_account_id=target_account_id,
             )

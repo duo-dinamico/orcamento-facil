@@ -18,7 +18,7 @@ class ModelIncome:
         name: str,
         recurrence_value,
         income_date: date = None,
-        currency: str = None,
+        currency_id: int = None,
         recurrent: bool = False,
         recurrence: RecurrenceEnum = None,
     ) -> Income:
@@ -30,6 +30,7 @@ class ModelIncome:
             recurrence_value: expected value of the income in cents, it's zero by default.
             income_date: the expected date of the income. We will only care about day and month.
             recurrence: recurrence of the income, from an enum, it's ONE by default.
+            currency_id: the id of the currency
 
         Returns:
             Income: The newly created income.
@@ -43,7 +44,7 @@ class ModelIncome:
                 name=name,
                 recurrence_value=recurrence_value,
                 income_date=income_date,
-                currency=currency,
+                currency_id=currency_id,
                 recurrent=recurrent,
                 recurrence=recurrence,
             )

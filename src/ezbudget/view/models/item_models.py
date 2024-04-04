@@ -63,13 +63,13 @@ class TransactionItem:
         return date_time.toString("dd/MM/yyyy")
 
     def valueWithCurrency(self):
-        return f"{self.currencyValue()} {self.value()}"
+        return f"{self.currencySymbol()} {self.value()}"
 
     def value(self):
         return self._value / 100
 
-    def currencyValue(self):
-        return self.currency.value
+    def currencySymbol(self):
+        return self.currency.symbol
 
     def currencyName(self):
         return self.currency.name
@@ -88,3 +88,28 @@ class TransactionItem:
 
     def targetAccountId(self):
         return self.target_account_id
+
+
+class CurrencyItem:
+    def __init__(self, currency, value: float = 0.00):
+        self._id = currency.id
+        self.name = currency.name
+        self.symbol = currency.symbol
+        self.code = currency.code
+        self.symbol_position = currency.symbol_position
+        self.value = value
+
+    def valueWithCurrency(self):
+        value_with_currency = (
+            f"{self.symbol} {self.value}" if self.symbol_position == "prefix" else f"{self.value} {self.symbol}"
+        )
+        return value_with_currency
+
+    def getName(self):
+        return self.name
+
+    def getSymbol(self):
+        return self.symbol
+
+    def getId(self):
+        return self._id

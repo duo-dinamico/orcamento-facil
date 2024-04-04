@@ -1,6 +1,7 @@
 # isort:skip_file
 from .login import LoginView
 from .header import HeaderView
+from .settings import SettingsView
 from .tab_home import Summary
 from .tab_monthly_budget import MonthlyBudget
 from .tab_manage_accounts import IncomingOutgoing

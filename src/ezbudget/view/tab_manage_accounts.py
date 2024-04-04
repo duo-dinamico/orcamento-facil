@@ -389,7 +389,10 @@ class IncomingOutgoing(QWidget):
             self.set_error_message("INCOME", new_income_source)
         else:
             self.incoming_list_model.addData(
-                [new_income_source.name, f"{new_income_source.balance / 100} {new_income_source.currency.value}"]
+                [
+                    new_income_source.name,
+                    f"{new_income_source.recurrence_value / 100} {new_income_source.currency.value}",
+                ]
             )
 
     def on_account_table_view_selection(self, index):

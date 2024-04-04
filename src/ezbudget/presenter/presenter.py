@@ -4,6 +4,8 @@ from calendar import isleap, monthcalendar, monthrange
 from datetime import datetime
 from typing import Protocol
 
+from cryptography.fernet import Fernet
+
 from ezbudget.model import (
     CategoryTypeEnum,
     CurrencyEnum,
@@ -22,9 +24,9 @@ class ViewProtocol(Protocol):
 
 
 class Presenter:
-    def __init__(self, model: ModelProtocol, view: ViewProtocol) -> None:
+    def __init__(self, model: ModelProtocol) -> None:
         self.model = model
-        self.view = view
+        self.view = None
 
         self.model_account = model.model_account
         self.model_category = model.model_category
@@ -37,8 +39,11 @@ class Presenter:
     # user login and register
     def register(self, user_data) -> None:
         hashed_password = get_hashed_password(user_data["password"])
+        personal_key = Fernet.generate_key()
 
-        response = self.model_user.create_user(username=user_data["username"], password=hashed_password)
+        response = self.model_user.create_user(
+            username=user_data["username"], password=hashed_password, personal_key=personal_key
+        )
         if isinstance(response, str):  # check no error was returned (like existing user)
             self.view.login_view.set_error(response)
             print(response)  # TODO replace this with the log
@@ -457,3 +462,9 @@ class Presenter:
             self.checked_field = field
 
         return self.checked_field
+
+    def open_settings_view(self):
+        self.view.show_settings(self.model.user)
+
+    def close_settings_view(self):
+        self.view.stacked_widget.setCurrentIndex(1)

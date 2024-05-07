@@ -2,7 +2,7 @@ from sqlalchemy import and_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
-from ezbudget.model import CurrencyEnum, RecurrenceEnum, SubCategory
+from ezbudget.model import RecurrenceEnum, SubCategory
 
 
 class ModelSubCategory:
@@ -15,7 +15,7 @@ class ModelSubCategory:
         name: str,
         recurrent: bool = False,
         recurrence: RecurrenceEnum = None,
-        currency: CurrencyEnum = None,
+        currency_id: int = None,
         recurrence_value: int = None,
     ) -> SubCategory | None:
         """Create a new subcategory in the database, and return the subcategory.
@@ -33,7 +33,7 @@ class ModelSubCategory:
                 name=name,
                 recurrent=recurrent,
                 recurrence=recurrence,
-                currency=currency,
+                currency_id=currency_id,
                 recurrence_value=recurrence_value,
             )
 

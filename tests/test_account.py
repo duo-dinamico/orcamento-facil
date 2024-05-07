@@ -44,7 +44,7 @@ def test_success_account_update(db_session, valid_account):
 
 def test_success_user_accounts_list(db_session, valid_account):
     _ = valid_account
-    account_list = db_session.model_account.read_accounts_by_user(user_id=1, account_type="BANK")
+    account_list = db_session.model_account.read_accounts_by_user(user_id=1, account_type="DEBIT")
 
     assert isinstance(account_list, list)
     assert len(account_list) > 0
@@ -89,7 +89,7 @@ def test_error_account_creation_invalid_type(db_session, valid_user):
 
     assert (
         account
-        == "A LookupError occurred: 'STUPID' is not among the defined enum values. Enum name: accounttypeenum. Possible values: BANK, CARD, CASH"
+        == "A LookupError occurred: 'STUPID' is not among the defined enum values. Enum name: accounttypeenum. Possible values: DEBIT, CARD, CASH"
     )
 
 
@@ -100,6 +100,6 @@ def test_error_acccount_delete_wrong_account_id(db_session):
 
 
 def test_error_accounts_list_invalid_user(db_session):
-    account_list = db_session.model_account.read_accounts_by_user(user_id=1, account_type="BANK")
+    account_list = db_session.model_account.read_accounts_by_user(user_id=1, account_type="DEBIT")
 
     assert account_list == list()

@@ -4,7 +4,7 @@ from .base_models import (
     Base,
     Category,
     CategoryTypeEnum,
-    CurrencyEnum,
+    Currency,
     Income,
     RecurrenceEnum,
     SubCategory,

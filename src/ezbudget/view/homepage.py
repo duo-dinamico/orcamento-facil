@@ -1,9 +1,10 @@
 from PySide6.QtWidgets import QTabWidget, QVBoxLayout, QWidget
 
 from ezbudget.view import (
+    Accounts,
     Categories,
     HeaderView,
-    IncomingOutgoing,
+    IncomeSources,
     MonthlyBudget,
     Summary,
     Transactions,
@@ -24,8 +25,9 @@ class HomePageView(QWidget):
 
         # setup table view for accounts
         self.summary = Summary(self.presenter)
-        self.incoming_outgoing = IncomingOutgoing(self, self.presenter)
-        self.manage_categories = Categories(self.presenter)
+        self.accounts = Accounts(self, self.presenter)
+        self.income_sources = IncomeSources(self, self.presenter)
+        self.categories = Categories(self.presenter)
         self.transactions = Transactions(self, self.presenter)
         self.monthly_budget = MonthlyBudget(self.presenter)
 
@@ -33,9 +35,10 @@ class HomePageView(QWidget):
         tbl_homepage = QTabWidget()
         tbl_homepage.setTabPosition(QTabWidget.South)
         tbl_homepage.addTab(self.summary, "Home")
-        tbl_homepage.addTab(self.incoming_outgoing, "Manage Accounts")
-        tbl_homepage.addTab(self.manage_categories, "Manage Categories")
-        tbl_homepage.addTab(self.transactions, "Manage Transactions")
+        tbl_homepage.addTab(self.accounts, "Accounts")
+        tbl_homepage.addTab(self.income_sources, "Income Sources")
+        tbl_homepage.addTab(self.categories, "Categories")
+        tbl_homepage.addTab(self.transactions, "Transactions")
         tbl_homepage.addTab(self.monthly_budget, "Monthly Budget")
 
         # place the widgets

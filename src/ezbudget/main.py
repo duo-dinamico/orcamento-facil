@@ -15,8 +15,11 @@ def main() -> None:
     with open(f"{BASEDIR}/categories_data.toml", mode="rb") as doc:
         category_data = tomllib.load(doc)
 
+    with open(f"{BASEDIR}/currencies.toml", mode="rb") as doc:
+        currency_data = tomllib.load(doc)
+
     app = QApplication(sys.argv)
-    model = Model(category_data)
+    model = Model(category_data, currency_data)
     presenter = Presenter(model)
     view = MainWindow(presenter, BASEDIR)
     presenter.view = view

@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from ezbudget.view.models import TableModel, TransactionItem
+from ezbudget.view.models import CurrencyItem, TableModel, TransactionItem
 from ezbudget.view.styles import DateSetup, DoubleSpinBox, MainTitle
 
 
@@ -42,15 +42,16 @@ class Transactions(QWidget):
         self.btn_delete_transaction = QPushButton("Delete transaction")
         self.btn_clear = QPushButton("Clear")
         self.tbl_transactions = QTableView()
+        self.dsp_value = DoubleSpinBox()
         grb_add_transaction = QGroupBox("Add/Edit/Remove transactions")
 
         # configure entries
-        self.populate_currencies()
         self.cbx_currencies.currentTextChanged.connect(self.on_currency_change)
+
+        self.starting_setup()
 
         lbl_title_transactions = MainTitle("Manage transactions")
         self.dte_transaction_date = DateSetup("dd/MM/yyyy", "current month")
-        self.dsp_value = DoubleSpinBox(f"{self.currency_list[self.cbx_currencies.currentText()].value} ")
         self.dsp_recurring_value = DoubleSpinBox()
         self.dsp_recurring_value.setEnabled(False)
 
@@ -67,12 +68,6 @@ class Transactions(QWidget):
         self.tbl_transactions.clicked.connect(self.on_table_view_selection)
         table_header = self.tbl_transactions.horizontalHeader()
         table_header.setSectionResizeMode(QHeaderView.Stretch)
-
-        # get the data and set it to the models
-        self.populate_accounts()
-        self.populate_subcategories()
-        self.populate_transaction_types()
-        self.on_subcategory_change()
 
         # target accounts setup
         self.cbx_target_account.setEnabled(False)
@@ -95,7 +90,7 @@ class Transactions(QWidget):
         grb_add_transaction.setLayout(frm_add_edit_transactions)
         vbl_add_edit_transactions.addWidget(lbl_title_transactions)
         vbl_add_edit_transactions.addWidget(grb_add_transaction)
-        vbl_add_edit_transactions.addSpacing(500)
+        vbl_add_edit_transactions.addSpacing(125)
         vbl_add_edit_transactions.addWidget(self.btn_add_transaction)
         vbl_add_edit_transactions.addWidget(self.btn_edit_transaction)
         vbl_add_edit_transactions.addWidget(self.btn_delete_transaction)
@@ -115,8 +110,8 @@ class Transactions(QWidget):
         hbl_transactions.addWidget(self.tbl_transactions, 2)
 
         # listen for an accounts signal
-        self._parent.incoming_outgoing.account_list_model.rowsInserted.connect(self.populate_accounts)
-        self._parent.manage_categories.user_subcategory_list_model.rowsInserted.connect(self.populate_subcategories)
+        self._parent.accounts.account_list_model.rowsInserted.connect(self.populate_accounts)
+        self._parent.categories.user_subcategory_list_model.rowsInserted.connect(self.populate_subcategories)
         self.transactions_list_model.rowsInserted.connect(self.on_model_update)
         self.transactions_list_model.dataChanged.connect(self.on_model_update)
         self.transactions_list_model.rowsRemoved.connect(self.on_model_update)
@@ -130,10 +125,20 @@ class Transactions(QWidget):
         # chose the horizontal layout as the main one
         self.setLayout(vbl_main_layout)
 
+    def starting_setup(self):
+        self.populate_currencies()
+        self.on_currency_change()
+        # get the data and set it to the models
+        self.populate_accounts()
+        self.populate_subcategories()
+        self.populate_transaction_types()
+        self.on_subcategory_change()
+
     def populate_currencies(self):
-        self.currency_list = self.presenter.get_currency()
+        all_currencies = self.presenter.get_currency()
+        self.currency_list = [CurrencyItem(currency) for currency in all_currencies]
         self.cbx_currencies.clear()
-        self.cbx_currencies.addItems([currency.name for currency in self.currency_list])
+        self.cbx_currencies.addItems([currency.getName() for currency in self.currency_list])
 
     def populate_transaction_types(self):
         self.transaction_types_list = self.presenter.get_transaction_types()
@@ -173,7 +178,7 @@ class Transactions(QWidget):
             "target_account_name": self.cbx_target_account.currentText(),
             "subcategory_name": self.cbx_subcategories.currentText(),
             "date": self.dte_transaction_date.date().toString("yyyy/MM/dd"),
-            "currency": self.cbx_currencies.currentText(),
+            "currency_id": self.selected_currency.getId(),
             "transaction_type": self.cbx_transaction_type.currentText(),
             "value": self.dsp_value.value() * 100,
             "description": self.lne_description.text(),
@@ -258,7 +263,11 @@ class Transactions(QWidget):
         self.btn_clear.setEnabled(False)
 
     def on_currency_change(self):
-        self.dsp_value.setPrefix(f"{self.currency_list[self.cbx_currencies.currentText()].value} ")
+        current_currency = self.cbx_currencies.currentText()
+        for currency in self.currency_list:
+            if currency.getName() == current_currency:
+                self.selected_currency = currency
+                self.dsp_value.setPrefix(currency.getSymbol())
 
     def on_subcategory_change(self):
         for user_subcategory in self.subcategories:

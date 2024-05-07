@@ -1,0 +1,6 @@
+currencies = [
+    { name = 'US Dollar', symbol = '$', code = 'USD', symbol_position = 'prefix' },
+    { name = 'Euro', symbol = '€', code = 'EUR', symbol_position = 'prefix' },
+    { name = 'Sterling', symbol = '£', code = 'GBP', symbol_position = 'prefix' },
+    { name = 'Japanese Yen', symbol = '¥', code = 'JPY', symbol_position = 'prefix' },
+]

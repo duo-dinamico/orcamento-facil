@@ -99,6 +99,7 @@ class SettingsView(QWidget):
         currencies = self.presenter.get_currency()
         for currency in currencies:
             checkbox = QCheckBox()
+            checkbox.setChecked(True)
             self.checkboxes[currency.name] = checkbox
             self.frm_settings.addRow(currency.name, checkbox)
             checkbox.stateChanged.connect(self.get_user_settings)

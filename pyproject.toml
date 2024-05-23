@@ -16,6 +16,7 @@ pyside6 = "^6.6.1"
 cryptography = "^42.0.5"
 toml = "^0.10.2"
 qdarkstyle = "^3.2.3"
+alembic = "^1.13.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
@@ -31,6 +32,9 @@ pyinstaller = "^6.3.0"
 test = { cmd = "pytest -rP", help = 'run pytest on all files' }
 lint = { cmd = "ruff check .", help = 'ruff all files' }
 sort = { cmd = "isort -vc .", help = 'run isort in all files.' }
+
+[tool.poetry.scripts]
+alembic = "alembic.config:main"
 
 [tool.black]
 line-length = 120

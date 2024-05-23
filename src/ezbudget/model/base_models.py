@@ -56,14 +56,12 @@ class Currency(Base):
 
     # mandatory
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(nullable=False)
-    symbol: Mapped[str] = mapped_column(nullable=False)
-    code: Mapped[str] = mapped_column(nullable=False)
+    name: Mapped[str] = mapped_column(nullable=False, unique=True)
+    symbol: Mapped[str] = mapped_column(nullable=False, unique=True)
+    code: Mapped[str] = mapped_column(nullable=False, unique=True)
     symbol_position: Mapped[str] = mapped_column(nullable=False)
 
-    __table_args__ = (
-        Index("ix_currencies_name_symbol_code", func.lower(name), func.lower(symbol), func.lower(code), unique=True),
-    )
+    __table_args__ = (Index("ix_currencies_name_symbol_code", func.lower(name), func.lower(symbol), func.lower(code)),)
 
 
 class Account(Base):
@@ -97,7 +95,7 @@ class Income(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", name="user"), nullable=False)
     account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id", name="account"), nullable=False)
-    name: Mapped[str] = mapped_column(nullable=False)
+    name: Mapped[str] = mapped_column(nullable=False, unique=True)
     recurrence_value: Mapped[int] = mapped_column(default=0)  # In cents
     currency_id: Mapped[int] = mapped_column(ForeignKey("currencies.id", name="currency"), nullable=False)
     recurrent: Mapped[bool] = mapped_column(default=False)
@@ -111,7 +109,7 @@ class Income(Base):
     account: Mapped["Account"] = relationship("Account")
     currency: Mapped["Currency"] = relationship("Currency")
 
-    __table_args__ = (Index("ix_incomes_name", func.lower(name), unique=True),)
+    __table_args__ = (Index("ix_incomes_name", func.lower(name)),)
 
 
 class Transaction(Base):
@@ -162,10 +160,10 @@ class Category(Base):
 
     # mandatory
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(nullable=False)
+    name: Mapped[str] = mapped_column(nullable=False, unique=True)
     category_type: Mapped[CategoryTypeEnum] = mapped_column(nullable=False)
 
-    __table_args__ = (Index("ix_category_name", func.lower(name), unique=True),)
+    __table_args__ = (Index("ix_category_name", func.lower(name)),)
 
 
 class UserSubCategory(Base):

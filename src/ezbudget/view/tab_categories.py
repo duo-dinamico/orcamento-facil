@@ -1,4 +1,4 @@
-from PySide6.QtCore import QItemSelectionModel, QModelIndex, QTimer
+from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import (
     QComboBox,
     QFormLayout,
@@ -7,255 +7,135 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QListView,
     QPushButton,
-    QTreeView,
     QVBoxLayout,
     QWidget,
 )
 
-from ezbudget.view.models import (
-    CategoryItem,
-    CategoryListModel,
-    CategoryModel,
-    CurrencyItem,
-    UserCategoryItem,
-)
-from ezbudget.view.styles import DoubleSpinBox, ErrorMessage, MainTitle, SecondaryTitle
+from ezbudget.model import CategoryTypeEnum
+from ezbudget.view.models import AbstractListModel, CurrencyItem, SubCategoryItem
+from ezbudget.view.styles import DoubleSpinBox, ErrorMessage, MainTitle
 
 
 class Categories(QWidget):
     def __init__(self, presenter):
         super().__init__()
         self.presenter = presenter
-        self.clear_timer = None
 
         # instances of necessary widgets
-        hbl_manage_categories = QHBoxLayout()
-        hbl_add_categories = QHBoxLayout()
         vbl_main_layout = QVBoxLayout()
-        vbl_controls = QVBoxLayout()
         vbl_categories = QVBoxLayout()
-        vbl_add_categories = QVBoxLayout()
-        vbl_add_subcategories = QVBoxLayout()
-        vbl_user_subcategories = QVBoxLayout()
-        btn_select_users_categories = QPushButton(">>")
-        btn_remove_users_categories = QPushButton("<<")
-        btn_add_category = QPushButton("Add category")
-        btn_add_subcategory = QPushButton("Add sub-category")
-        self.lvw_user_categories = QListView(self)
-        grb_add_categories = QGroupBox("Add Categories")
-        grb_add_subcategories = QGroupBox("Add SubCategories")
-        frm_add_categories = QFormLayout()
-        frm_add_subcategories = QFormLayout()
-        self.lne_category_name = QLineEdit()
-        self.lne_subcategory_name = QLineEdit()
-        self.cbx_category_type = QComboBox()
+        vbl_subcategories = QVBoxLayout()
+        hbl_user_categories = QHBoxLayout()
+        grb_categories = QGroupBox("Manage Categories")
+        grb_subcategories = QGroupBox("Manage Sub Categories")
         self.cbx_categories = QComboBox()
-        self.cbx_recurrent = QComboBox()
-        self.cbx_recurrency = QComboBox()
+        self.cbx_edit_category_types = QComboBox()
+        self.cbx_add_category_types = QComboBox()
         self.cbx_currencies = QComboBox()
-        self.trw_categories = QTreeView()
+        self.cbx_recurrent = QComboBox()
+        self.cbx_recurrence = QComboBox()
+        frm_manage_categories = QFormLayout()
+        frm_add_category = QFormLayout()
+        frm_edit_subcategories = QFormLayout()
+        self.lne_edit_category_name = QLineEdit()
+        self.lne_add_category_name = QLineEdit()
+        self.lne_subcategory_name = QLineEdit()
+        btn_add_category = QPushButton("Add Category")
+        btn_save_category = QPushButton("Save Changes")
+        btn_delete_category = QPushButton("Delete Category")
+        btn_add_subcategory = QPushButton("Add Subcategory")
+        self.btn_save_subcategory = QPushButton("Save Changes")
+        self.btn_delete_subcategory = QPushButton("Delete Subcategory")
+        self.lvw_user_categories = QListView(self)
 
-        # setup the tree and model for categories
-        # fetch categories and subcategories from model
-        self.categories_list = self.presenter.get_category_list()
-        self.subcategories_list = self.presenter.get_subcategory_list()
-        # create the root/parent item list and add the children (subcategory) to them
-        root_items = []
-        for cat in self.categories_list:
-            root_item = CategoryItem(f"{cat.category_type.value} - {cat.name}", cat.id)
-            for subcat in self.subcategories_list:
-                if subcat.category_id == cat.id:
-                    root_item.addChild(CategoryItem(subcat.name, subcat.id, root_item))
-            root_items.append(root_item)
-        # send the items to the model and set it to the tree
-        self.categories_model = CategoryModel(root_items)
-        self.trw_categories.setModel(self.categories_model)
-        # signals
-        self.trw_categories.clicked.connect(self.handle_category_clicked)
-        self.categories_model.categoryInserted.connect(lambda: self.on_model_row_inserted("category"))
-        self.categories_model.subCategoryInserted.connect(lambda: self.on_model_row_inserted("subcategory"))
-
-        # setup the user subcategories list and model
-        # get the user categories from the model
-        user_category_list = self.presenter.get_user_subcategory_list()
-        # setup a list of user category items
-        user_category_items: list = []
-        for user_cat in user_category_list:
-            user_category_items.append(
-                UserCategoryItem(f"{user_cat.subcategory.category.name} - {user_cat.subcategory.name}", user_cat.id)
-            )
-        # send the user category list to the model and set it to the list table
-        self.user_subcategory_list_model = CategoryListModel(user_category_items)
-        self.lvw_user_categories.setModel(self.user_subcategory_list_model)
-
-        self.starting_setup()
-
-        # currencies setup
-        self.cbx_currencies.currentTextChanged.connect(self.on_currency_change)
+        self.populate_currencies()
 
         # widgets with styles
-        lbl_title_manage_categories = MainTitle("Manage expense categories")
-        lbl_categories = SecondaryTitle("Category list")
-        lbl_user_categories = SecondaryTitle("User categories")
+        self.clear_timer = None
+        lbl_title_manage_categories = MainTitle("Manage Categories")
         self.lbl_category_error_message = ErrorMessage("")
+        self.lbl_add_category_error_message = ErrorMessage("")
         self.lbl_subcategory_error_message = ErrorMessage("")
         current_currency = self.cbx_currencies.currentText()
         for currency in self.currency_list:
             if currency.getName() == current_currency:
                 self.dsp_value = DoubleSpinBox(currency.getSymbol())
 
-        # setup categories layout
-        vbl_categories.addWidget(lbl_categories)
-        vbl_categories.addWidget(self.trw_categories)
-        vbl_categories.addLayout(hbl_add_categories)
-        vbl_user_subcategories.addWidget(lbl_user_categories)
-        vbl_user_subcategories.addWidget(self.lvw_user_categories)
-        hbl_add_categories.addWidget(grb_add_categories, 1)
-        hbl_add_categories.addWidget(grb_add_subcategories, 1)
-        grb_add_categories.setLayout(vbl_add_categories)
-        grb_add_subcategories.setLayout(vbl_add_subcategories)
+        # setup subcategories model
+        self.subcategories_model = AbstractListModel()
+        self.lvw_user_categories.setModel(self.subcategories_model)
 
-        # setup categories form
-        vbl_add_categories.addLayout(frm_add_categories)
-        frm_add_categories.addRow("Category name", self.lne_category_name)
-        frm_add_categories.addRow("Category type", self.cbx_category_type)
-        vbl_add_categories.addWidget(self.lbl_category_error_message)
-        vbl_add_categories.addWidget(btn_add_category)
-        btn_add_category.clicked.connect(self.add_category)
-
-        # setup subcategories form
-        vbl_add_subcategories.addLayout(frm_add_subcategories)
-        frm_add_subcategories.addRow("Parent category", self.cbx_categories)
-        frm_add_subcategories.addRow("Sub-category name", self.lne_subcategory_name)
+        # setup form
+        frm_manage_categories.addRow("Name", self.lne_edit_category_name)
+        frm_manage_categories.addRow("Type", self.cbx_edit_category_types)
+        frm_add_category.addRow("Name", self.lne_add_category_name)
+        frm_add_category.addRow("Type", self.cbx_add_category_types)
+        frm_edit_subcategories.addRow("Name", self.lne_subcategory_name)
+        frm_edit_subcategories.addRow("Currency", self.cbx_currencies)
+        frm_edit_subcategories.addRow("Recurrence value", self.dsp_value)
+        frm_edit_subcategories.addRow("Recurrent", self.cbx_recurrent)
         self.cbx_recurrent.addItems(["Yes", "No"])
-        frm_add_subcategories.addRow("Currency", self.cbx_currencies)
-        frm_add_subcategories.addRow("Recurrency value", self.dsp_value)
-        frm_add_subcategories.addRow("Recurrent", self.cbx_recurrent)
         self.cbx_recurrent.currentIndexChanged.connect(self.on_recurrent_change)
-        frm_add_subcategories.addRow("Recurrency", self.cbx_recurrency)
-        vbl_add_subcategories.addWidget(self.lbl_subcategory_error_message)
-        vbl_add_subcategories.addWidget(btn_add_subcategory)
-        btn_add_subcategory.clicked.connect(self.add_subcategory)
+        frm_edit_subcategories.addRow("Recurrence", self.cbx_recurrence)
 
-        # setup user categories buttons
-        vbl_controls.addWidget(btn_select_users_categories)
-        vbl_controls.addWidget(btn_remove_users_categories)
-        btn_select_users_categories.clicked.connect(self.add_user_categories)
-        btn_remove_users_categories.clicked.connect(self.remove_user_categories)
+        # setup categories layout
+        vbl_categories.addWidget(self.cbx_categories)
+        vbl_categories.addLayout(frm_manage_categories)
+        vbl_categories.addWidget(self.lbl_category_error_message)
+        vbl_categories.addWidget(btn_save_category)
+        vbl_categories.addWidget(btn_delete_category)
+        vbl_categories.insertStretch(5, 1)
+        vbl_categories.addLayout(frm_add_category)
+        vbl_categories.addWidget(self.lbl_add_category_error_message)
+        vbl_categories.addWidget(btn_add_category)
 
-        # setup the vertical layouts inside the horizontal layout
-        hbl_manage_categories.addLayout(vbl_categories, 6)
-        hbl_manage_categories.addLayout(vbl_controls, 1)
-        hbl_manage_categories.addLayout(vbl_user_subcategories, 2)
+        # setup subcategories layout
+        vbl_subcategories.addWidget(self.lvw_user_categories)
+        vbl_subcategories.addLayout(frm_edit_subcategories)
+        vbl_subcategories.addWidget(self.lbl_subcategory_error_message)
+        vbl_subcategories.addWidget(btn_add_subcategory)
+        vbl_subcategories.addWidget(self.btn_save_subcategory)
+        vbl_subcategories.addWidget(self.btn_delete_subcategory)
 
-        # setup everything on the main layout
+        # place widgets
+        grb_categories.setLayout(vbl_categories)
+        grb_subcategories.setLayout(vbl_subcategories)
+        hbl_user_categories.addWidget(grb_categories, 1)
+        hbl_user_categories.addWidget(grb_subcategories, 1)
         vbl_main_layout.addWidget(lbl_title_manage_categories)
-        vbl_main_layout.addLayout(hbl_manage_categories)
+        vbl_main_layout.addLayout(hbl_user_categories, 1)
+
+        # signals and slots
+        self.cbx_categories.currentTextChanged.connect(self.on_category_change)
+        btn_save_category.clicked.connect(self.on_save_category)
+        btn_delete_category.clicked.connect(self.on_delete_category)
+        btn_add_category.clicked.connect(self.on_add_category)
+        self.cbx_currencies.currentTextChanged.connect(self.on_currency_change)
+        btn_add_subcategory.clicked.connect(self.add_subcategory)
+        self.btn_save_subcategory.setEnabled(False)
+        self.btn_delete_subcategory.setEnabled(False)
+        self.btn_delete_subcategory.clicked.connect(self.delete_subcategory)
+        self.btn_save_subcategory.clicked.connect(self.update_subcategory)
+        self.lvw_user_categories.clicked.connect(self.on_table_view_selection)
+        self.subcategories_model.modelReset.connect(self.on_data_change)
+
+        # initial setup
+        self.starting_setup()
 
         # chose the horizontal layout as the main one
         self.setLayout(vbl_main_layout)
 
-    def starting_setup(self):
-        self.populate_currencies()
-        # setup the categories for subcategory form
-        self.populate_categories()
-        # setup the category types for category form
-        self.populate_category_type()
-        # setup the recurrences for the subcategory form
-        self.populate_recurrence()
-
-    def add_category(self):
-        data = self.get_category_data()
-        new_category = self.presenter.create_category(data)
-        if isinstance(new_category, str):
-            self.set_error_message("category", new_category)
-        else:
-            new_category_item = CategoryItem(
-                f"{new_category.category_type.value} - {new_category.name}", new_category.id
-            )
-            self.categories_model.addCategory(new_category_item)
-
-    def add_subcategory(self):
-        data = self.get_subcategory_data()
-        category_name = data["category_name"]
-        new_subcategory = self.presenter.create_subcategory(data)
-        if isinstance(new_subcategory, str):
-            self.set_error_message("subcategory", new_subcategory)
-        else:
-            root_items = self.categories_model.getCategories()
-            for root_item in root_items:
-                if root_item.data() == category_name:
-                    self.categories_model.addSubcategory(
-                        root_item, CategoryItem(new_subcategory.name, new_subcategory.id, root_item)
-                    )
-
-    def handle_category_clicked(self, index: QModelIndex):
-        if not index.isValid():
-            return
-
-        # Check if the clicked item has children
-        if self.categories_model.hasChildren(index):
-            # Only collapse/expand if it's a category
-            if self.trw_categories.isExpanded(index):
-                self.trw_categories.collapse(index)
-            else:
-                self.trw_categories.collapseAll()
-                self.trw_categories.expand(index)
-
-                # Clear previous selections
-                self.trw_categories.selectionModel().clearSelection()
-
-                # Select the clicked item
-                self.trw_categories.selectionModel().select(index, QItemSelectionModel.Select)
-
-                # Select all children if it's a category
-                childCount = self.categories_model.rowCount(index)
-                for i in range(childCount):
-                    childIndex = self.categories_model.index(i, 0, index)
-                    self.trw_categories.selectionModel().select(childIndex, QItemSelectionModel.Select)
-
-    def add_user_categories(self):
-        selection_model = self.trw_categories.selectionModel()
-        selected_indexes = selection_model.selectedIndexes()
-        for index in selected_indexes:
-            item = index.internalPointer()
-            if len(item.children()) == 0:
-                subcategory_id = item.id()
-                new_user_subcategory = self.presenter.add_user_category(subcategory_id)
-                if isinstance(new_user_subcategory, str):
-                    # TODO need to add a place for error message here
-                    print(new_user_subcategory)
-                else:
-                    self.user_subcategory_list_model.addUserCategory(
-                        UserCategoryItem(
-                            f"{new_user_subcategory.subcategory.category.name} - {new_user_subcategory.subcategory.name}",
-                            new_user_subcategory.id,
-                        )
-                    )
-
-    def remove_user_categories(self):
-        selection_model = self.lvw_user_categories.selectionModel()
-        selected_indexes = selection_model.selectedIndexes()
-        for index in selected_indexes:
-            item = index.internalPointer()
-            # TODO handle errors from the db model
-            self.presenter.remove_user_category(item.id())
-            self.user_subcategory_list_model.removeUserCategory(index)
-
-    def populate_categories(self):
-        categories = self.categories_model.getCategories()
+    def fetch_categories(self):
+        self.category_list = self.presenter.get_category_list()
         self.cbx_categories.clear()
-        self.cbx_categories.addItems(category.name for category in categories)
+        self.cbx_categories.addItems([category.name for category in self.category_list])
+        self.cbx_edit_category_types.clear()
+        self.cbx_add_category_types.clear()
+        self.cbx_edit_category_types.addItems([e.value for e in CategoryTypeEnum])
+        self.cbx_add_category_types.addItems([e.value for e in CategoryTypeEnum])
 
-    def populate_recurrence(self):
-        recurrence_list = self.presenter.get_recurrence()
-        self.cbx_recurrency.clear()
-        self.cbx_recurrency.addItems(recurrence for recurrence in recurrence_list if recurrence.name != "ONE")
-
-    def populate_category_type(self):
-        category_type_list = self.presenter.get_category_type()
-        self.cbx_category_type.clear()
-        self.cbx_category_type.addItems(category_type for category_type in category_type_list)
+    def fetch_subcategories(self):
+        self.subcategory_list = self.presenter.get_subcategory_list()
 
     def populate_currencies(self):
         all_currencies = self.presenter.get_currency()
@@ -263,32 +143,86 @@ class Categories(QWidget):
         self.cbx_currencies.clear()
         self.cbx_currencies.addItems([currency.getName() for currency in self.currency_list])
 
-    def on_recurrent_change(self, _):
+    def on_currency_change(self):
+        current_incoming_currency = self.cbx_currencies.currentText()
+        for currency in self.currency_list:
+            if currency.getName() == current_incoming_currency:
+                self.selected_currency = currency
+                self.dsp_value.setPrefix(currency.getSymbol())
+
+    def populate_recurrence(self):
+        self.recurrence_list = self.presenter.get_recurrence()
+        self.cbx_recurrence.clear()
+        self.cbx_recurrence.addItems([recurrence.value for recurrence in self.recurrence_list])
+
+    def on_recurrent_change(self):
         if self.cbx_recurrent.currentText() == "No":
-            self.cbx_recurrency.setDisabled(True)
+            self.cbx_recurrence.setDisabled(True)
         else:
-            self.cbx_recurrency.setDisabled(False)
+            self.cbx_recurrence.setDisabled(False)
+
+    def starting_setup(self):
+        self.fetch_subcategories()
+        self.fetch_categories()
+        self.populate_currencies()
+        self.populate_recurrence()
+        self.on_category_change()
+        self.refresh_model_data()
+
+    def refresh_model_data(self):
+        current_category_subcategories: list = []
+        for subcategory in self.subcategory_list:
+            if subcategory.category.name == self.current_category_name:
+                subcategory_item = SubCategoryItem(subcategory)
+                current_category_subcategories.append(subcategory_item)
+        self.subcategories_model.setObjects(current_category_subcategories)
+
+    def on_category_change(self):
+        self.lne_edit_category_name.setText(self.cbx_categories.currentText())
+        for category in self.category_list:
+            if category.name == self.cbx_categories.currentText():
+                self.current_category_id = category.id
+                self.current_category_name = category.name
+                self.current_category_type = category.category_type.value
+        self.cbx_edit_category_types.setCurrentText(self.current_category_type)
+        self.refresh_model_data()
+
+    def get_category_data(self):
+        return {"name": self.lne_edit_category_name.text(), "category_type": self.cbx_edit_category_types.currentText()}
+
+    def get_add_category_data(self):
+        return {"name": self.lne_add_category_name.text(), "category_type": self.cbx_add_category_types.currentText()}
 
     def get_subcategory_data(self):
         return {
             "category_name": self.cbx_categories.currentText(),
             "name": self.lne_subcategory_name.text(),
             "recurrent": True if self.cbx_recurrent.currentText() == "Yes" else False,
-            "recurrence": self.cbx_recurrency.currentText(),
+            "recurrence": self.cbx_recurrence.currentText() if self.cbx_recurrent.currentText() == "Yes" else None,
             "recurrence_value": self.dsp_value.value() * 100,
-            "currency": self.cbx_currencies.currentText(),
+            "currency_id": self.selected_currency.getId(),
         }
 
-    def get_category_data(self):
-        return {"name": self.lne_category_name.text(), "category_type": self.cbx_category_type.currentText()}
+    def on_save_category(self):
+        response = self.presenter.update_category(self.current_category_id, self.get_category_data())
+        if isinstance(response, str):
+            self.set_error_message(response, "edit")
+        else:
+            self.fetch_categories()
 
-    def on_currency_change(self):
-        self.dsp_value.setPrefix(f"{self.currency_list[self.cbx_currencies.currentText()].value} ")
+    def on_delete_category(self):
+        response = self.presenter.delete_category(self.current_category_id)
+        if isinstance(response, str):
+            self.set_error_message(response, "edit")
+        else:
+            self.fetch_categories()
 
-    def set_error_message(self, type: str, message: str) -> None:
-        if type == "category":
+    def set_error_message(self, message: str, type: str) -> None:
+        if type == "edit":
             self.lbl_category_error_message.setText(message)
-        if type == "subcategory":
+        elif type == "add":
+            self.lbl_add_category_error_message.setText(message)
+        elif type == "subcategory":
             self.lbl_subcategory_error_message.setText(message)
         self.set_clear_timer()
 
@@ -303,27 +237,81 @@ class Categories(QWidget):
             self.clear_timer.start(3 * 1000)
 
     def reset_line_edit_text(self):
-        self.lbl_category_error_message.clear()
-        self.lbl_subcategory_error_message.clear()
+        self.lbl_category_error_message.setText("")
+        self.lbl_subcategory_error_message.setText("")
         # Stop the timer after clearing the messages
         if self.clear_timer:
             self.clear_timer.stop()
 
-    def on_model_row_inserted(self, type: str):
-        if type == "category":
-            self.populate_categories()
+    def on_add_category(self):
+        response = self.presenter.create_category(self.get_add_category_data())
+        if isinstance(response, str):
+            self.set_error_message(response, "add")
+        else:
+            self.fetch_categories()
             self.clear_category_data()
-        if type == "subcategory":
+
+    def add_subcategory(self):
+        data = self.get_subcategory_data()
+        new_subcategory = self.presenter.create_subcategory(data)
+        if isinstance(new_subcategory, str):
+            self.set_error_message(new_subcategory, "subcategory")
+        else:
+            self.fetch_subcategories()
+            new_subcategory_item = SubCategoryItem(new_subcategory)
+            self.subcategories_model.addListItem(new_subcategory_item)
+            self.clear_subcategory_data()
+
+    def on_table_view_selection(self, index):
+        self.selection_index = index
+        item: SubCategoryItem = self.get_selected_item()
+        self.lne_subcategory_name.setText(item.getName())
+        if item.getCurrencyName() is not None:
+            self.cbx_currencies.setCurrentText(item.getCurrencyName())
+        self.dsp_value.setValue(item.getValue())
+        self.cbx_recurrent.setCurrentText("Yes") if item.recurrent is True else self.cbx_recurrent.setCurrentText("No"),
+        if item.recurrent is True:
+            self.cbx_recurrence.setCurrentText(item.recurrence.value)
+        else:
+            self.cbx_recurrence.setEnabled(False)
+        self.btn_save_subcategory.setEnabled(True)
+        self.btn_delete_subcategory.setEnabled(True)
+
+    def on_data_change(self):
+        self.selection_index = None
+        self.btn_save_subcategory.setEnabled(False)
+        self.btn_delete_subcategory.setEnabled(False)
+
+    def get_selected_item(self):
+        return self.selection_index.internalPointer()
+
+    def update_subcategory(self):
+        item: SubCategoryItem = self.get_selected_item()
+        response = self.presenter.update_subcategory(item.getId(), self.get_subcategory_data())
+        if isinstance(response, str):
+            self.set_error_message(response, "subcategory")
+        else:
+            self.fetch_subcategories()
+            self.refresh_model_data()
+            self.clear_subcategory_data()
+
+    def delete_subcategory(self):
+        item: SubCategoryItem = self.get_selected_item()
+        response = self.presenter.delete_subcategory(item.getId())
+        if isinstance(response, str):
+            self.set_error_message(response, "subcategory")
+        else:
+            self.fetch_subcategories()
+            self.subcategories_model.removeListItem(self.selection_index)
             self.clear_subcategory_data()
 
     def clear_category_data(self):
-        self.lne_category_name.clear()
-        self.cbx_category_type.setCurrentIndex(0)
+        self.lne_add_category_name.clear()
+        self.cbx_add_category_types.setCurrentIndex(0)
 
     def clear_subcategory_data(self):
-        self.cbx_categories.setCurrentIndex(0)
         self.lne_subcategory_name.clear()
         self.cbx_recurrent.setCurrentIndex(0)
-        self.cbx_recurrency.setCurrentIndex(0)
+        self.cbx_recurrence.setCurrentIndex(0)
         self.dsp_value.setValue(0.00)
         self.cbx_currencies.setCurrentIndex(0)

@@ -15,6 +15,7 @@ sqlalchemy = "^2.0.22"
 pyside6 = "^6.6.1"
 cryptography = "^42.0.5"
 toml = "^0.10.2"
+qdarkstyle = "^3.2.3"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"

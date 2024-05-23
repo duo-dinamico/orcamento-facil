@@ -48,12 +48,12 @@ class Transactions(QWidget):
         # configure entries
         self.cbx_currencies.currentTextChanged.connect(self.on_currency_change)
 
-        self.starting_setup()
-
         lbl_title_transactions = MainTitle("Manage transactions")
         self.dte_transaction_date = DateSetup("dd/MM/yyyy", "current month")
         self.dsp_recurring_value = DoubleSpinBox()
         self.dsp_recurring_value.setEnabled(False)
+
+        self.starting_setup()
 
         # setup the model and set it to the table
         self.transactions_list = self.presenter.get_transactions_list()
@@ -111,7 +111,9 @@ class Transactions(QWidget):
 
         # listen for an accounts signal
         self._parent.accounts.account_list_model.rowsInserted.connect(self.populate_accounts)
-        self._parent.categories.user_subcategory_list_model.rowsInserted.connect(self.populate_subcategories)
+        self._parent.user_categories.user_subcategory_list_model.rowsInserted.connect(self.populate_subcategories)
+        self._parent.user_categories.user_subcategory_list_model.rowsRemoved.connect(self.populate_subcategories)
+        self._parent.categories.subcategories_model.modelReset.connect(self.populate_subcategories)
         self.transactions_list_model.rowsInserted.connect(self.on_model_update)
         self.transactions_list_model.dataChanged.connect(self.on_model_update)
         self.transactions_list_model.rowsRemoved.connect(self.on_model_update)
@@ -273,7 +275,7 @@ class Transactions(QWidget):
         for user_subcategory in self.subcategories:
             user_category_name = f"{user_subcategory.subcategory.category.name} - {user_subcategory.subcategory.name}"
             if user_category_name == self.cbx_subcategories.currentText():
-                currency_and_value = f"{user_subcategory.subcategory.currency.value if user_subcategory.subcategory.currency is not None else None} {user_subcategory.subcategory.recurrence_value}".split(
+                currency_and_value = f"{user_subcategory.subcategory.currency.symbol if user_subcategory.subcategory.currency is not None else None} {user_subcategory.subcategory.recurrence_value}".split(
                     " "
                 )
                 if currency_and_value[1] == "None":

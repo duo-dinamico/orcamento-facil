@@ -121,13 +121,13 @@ class ModelTransaction:
             return None
 
     def update_transaction(self, transaction: Transaction) -> None:
-        """Update a transaction in the database, and return the transaction id.
+        """Update a transaction in the database, and return the transaction.
 
         Args:
             transaction: the transaction to be updated
 
         Returns:
-            trasaction id: if the transaction was updated
+            transaction: if the transaction was updated
             None: if the transaction failed to be updated.
         """
         try:

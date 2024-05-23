@@ -73,3 +73,51 @@ class ModelCategory:
             category_list: list of all categories.
         """
         return self.parent.read_all_basequery(select(Category))
+
+    def update_category(self, category: Category) -> None:
+        """Update a category in the database, and return the category.
+
+        Args:
+            category: the category to be updated
+
+        Returns:
+            category_id: if the category was updated
+            None: if the category failed to be updated.
+        """
+        try:
+            self.parent.session.add(category)
+            self.parent.session.commit()
+            self.parent.session.refresh(category)
+            return category
+        except IntegrityError as integrity_error:
+            self.parent.session.rollback()
+            if "unique constraint" in str(integrity_error.orig).lower():
+                return "Category name must be unique."
+            else:
+                return f"An unknown IntegrityError occurred: {integrity_error}"
+        except LookupError as lookup_error:
+            self.parent.session.rollback()
+            return f"A LookupError occurred: {lookup_error}"
+
+    def delete_category(self, category_id: int) -> int:
+        """Delete a category with the given id.
+
+        Args:
+            category_id: the category id.
+
+        Returns:
+            Number of rows deleted. Should allways be 1.
+        """
+        try:
+            result = self.parent.session.query(Category).where(Category.id == category_id).delete()
+            self.parent.session.commit()
+            return result
+        except IntegrityError as integrity_error:
+            self.parent.session.rollback()
+            if "foreign key constraint failed" in str(integrity_error.orig).lower():
+                return "Category has sub categories which must be removed first"
+            else:
+                return f"An unknown IntegrityError occurred: {integrity_error}"
+        except NoResultFound:
+            self.parent.session.rollback()
+            return "Category was not found"

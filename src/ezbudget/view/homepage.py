@@ -8,6 +8,7 @@ from ezbudget.view import (
     MonthlyBudget,
     Summary,
     Transactions,
+    UserCategories,
 )
 
 
@@ -28,6 +29,7 @@ class HomePageView(QWidget):
         self.accounts = Accounts(self, self.presenter)
         self.income_sources = IncomeSources(self, self.presenter)
         self.categories = Categories(self.presenter)
+        self.user_categories = UserCategories(self, self.presenter)
         self.transactions = Transactions(self, self.presenter)
         self.monthly_budget = MonthlyBudget(self.presenter)
 
@@ -37,7 +39,8 @@ class HomePageView(QWidget):
         tbl_homepage.addTab(self.summary, "Home")
         tbl_homepage.addTab(self.accounts, "Accounts")
         tbl_homepage.addTab(self.income_sources, "Income Sources")
-        tbl_homepage.addTab(self.categories, "Categories")
+        tbl_homepage.addTab(self.categories, "Manage Categories")
+        tbl_homepage.addTab(self.user_categories, "User Categories")
         tbl_homepage.addTab(self.transactions, "Transactions")
         tbl_homepage.addTab(self.monthly_budget, "Monthly Budget")
 

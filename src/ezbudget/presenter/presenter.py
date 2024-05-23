@@ -100,10 +100,9 @@ class Presenter:
         return [account.name for account in self.model_account.read_accounts_by_user(user_id=self.model.user.id)]
 
     def update_accounts_from_transaction(self):
-        self.view.homepage_view.incoming_outgoing.account_list_model.updateAccounts()
+        self.view.homepage_view.accounts.account_list_model.updateAccounts()
         # TODO should we be updating the income since it is meant to be a prediction?
-        # self.view.homepage_view.incoming_outgoing.incoming_list_model.updateAccounts()
-        self.view.homepage_view.incoming_outgoing.credit_card_list_model.updateAccounts()
+        # self.view.homepage_view.accounts.incoming_list_model.updateAccounts()
 
     def handle_set_total_credit_cards(self):
         if self.model.user is not None:
@@ -141,7 +140,7 @@ class Presenter:
         return self.model_category.create_category(**category_data)
 
     def create_subcategory(self, subcategory_data):
-        category_name = subcategory_data["category_name"].split(" - ")[1]
+        category_name = subcategory_data["category_name"]
         subcategory_data["name"] = self.check_mandatory_fields(subcategory_data["name"])
         category_id = self.model_category.read_category_by_name(category_name).id
         subcategory_data["category_id"] = category_id
@@ -151,10 +150,10 @@ class Presenter:
                 subcategory_data["recurrence"] = recurrence.name
         return self.model_subcategory.create_subcategory(**subcategory_data)
 
-    def get_category_list(self) -> None:
+    def get_category_list(self) -> list:
         return self.model_category.read_categories()
 
-    def get_subcategory_list(self) -> None:
+    def get_subcategory_list(self) -> list:
         return self.model_subcategory.read_subcategories()
 
     def get_category_subcategory_list(self) -> None:
@@ -175,14 +174,40 @@ class Presenter:
     def get_category_id_by_name(self, category_name):
         return self.model_category.read_category_by_name(category_name).id
 
+    def update_category(self, category_id: int, category_data):
+        category_to_update = self.model_category.read_category_by_id(category_id)
+        category_to_update.name = category_data["name"]
+        category_to_update.category_type = category_data["category_type"]
+        return self.model_category.update_category(category_to_update)
+
+    def update_subcategory(self, subcategory_id: int, subcategory_data):
+        subcategory_to_update = self.model_subcategory.read_subcategory_by_id(subcategory_id)
+        category_id = self.model_category.read_category_by_name(subcategory_data["category_name"]).id
+        subcategory_to_update.category_id = category_id
+        subcategory_to_update.name = subcategory_data["name"]
+        subcategory_to_update.recurrent = subcategory_data["recurrent"]
+        subcategory_to_update.recurrence = subcategory_data["recurrence"]
+        subcategory_to_update.currency_id = subcategory_data["currency_id"]
+        subcategory_to_update.recurrence_value = subcategory_data["recurrence_value"]
+        return self.model_subcategory.update_subcategory(subcategory_to_update)
+
+    def delete_category(self, category_id: int):
+        # TODO if there's an error on the response, we need to use it to show the user
+        return self.model_category.delete_category(category_id)
+
+    def delete_subcategory(self, subcategory_id: int):
+        return self.model_subcategory.delete_subcategory(subcategory_id)
+
     def add_user_category(self, subcategory_id) -> None:
         # TODO if there's an error on the response, we need to use it to show the user
         return self.model_user_subcategory.create_user_subcategory(
             user_id=self.model.user.id, subcategory_id=subcategory_id
         )
 
-    def remove_user_category(self, user_category_id: int):
-        self.model_user_subcategory.delete_user_subcategory(id=user_category_id)
+    def remove_user_category(self, subcategory_id: int):
+        return self.model_user_subcategory.delete_user_subcategory(
+            user_id=self.model.user.id, subcategory_id=subcategory_id
+        )
 
     def get_user_subcategory_list(self):
         # Get user subcategory object list

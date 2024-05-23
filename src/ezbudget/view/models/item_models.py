@@ -1,44 +1,45 @@
 from PySide6.QtCore import QDateTime
 
 
-class CategoryItem:
-    def __init__(self, name, id, parent=None):
-        self.name = name
-        self._id = id
-        self.parentItem = parent
-        self.childItems = []
-
-    def addChild(self, item):
-        self.childItems.append(item)
-
-    def children(self):
-        return self.childItems
-
-    def parent(self):
-        return self.parentItem
-
-    def row(self):
-        if self.parentItem:
-            return self.parentItem.childItems.index(self)
-        return self.parentItem.rootItems.index(self) if self.parentItem else 0
-
-    def data(self):
-        return self.name
-
-    def id(self):
-        return self._id
-
-
 class UserCategoryItem:
-    def __init__(self, name, id):
-        self.name = name
-        self._id = id
+    def __init__(self, data):
+        self.name = data.name
+        self.category = data.category
+        self._id = data.id
 
-    def data(self):
+    def getName(self):
+        return f"{self.category.name} - {self.name}"
+
+    def getId(self):
+        return self._id
+
+
+class SubCategoryItem:
+    def __init__(self, data):
+        self.name = data.name
+        self._id = data.id
+        self.currency = data.currency or None
+        self.recurrence_value = data.recurrence_value or None
+        self.recurrent = data.recurrent or None
+        self.recurrence = data.recurrence or None
+
+    def getName(self):
         return self.name
 
-    def id(self):
+    def getId(self):
         return self._id
+
+    def getCurrencyName(self):
+        if self.currency:
+            return self.currency.name
+        else:
+            return None
+
+    def getValue(self):
+        if self.recurrence_value:
+            return self.recurrence_value / 100
+        else:
+            return 0.00
 
 
 class TransactionItem:

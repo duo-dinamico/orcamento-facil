@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from sqlalchemy import ForeignKey, UniqueConstraint
+from sqlalchemy import ForeignKey, Index, UniqueConstraint, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -44,9 +44,11 @@ class User(Base):
 
     # mandatory
     id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str] = mapped_column(unique=True, nullable=False)
+    username: Mapped[str] = mapped_column(nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
     personal_key: Mapped[bytes] = mapped_column(nullable=False)
+
+    __table_args__ = (Index("ix_users_username", func.lower(username), unique=True),)
 
 
 class Currency(Base):
@@ -54,10 +56,14 @@ class Currency(Base):
 
     # mandatory
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(unique=True, nullable=False)
-    symbol: Mapped[str] = mapped_column(unique=True, nullable=False)
-    code: Mapped[str] = mapped_column(unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(nullable=False)
+    symbol: Mapped[str] = mapped_column(nullable=False)
+    code: Mapped[str] = mapped_column(nullable=False)
     symbol_position: Mapped[str] = mapped_column(nullable=False)
+
+    __table_args__ = (
+        Index("ix_currencies_name_symbol_code", func.lower(name), func.lower(symbol), func.lower(code), unique=True),
+    )
 
 
 class Account(Base):
@@ -66,7 +72,7 @@ class Account(Base):
     # mandatory
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", name="user"), nullable=False)
-    name: Mapped[str] = mapped_column(unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(nullable=False)
     account_type: Mapped[AccountTypeEnum] = mapped_column(nullable=False)
     currency_id: Mapped[int] = mapped_column(ForeignKey("currencies.id", name="currency"), nullable=False)
     balance: Mapped[int] = mapped_column(default=0)  # In cents
@@ -81,6 +87,8 @@ class Account(Base):
     user: Mapped["User"] = relationship("User")
     currency: Mapped["Currency"] = relationship("Currency")
 
+    __table_args__ = (Index("ix_accounts_name", func.lower(name), unique=True),)
+
 
 class Income(Base):
     __tablename__ = "incomes"
@@ -89,7 +97,7 @@ class Income(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", name="user"), nullable=False)
     account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id", name="account"), nullable=False)
-    name: Mapped[str] = mapped_column(unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(nullable=False)
     recurrence_value: Mapped[int] = mapped_column(default=0)  # In cents
     currency_id: Mapped[int] = mapped_column(ForeignKey("currencies.id", name="currency"), nullable=False)
     recurrent: Mapped[bool] = mapped_column(default=False)
@@ -102,6 +110,8 @@ class Income(Base):
     user: Mapped["User"] = relationship("User")
     account: Mapped["Account"] = relationship("Account")
     currency: Mapped["Currency"] = relationship("Currency")
+
+    __table_args__ = (Index("ix_incomes_name", func.lower(name), unique=True),)
 
 
 class Transaction(Base):
@@ -144,6 +154,7 @@ class SubCategory(Base):
     # relatioships
     category: Mapped["Category"] = relationship("Category")
     currency: Mapped["Currency"] = relationship("Currency")
+    __table_args__ = (UniqueConstraint("category_id", "name", name="uniq_category_subcategory"),)
 
 
 class Category(Base):
@@ -151,8 +162,10 @@ class Category(Base):
 
     # mandatory
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(nullable=False)
     category_type: Mapped[CategoryTypeEnum] = mapped_column(nullable=False)
+
+    __table_args__ = (Index("ix_category_name", func.lower(name), unique=True),)
 
 
 class UserSubCategory(Base):

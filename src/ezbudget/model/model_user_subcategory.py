@@ -90,7 +90,7 @@ class ModelUserSubCategory:
         """
         return self.parent.read_all_basequery(select(UserSubCategory).where(UserSubCategory.user_id == user_id))
 
-    def delete_user_subcategory(self, id: int) -> int:
+    def delete_user_subcategory(self, user_id: int, subcategory_id: int) -> int:
         """Removes a user subcategory relationship for a given id.
 
         Args:
@@ -99,7 +99,17 @@ class ModelUserSubCategory:
         Returns:
             int: the number of deleted rows
         """
-        # TODO Delete and update are under consideration due to the risk of permanent changes
-        deleted_row = self.parent.session.query(UserSubCategory).where(UserSubCategory.id == id).delete()
-        self.parent.session.commit()
-        return deleted_row
+        try:
+            result = (
+                self.parent.session.query(UserSubCategory)
+                .where(and_(UserSubCategory.user_id == user_id, UserSubCategory.subcategory_id == subcategory_id))
+                .delete()
+            )
+            self.parent.session.commit()
+            return result
+        except IntegrityError as integrity_error:
+            self.parent.session.rollback()
+            return f"An unknown IntegrityError occurred: {integrity_error}"
+        except NoResultFound:
+            self.parent.session.rollback()
+            return "Category was not found"

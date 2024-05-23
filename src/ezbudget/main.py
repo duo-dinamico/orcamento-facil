@@ -2,6 +2,7 @@ import os
 import sys
 import tomllib
 
+import qdarkstyle
 from PySide6.QtWidgets import QApplication
 
 from ezbudget.model import Model
@@ -19,6 +20,8 @@ def main() -> None:
         currency_data = tomllib.load(doc)
 
     app = QApplication(sys.argv)
+    # setup stylesheet
+    app.setStyleSheet(qdarkstyle.load_stylesheet_pyside6())
     model = Model(category_data, currency_data)
     presenter = Presenter(model)
     view = MainWindow(presenter, BASEDIR)

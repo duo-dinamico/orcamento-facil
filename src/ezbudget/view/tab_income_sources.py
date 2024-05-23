@@ -75,6 +75,7 @@ class IncomeSources(QWidget):
 
         # instances of necessary widgets
         vbl_main_layout = QVBoxLayout()
+        vbl_income_sources = QVBoxLayout()
         vbl_income_sources_controls = QVBoxLayout()
         hbl_income_sources = QHBoxLayout()
         frm_add_edit_incomings = QFormLayout()
@@ -116,7 +117,6 @@ class IncomeSources(QWidget):
 
         # organize the buttons into the controls layout
         income_sources_controls = [self.btn_incoming_add, btn_incoming_edit, btn_incoming_delete]
-        vbl_income_sources_controls.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         for btn in income_sources_controls:
             vbl_income_sources_controls.addWidget(btn)
 
@@ -150,22 +150,14 @@ class IncomeSources(QWidget):
         self.incoming_list_model.rowsInserted.connect(self.on_model_row_inserted)
 
         # setup the vertical layouts
-        grb_incomings_controls.setLayout(vbl_income_sources_controls)
+        grb_incomings_controls.setLayout(vbl_income_sources)
 
         # setup the controls widgets
-        incoming_layout_setup = [
-            lbl_income_mandatory_fields,
-            frm_add_edit_incomings,
-            self.lbl_income_error_message,
-            self.btn_incoming_add,
-            btn_incoming_edit,
-            btn_incoming_delete,
-        ]
-        for widget in incoming_layout_setup:
-            if isinstance(widget, QFormLayout):
-                vbl_income_sources_controls.addLayout(widget)
-            else:
-                vbl_income_sources_controls.addWidget(widget)
+        vbl_income_sources.addWidget(lbl_income_mandatory_fields)
+        vbl_income_sources.addLayout(frm_add_edit_incomings)
+        vbl_income_sources.insertStretch(2, 1)
+        vbl_income_sources.addWidget(self.lbl_income_error_message)
+        vbl_income_sources.addLayout(vbl_income_sources_controls)
 
         # setup the vertical layouts inside the horizontal layout
         hbl_income_sources.addWidget(self.tbl_incomings, 2)

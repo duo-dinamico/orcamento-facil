@@ -71,6 +71,7 @@ class Accounts(QWidget):
         # instances of necessary widgets
         hbl_accounts = QHBoxLayout()
         vbl_main_layout = QVBoxLayout()
+        vbl_accounts = QVBoxLayout()
         vbl_accounts_controls = QVBoxLayout()
         frm_add_edit_accounts = QFormLayout()
         grb_accounts_controls = QGroupBox("Manage accounts")
@@ -108,7 +109,6 @@ class Accounts(QWidget):
 
         # organize the buttons into the controls layout
         accounts_controls = [btn_account_add, btn_account_edit, btn_account_delete]
-        vbl_accounts_controls.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         for btn in accounts_controls:
             vbl_accounts_controls.addWidget(btn)
 
@@ -139,22 +139,14 @@ class Accounts(QWidget):
         self.account_list_model.rowsInserted.connect(self.on_model_row_inserted)
 
         # setup the vertical layouts
-        grb_accounts_controls.setLayout(vbl_accounts_controls)
+        grb_accounts_controls.setLayout(vbl_accounts)
 
         # setup the controls widgets
-        accounts_layout_setup = [
-            lbl_account_mandatory_fields,
-            frm_add_edit_accounts,
-            self.lbl_account_error_message,
-            btn_account_add,
-            btn_account_edit,
-            btn_account_delete,
-        ]
-        for widget in accounts_layout_setup:
-            if isinstance(widget, QFormLayout):
-                vbl_accounts_controls.addLayout(widget)
-            else:
-                vbl_accounts_controls.addWidget(widget)
+        vbl_accounts.addWidget(lbl_account_mandatory_fields)
+        vbl_accounts.addLayout(frm_add_edit_accounts)
+        vbl_accounts.insertStretch(2, 1)
+        vbl_accounts.addWidget(self.lbl_account_error_message)
+        vbl_accounts.addLayout(vbl_accounts_controls)
 
         # setup the vertical layouts
         hbl_accounts.addWidget(self.tbl_accounts, 2)
@@ -223,7 +215,7 @@ class Accounts(QWidget):
             self.clear_timer.start(3 * 1000)
 
     def reset_line_edit_text(self):
-        self.lbl_account_error_message.clear()
+        self.lbl_account_error_message.setText("")
         # Stop the timer after clearing the messages
         if self.clear_timer:
             self.clear_timer.stop()

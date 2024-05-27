@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "orcamento-facil"
-version = "0.2.0"
+version = "0.3.0_20240527"
 description = "Budget management application"
 authors = ["DuoDinamico"]
 license = "LICENSE"

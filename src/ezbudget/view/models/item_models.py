@@ -47,8 +47,9 @@ class TransactionItem:
         self._id = transaction.id
         self.account_id = transaction.account_id
         self.account_name = transaction.account.name
-        self.category_name = transaction.subcategory.category.name
-        self.subcategory_name = transaction.subcategory.name
+        self.category_name = transaction.subcategory.category.name if transaction.subcategory is not None else None
+        self.subcategory_name = transaction.subcategory.name if transaction.subcategory is not None else None
+        self.income_name = transaction.income.name if transaction.income is not None else None
         self._date = transaction.date
         self.transaction_type = transaction.transaction_type
         self.currency = transaction.currency
@@ -57,7 +58,10 @@ class TransactionItem:
         self.target_account_id = transaction.target_account_id
 
     def category(self):
-        return f"{self.category_name} - {self.subcategory_name}"
+        if self.transaction_type.name == "Expense" or self.transaction_type.name == "Transfer":
+            return f"{self.category_name} - {self.subcategory_name}"
+        elif self.transaction_type.name == "Income":
+            return f"Income - {self.income_name}"
 
     def date(self):
         date_time = QDateTime.fromString(str(self._date), "yyyy-MM-dd hh:mm:ss")

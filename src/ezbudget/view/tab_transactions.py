@@ -31,25 +31,28 @@ class Transactions(QWidget):
         vbl_main_layout = QVBoxLayout()
         frm_add_edit_transactions = QFormLayout()
         self.cbx_account = QComboBox()
-        self.cbx_subcategories = QComboBox()
+        self.cbx_category = QComboBox()
         self.cbx_currencies = QComboBox()
         self.cbx_transaction_type = QComboBox()
         self.cbx_target_account = QComboBox()
         self.chk_transfer_account_toggle = QCheckBox()
         self.lne_description = QLineEdit()
         self.btn_add_transaction = QPushButton("Add transaction")
-        self.btn_edit_transaction = QPushButton("Edit transaction")
+        self.btn_edit_transaction = QPushButton("Save transaction")
         self.btn_delete_transaction = QPushButton("Delete transaction")
         self.btn_clear = QPushButton("Clear")
         self.tbl_transactions = QTableView()
         self.dsp_value = DoubleSpinBox()
-        grb_add_transaction = QGroupBox("Add/Edit/Remove transactions")
+        grb_add_transaction = QGroupBox("Add/Save/Delete transactions")
 
         # configure entries
         self.cbx_currencies.currentTextChanged.connect(self.on_currency_change)
+        self.cbx_transaction_type.setEditable(False)
+        self.cbx_transaction_type.setDisabled(True)
+        self.cbx_category.setMaximumWidth(210)
 
         lbl_title_transactions = MainTitle("Manage transactions")
-        self.dte_transaction_date = DateSetup("dd/MM/yyyy", "current month")
+        self.dte_transaction_date = DateSetup("dd/MM/yyyy", "yearly")
         self.dsp_recurring_value = DoubleSpinBox()
         self.dsp_recurring_value.setEnabled(False)
 
@@ -76,9 +79,9 @@ class Transactions(QWidget):
 
         # setup the frame
         frm_add_edit_transactions.addRow("Account", self.cbx_account)
-        frm_add_edit_transactions.addRow("Is account transfer", self.chk_transfer_account_toggle)
+        frm_add_edit_transactions.addRow("Account transfer?", self.chk_transfer_account_toggle)
         frm_add_edit_transactions.addRow("Target account", self.cbx_target_account)
-        frm_add_edit_transactions.addRow("Category", self.cbx_subcategories)
+        frm_add_edit_transactions.addRow("Category", self.cbx_category)
         frm_add_edit_transactions.addRow("Recurring value", self.dsp_recurring_value)
         frm_add_edit_transactions.addRow("Date", self.dte_transaction_date)
         frm_add_edit_transactions.addRow("Currency", self.cbx_currencies)
@@ -103,17 +106,18 @@ class Transactions(QWidget):
         self.btn_edit_transaction.clicked.connect(self.update_transaction)
         self.btn_delete_transaction.clicked.connect(self.remove_transaction)
         self.btn_clear.clicked.connect(self.reset_fields)
-        self.cbx_subcategories.currentTextChanged.connect(self.on_subcategory_change)
+        self.cbx_category.currentTextChanged.connect(self.on_subcategory_change)
 
         # setup the horizontal layouts
         hbl_transactions.addLayout(vbl_add_edit_transactions, 1)
-        hbl_transactions.addWidget(self.tbl_transactions, 2)
+        hbl_transactions.addWidget(self.tbl_transactions, 3)
 
         # listen for an accounts signal
         self._parent.accounts.account_list_model.rowsInserted.connect(self.populate_accounts)
         self._parent.user_categories.user_subcategory_list_model.rowsInserted.connect(self.populate_subcategories)
         self._parent.user_categories.user_subcategory_list_model.rowsRemoved.connect(self.populate_subcategories)
         self._parent.categories.subcategories_model.modelReset.connect(self.populate_subcategories)
+        self._parent.income_sources.incoming_list_model.rowsInserted.connect(self.populate_subcategories)
         self.transactions_list_model.rowsInserted.connect(self.on_model_update)
         self.transactions_list_model.dataChanged.connect(self.on_model_update)
         self.transactions_list_model.rowsRemoved.connect(self.on_model_update)
@@ -155,7 +159,7 @@ class Transactions(QWidget):
             self.cbx_target_account.setCurrentText(target_account_name)
         else:
             self.chk_transfer_account_toggle.setChecked(False)
-        self.cbx_subcategories.setCurrentText(transaction_item.category())
+        self.cbx_category.setCurrentText(transaction_item.category())
         self.dte_transaction_date.setDate(transaction_item._date)
         self.cbx_currencies.setCurrentText(transaction_item.currencyName())
         self.cbx_transaction_type.setCurrentText(transaction_item.transactionTypeName())
@@ -170,7 +174,7 @@ class Transactions(QWidget):
         item = self.get_selected_item()
         self.set_data_on_selection(item)
         self.btn_add_transaction.setText("Duplicate transaction")
-        self.btn_edit_transaction.setEnabled(True)
+        # self.btn_edit_transaction.setEnabled(True)
         self.btn_delete_transaction.setEnabled(True)
         self.btn_clear.setEnabled(True)
 
@@ -178,7 +182,7 @@ class Transactions(QWidget):
         data = {
             "account_name": self.cbx_account.currentText(),
             "target_account_name": self.cbx_target_account.currentText(),
-            "subcategory_name": self.cbx_subcategories.currentText(),
+            "category_name": self.cbx_category.currentText(),
             "date": self.dte_transaction_date.date().toString("yyyy/MM/dd"),
             "currency_id": self.selected_currency.getId(),
             "transaction_type": self.cbx_transaction_type.currentText(),
@@ -226,24 +230,33 @@ class Transactions(QWidget):
     def on_transfer_account_toggle(self):
         if self.chk_transfer_account_toggle.isChecked():
             self.cbx_target_account.setEnabled(True)
-            self.cbx_transaction_type.setEnabled(False)
             self.cbx_transaction_type.setCurrentText("Transfer")
+            self.dsp_recurring_value.setValue(0.00)
             self.populate_target_accounts()
         else:
             self.cbx_target_account.clear()
-            self.cbx_transaction_type.setEnabled(True)
-            self.populate_transaction_types()
+            self.on_subcategory_change()
 
     def populate_subcategories(self):
-        self.subcategories = self.presenter.get_user_subcategory_list()
-        if self.subcategories is None:
-            self.subcategories = []
+        self.incomes: list = self.presenter.get_income_list()
+        self.user_subcategories: list = self.presenter.get_user_subcategory_list()
+        self.category_list_selection: list = [*self.incomes, *self.user_subcategories]
+        category_names: list = []
+        for cat in self.category_list_selection:
+            if hasattr(cat, "name"):
+                category_names.append(f"Income - {cat.name}")
+            else:
+                category_names.append(f"{cat.subcategory.category.name} - {cat.subcategory.name}")
+
         self.on_subcategory_change()
-        self.cbx_subcategories.clear()
-        self.cbx_subcategories.addItems(
-            f"{user_subcategory.subcategory.category.name} - {user_subcategory.subcategory.name}"
-            for user_subcategory in self.subcategories
-        )
+        self.cbx_category.clear()
+        category_names.sort(key=lambda category: category)
+        self.cbx_category.addItems(category_names)
+        self.cbx_category.setStyleSheet("combobox-popup: 0;")
+        self.cbx_category.setMaxVisibleItems(15)
+        if len(category_names) > 15:
+            view = self.cbx_category.view()
+            view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
 
     def reset_fields(self):
         self.tbl_transactions.clearSelection()
@@ -252,7 +265,7 @@ class Transactions(QWidget):
         self.cbx_account.setCurrentIndex(0)
         self.chk_transfer_account_toggle.setChecked(False)
         self.on_transfer_account_toggle()
-        self.cbx_subcategories.setCurrentIndex(0)
+        self.cbx_category.setCurrentIndex(0)
         self.dte_transaction_date.setDate(QDate.currentDate())
         self.cbx_currencies.setCurrentIndex(0)
         self.cbx_transaction_type.setCurrentIndex(0)
@@ -272,17 +285,36 @@ class Transactions(QWidget):
                 self.dsp_value.setPrefix(currency.getSymbol())
 
     def on_subcategory_change(self):
-        for user_subcategory in self.subcategories:
-            user_category_name = f"{user_subcategory.subcategory.category.name} - {user_subcategory.subcategory.name}"
-            if user_category_name == self.cbx_subcategories.currentText():
-                currency_and_value = f"{user_subcategory.subcategory.currency.symbol if user_subcategory.subcategory.currency is not None else None} {user_subcategory.subcategory.recurrence_value}".split(
-                    " "
-                )
-                if currency_and_value[1] == "None":
-                    self.dsp_recurring_value.setValue(0.00)
+        if not self.chk_transfer_account_toggle.isChecked():
+            for cat in self.category_list_selection:
+                if hasattr(cat, "name"):
+                    cat_name = f"Income - {cat.name}"
+                    self.cbx_transaction_type.setCurrentText("Income")
+                    if cat_name == self.cbx_category.currentText():
+                        currency_and_value = (
+                            f"{cat.currency.symbol if cat.currency is not None else None} {cat.recurrence_value}".split(
+                                " "
+                            )
+                        )
+                        if currency_and_value[1] == "None":
+                            self.dsp_recurring_value.setValue(0.00)
+                        else:
+                            self.dsp_recurring_value.setPrefix(f"{currency_and_value[0]} ")
+                            self.dsp_recurring_value.setValue(float(currency_and_value[1]) / 100)
+                        break
                 else:
-                    self.dsp_recurring_value.setPrefix(f"{currency_and_value[0]} ")
-                    self.dsp_recurring_value.setValue(int(currency_and_value[1]) / 100)
+                    cat_name = f"{cat.subcategory.category.name} - {cat.subcategory.name}"
+                    self.cbx_transaction_type.setCurrentText("Expense")
+                    if cat_name == self.cbx_category.currentText():
+                        currency_and_value = f"{cat.subcategory.currency.symbol if cat.subcategory.currency is not None else None} {cat.subcategory.recurrence_value}".split(
+                            " "
+                        )
+                        if currency_and_value[1] == "None":
+                            self.dsp_recurring_value.setValue(0.00)
+                        else:
+                            self.dsp_recurring_value.setPrefix(f"{currency_and_value[0]} ")
+                            self.dsp_recurring_value.setValue(float(currency_and_value[1]) / 100)
+                        break
 
     def on_model_update(self):
         self.reset_fields()

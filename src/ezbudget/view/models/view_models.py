@@ -32,6 +32,7 @@ class AbstractListModel(QAbstractListModel):
     def addListItem(self, item):
         self.beginInsertRows(QModelIndex(), len(self.item_list), len(self.item_list))
         self.item_list.append(item)
+        self.item_list.sort(key=lambda item: item.getName())
         self.endInsertRows()
 
     def removeListItem(self, item_index: QModelIndex):
@@ -46,6 +47,7 @@ class AbstractListModel(QAbstractListModel):
     def setObjects(self, item_list):
         self.beginResetModel()
         self.item_list = item_list
+        self.item_list.sort(key=lambda item: item.getName())
         self.endResetModel()
 
 

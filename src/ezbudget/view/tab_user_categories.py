@@ -67,6 +67,8 @@ class UserCategories(QWidget):
 
         # signals
         self._parent.categories.subcategories_model.rowsInserted.connect(self.refresh_subcategory_model_data)
+        self._parent.categories.subcategories_model.rowsRemoved.connect(self.refresh_subcategory_model_data)
+        self._parent.categories.subcategories_model.modelReset.connect(self.refresh_subcategory_model_data)
         self._parent.categories.subcategories_model.modelReset.connect(self.refresh_user_category_model_data)
         btn_select_users_categories.clicked.connect(self.add_user_categories)
         btn_remove_users_categories.clicked.connect(self.remove_user_categories)
@@ -95,7 +97,7 @@ class UserCategories(QWidget):
         )
         current_subcategories: list = []
         for subcategory in self.subcategories_list:
-            if subcategory.name not in present_in_user_categories:
+            if subcategory.id not in present_in_user_categories:
                 subcategory_item = UserCategoryItem(subcategory)
                 current_subcategories.append(subcategory_item)
         self.subcategories_model.setObjects(current_subcategories)

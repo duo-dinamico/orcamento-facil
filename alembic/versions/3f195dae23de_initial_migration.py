@@ -1,7 +1,7 @@
 """initial migration
 
 Revision ID: 3f195dae23de
-Revises: 
+Revises:
 Create Date: 2024-05-23 18:40:36.665374
 
 """
@@ -100,7 +100,7 @@ def upgrade() -> None:
         "transactions",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("account_id", sa.Integer(), nullable=False),
-        sa.Column("subcategory_id", sa.Integer(), nullable=False),
+        sa.Column("subcategory_id", sa.Integer(), nullable=True, default=None),
         sa.Column(
             "transaction_type", sa.Enum("Income", "Expense", "Transfer", name="transactiontypeenum"), nullable=False
         ),

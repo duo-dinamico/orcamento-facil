@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from sqlalchemy import ForeignKey, Index, UniqueConstraint, func
+from sqlalchemy import CheckConstraint, ForeignKey, Index, UniqueConstraint, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -118,7 +118,6 @@ class Transaction(Base):
     # mandatory
     id: Mapped[int] = mapped_column(primary_key=True)
     account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), nullable=False)
-    subcategory_id: Mapped[int] = mapped_column(ForeignKey("subcategories.id", name="subcategory"), nullable=False)
     transaction_type: Mapped[TransactionTypeEnum] = mapped_column(nullable=False)
     value: Mapped[int] = mapped_column(default=0)  # In cents
     currency_id: Mapped[int] = mapped_column(ForeignKey("currencies.id", name="currency"), nullable=False)
@@ -127,12 +126,24 @@ class Transaction(Base):
     # optional
     description: Mapped[Optional[str]]
     target_account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), nullable=True)
+    subcategory_id: Mapped[int] = mapped_column(
+        ForeignKey("subcategories.id", name="subcategory"), nullable=True, default=None
+    )
+    income_id: Mapped[int] = mapped_column(ForeignKey("incomes.id", name="income"), nullable=True, default=None)
 
     # relatioships
     account: Mapped["Account"] = relationship("Account", foreign_keys=[account_id])
     target_account: Mapped["Account"] = relationship("Account", foreign_keys=[target_account_id])
     subcategory: Mapped["SubCategory"] = relationship("SubCategory")
     currency: Mapped["Currency"] = relationship("Currency")
+    income: Mapped["Income"] = relationship("Income")
+
+    __table_args__ = (
+        CheckConstraint(
+            "(subcategory_id IS NOT NULL AND income_id IS NULL) OR (subcategory_id IS NULL AND income_id IS NOT NULL)",
+            name="check_subcategory_or_income",
+        ),
+    )
 
 
 class SubCategory(Base):

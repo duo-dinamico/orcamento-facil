@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QMainWindow, QStackedWidget
 from ezbudget.view import HomePageView, LoginView, SettingsView
 
 TITLE = "Ez Budget"
-WINDOW_WIDTH = 1024
+WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 768
 
 

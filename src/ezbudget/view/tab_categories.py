@@ -127,6 +127,7 @@ class Categories(QWidget):
 
     def fetch_categories(self):
         self.category_list = self.presenter.get_category_list()
+        self.category_list.sort(key=lambda cat: cat.name)
         self.cbx_categories.clear()
         self.cbx_categories.addItems([category.name for category in self.category_list])
         self.cbx_edit_category_types.clear()
@@ -185,6 +186,7 @@ class Categories(QWidget):
                 self.current_category_name = category.name
                 self.current_category_type = category.category_type.value
         self.cbx_edit_category_types.setCurrentText(self.current_category_type)
+        self.clear_subcategory_data()
         self.refresh_model_data()
 
     def get_category_data(self):

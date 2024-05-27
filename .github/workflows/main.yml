@@ -12,7 +12,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.12.3'
+          python-version: "3.12.3"
       - name: Install dependencies
         run: |
           pip install poetry
@@ -24,7 +24,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ezbudget-windows
-          path: dist/ezbudget.exe
+          path: builds/ezbudget.exe
 
   build-linux:
     runs-on: ubuntu-latest
@@ -33,7 +33,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.12.3'
+          python-version: "3.12.3"
       - name: Install dependencies
         run: |
           pip install poetry
@@ -45,4 +45,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ezbudget-linux
-          path: dist/ezbudget
+          path: builds/ezbudget

@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
-from ezbudget.model import Account, AccountTypeEnum, CurrencyEnum
+from ezbudget.model import Account, AccountTypeEnum
 
 
 class ModelAccount:
@@ -14,7 +14,7 @@ class ModelAccount:
         user_id: int,
         name: str,
         account_type: AccountTypeEnum,
-        currency: CurrencyEnum,
+        currency_id: int,
         balance: int,
         credit_limit: int = None,
         payment_day: str = None,
@@ -27,8 +27,8 @@ class ModelAccount:
             user_id: user id that own the account, which must exist in the users table.
             name: the name of the account, that must be unique.
             balance: the balance of the account, it's zero by default
-            account_type: the type of the account, it's BANK by default
-            currency: the currency of the account, it's EUR by default
+            account_type: the type of the account, it's DEBIT by default
+            currency_id: the currency id of the account
 
         Returns:
             Account: if a new account was created
@@ -39,7 +39,7 @@ class ModelAccount:
                 user_id=user_id,
                 name=name,
                 account_type=account_type,
-                currency=currency,
+                currency_id=currency_id,
                 balance=balance,
                 credit_limit=credit_limit,
                 payment_day=payment_day,

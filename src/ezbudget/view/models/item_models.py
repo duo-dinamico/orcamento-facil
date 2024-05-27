@@ -1,44 +1,45 @@
 from PySide6.QtCore import QDateTime
 
 
-class CategoryItem:
-    def __init__(self, name, id, parent=None):
-        self.name = name
-        self._id = id
-        self.parentItem = parent
-        self.childItems = []
-
-    def addChild(self, item):
-        self.childItems.append(item)
-
-    def children(self):
-        return self.childItems
-
-    def parent(self):
-        return self.parentItem
-
-    def row(self):
-        if self.parentItem:
-            return self.parentItem.childItems.index(self)
-        return self.parentItem.rootItems.index(self) if self.parentItem else 0
-
-    def data(self):
-        return self.name
-
-    def id(self):
-        return self._id
-
-
 class UserCategoryItem:
-    def __init__(self, name, id):
-        self.name = name
-        self._id = id
+    def __init__(self, data):
+        self.name = data.name
+        self.category = data.category
+        self._id = data.id
 
-    def data(self):
+    def getName(self):
+        return f"{self.category.name} - {self.name}"
+
+    def getId(self):
+        return self._id
+
+
+class SubCategoryItem:
+    def __init__(self, data):
+        self.name = data.name
+        self._id = data.id
+        self.currency = data.currency or None
+        self.recurrence_value = data.recurrence_value or None
+        self.recurrent = data.recurrent or None
+        self.recurrence = data.recurrence or None
+
+    def getName(self):
         return self.name
 
-    def id(self):
+    def getId(self):
         return self._id
+
+    def getCurrencyName(self):
+        if self.currency:
+            return self.currency.name
+        else:
+            return None
+
+    def getValue(self):
+        if self.recurrence_value:
+            return self.recurrence_value / 100
+        else:
+            return 0.00
 
 
 class TransactionItem:
@@ -46,8 +47,9 @@ class TransactionItem:
         self._id = transaction.id
         self.account_id = transaction.account_id
         self.account_name = transaction.account.name
-        self.category_name = transaction.subcategory.category.name
-        self.subcategory_name = transaction.subcategory.name
+        self.category_name = transaction.subcategory.category.name if transaction.subcategory is not None else None
+        self.subcategory_name = transaction.subcategory.name if transaction.subcategory is not None else None
+        self.income_name = transaction.income.name if transaction.income is not None else None
         self._date = transaction.date
         self.transaction_type = transaction.transaction_type
         self.currency = transaction.currency
@@ -56,20 +58,23 @@ class TransactionItem:
         self.target_account_id = transaction.target_account_id
 
     def category(self):
-        return f"{self.category_name} - {self.subcategory_name}"
+        if self.transaction_type.name == "Expense" or self.transaction_type.name == "Transfer":
+            return f"{self.category_name} - {self.subcategory_name}"
+        elif self.transaction_type.name == "Income":
+            return f"Income - {self.income_name}"
 
     def date(self):
         date_time = QDateTime.fromString(str(self._date), "yyyy-MM-dd hh:mm:ss")
         return date_time.toString("dd/MM/yyyy")
 
     def valueWithCurrency(self):
-        return f"{self.currencyValue()} {self.value()}"
+        return f"{self.currencySymbol()} {self.value()}"
 
     def value(self):
         return self._value / 100
 
-    def currencyValue(self):
-        return self.currency.value
+    def currencySymbol(self):
+        return self.currency.symbol
 
     def currencyName(self):
         return self.currency.name
@@ -88,3 +93,28 @@ class TransactionItem:
 
     def targetAccountId(self):
         return self.target_account_id
+
+
+class CurrencyItem:
+    def __init__(self, currency, value: float = 0.00):
+        self._id = currency.id
+        self.name = currency.name
+        self.symbol = currency.symbol
+        self.code = currency.code
+        self.symbol_position = currency.symbol_position
+        self.value = value
+
+    def valueWithCurrency(self):
+        value_with_currency = (
+            f"{self.symbol} {self.value}" if self.symbol_position == "prefix" else f"{self.value} {self.symbol}"
+        )
+        return value_with_currency
+
+    def getName(self):
+        return self.name
+
+    def getSymbol(self):
+        return self.symbol
+
+    def getId(self):
+        return self._id

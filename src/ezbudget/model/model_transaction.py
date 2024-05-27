@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
-from ezbudget.model import CurrencyEnum, Transaction, TransactionTypeEnum
+from ezbudget.model import Transaction, TransactionTypeEnum
 
 
 class ModelTransaction:
@@ -15,11 +15,12 @@ class ModelTransaction:
     def create_transaction(
         self,
         account_id: int,
-        subcategory_id: int,
         date: datetime,
         transaction_type: TransactionTypeEnum,
         value: int,
-        currency: CurrencyEnum,
+        currency_id: int,
+        subcategory_id: int = None,
+        income_id: int = None,
         description: str = None,
         target_account_id: int = None,
     ) -> int | None:
@@ -28,6 +29,7 @@ class ModelTransaction:
         Args:
             account_id: the id of the account where the transaction will be created.
             subcategory_id: the id of the category of the transation.
+            income_id: the id of the income of the transation.
             date: date of the transaction, in datetime format.
             value: value of the transaction in cents, positive if credit, negative if debit.
             description: short description of the transaction.
@@ -40,10 +42,11 @@ class ModelTransaction:
             new_transaction = Transaction(
                 account_id=account_id,
                 subcategory_id=subcategory_id,
+                income_id=income_id,
                 date=date,
                 transaction_type=transaction_type,
                 value=value,
-                currency=currency,
+                currency_id=currency_id,
                 description=description,
                 target_account_id=target_account_id,
             )
@@ -52,12 +55,12 @@ class ModelTransaction:
             self.parent.session.commit()
             self.parent.session.refresh(new_transaction)
             return new_transaction
-        except IntegrityError as e:
+        except IntegrityError as integrity_error:
             self.parent.session.rollback()
-            if "foreign key constraint" in str(e.orig).lower():
+            if "foreign key constraint" in str(integrity_error.orig).lower():
                 return "Either Account ID or SubCategory ID does not exist"
             else:
-                return "An unknown IntegrityError occurred"
+                return f"An IntegrityError occurred: {integrity_error}"
         except LookupError as lookup_error:
             self.parent.session.rollback()
             return f"A LookupError occurred: {lookup_error}"
@@ -121,13 +124,13 @@ class ModelTransaction:
             return None
 
     def update_transaction(self, transaction: Transaction) -> None:
-        """Update a transaction in the database, and return the transaction id.
+        """Update a transaction in the database, and return the transaction.
 
         Args:
             transaction: the transaction to be updated
 
         Returns:
-            trasaction id: if the transaction was updated
+            transaction: if the transaction was updated
             None: if the transaction failed to be updated.
         """
         try:

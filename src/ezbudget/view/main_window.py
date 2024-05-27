@@ -1,18 +1,19 @@
 from PySide6 import QtGui
 from PySide6.QtWidgets import QMainWindow, QStackedWidget
 
-from ezbudget.view import HomePageView, LoginView
+from ezbudget.view import HomePageView, LoginView, SettingsView
 
 TITLE = "Ez Budget"
-WINDOW_WIDTH = 1024
+WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 768
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, presenter):
+    def __init__(self, presenter, basedir):
         super().__init__()
 
         self.presenter = presenter
+        self.basedir = basedir
 
         # setup the window
         self.setWindowTitle(TITLE)
@@ -39,3 +40,8 @@ class MainWindow(QMainWindow):
         self.homepage_view = HomePageView(self.presenter, user)
         self.stacked_widget.addWidget(self.homepage_view)
         self.stacked_widget.setCurrentIndex(1)
+
+    def show_settings(self, user):
+        self.settings_view = SettingsView(self.presenter, self.basedir, user)
+        self.stacked_widget.addWidget(self.settings_view)
+        self.stacked_widget.setCurrentIndex(2)

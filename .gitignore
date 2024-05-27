@@ -163,3 +163,4 @@ cython_debug/
 *.db
 *.db-journal
 .ruff_cache
+*settings.toml

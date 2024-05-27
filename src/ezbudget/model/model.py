@@ -8,6 +8,7 @@ from sqlalchemy.sql.expression import ScalarSelect
 from ezbudget.model import Base
 from ezbudget.model.model_account import ModelAccount
 from ezbudget.model.model_category import ModelCategory
+from ezbudget.model.model_currency import ModelCurrency
 from ezbudget.model.model_income import ModelIncome
 from ezbudget.model.model_subcategory import ModelSubCategory
 from ezbudget.model.model_transaction import ModelTransaction
@@ -17,17 +18,19 @@ from ezbudget.presenter import ModelProtocol
 
 
 class Model(ModelProtocol):
-    def __init__(self, category_data, database_name: str = "of") -> None:
+    def __init__(self, category_data, currency_data, database_name: str = "of") -> None:
         self.engine = create_engine(f"sqlite:///{database_name}.db")
         # Composition
         self.model_account = ModelAccount(self)
         self.model_category = ModelCategory(self)
+        self.model_currency = ModelCurrency(self)
         self.model_income = ModelIncome(self)
         self.model_subcategory = ModelSubCategory(self)
         self.model_transaction = ModelTransaction(self)
         self.model_user_subcategory = ModelUserSubCategory(self)
         self.model_user = ModelUser(self)
         self._category_data = category_data
+        self._currency_data = currency_data
 
         @event.listens_for(self.engine, "connect")
         def set_sqlite_pragma(dbapi_connection, connection_record):
@@ -43,6 +46,7 @@ class Model(ModelProtocol):
 
         if database_name == "of":
             self.populate_categories()
+            self.populate_currencies()
 
         self.user = None
 
@@ -53,6 +57,11 @@ class Model(ModelProtocol):
         if len(self.model_subcategory.read_subcategories()) < 1:
             for item in self._category_data["subcategories"]:
                 self.model_subcategory.create_subcategory(**item)
+
+    def populate_currencies(self):
+        if len(self.model_currency.read_currencies()) < 1:
+            for item in self._currency_data["currencies"]:
+                self.model_currency.create_currency(**item)
 
     def close_session(self):
         self.session.close()

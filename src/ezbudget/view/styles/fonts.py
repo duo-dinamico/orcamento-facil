@@ -38,5 +38,15 @@ class ErrorMessage(QLabel):
         self._font = self.font()
         self._font.setPointSize(ERROR_MESSAGE_FONT_SIZE)
         self._font.setBold(True)
+        self.setWordWrap(True)
         self.setStyleSheet("color: rgb(250,0,0)")
         self.setAlignment(ALIGNMENT_H_CENTER | ALIGNMENT_BOTTOM)
+
+
+class MadatoryFields(QLabel):
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self._font = self.font()
+        self._font.setBold(True)
+        self.setStyleSheet("color: rgb(250,0,0)")
+        self.setAlignment(ALIGNMENT_LEFT | ALIGNMENT_TOP)

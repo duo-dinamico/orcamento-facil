@@ -8,40 +8,47 @@ from PySide6.QtCore import (
 )
 
 
-class CategoryListModel(QAbstractListModel):
-    def __init__(self, categories):
+class AbstractListModel(QAbstractListModel):
+    def __init__(self, item_list=None):
         super().__init__()
-        self.categories: list = categories
+        self.item_list: list = item_list or []
 
     def rowCount(self, _):
-        return len(self.categories)
+        return len(self.item_list)
 
     def data(self, index, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
-            user_subcategory = self.categories[index.row()]
-            return user_subcategory.data()
+            item = self.item_list[index.row()]
+            return item.getName()
 
     def index(self, row, column, parent=QModelIndex()):
         if 0 <= row < self.rowCount(parent) and column == 0:
-            return self.createIndex(row, column, self.categories[row])
+            return self.createIndex(row, column, self.item_list[row])
         return QModelIndex()
 
     def parent(self, index):
         return QModelIndex()
 
-    def addUserCategory(self, user_subcategory):
-        self.beginInsertRows(QModelIndex(), len(self.categories), len(self.categories))
-        self.categories.append(user_subcategory)
+    def addListItem(self, item):
+        self.beginInsertRows(QModelIndex(), len(self.item_list), len(self.item_list))
+        self.item_list.append(item)
+        self.item_list.sort(key=lambda item: item.getName())
         self.endInsertRows()
 
-    def removeUserCategory(self, user_subcategory_index: QModelIndex):
-        row = user_subcategory_index.row()
-        if row < 0 or row >= len(self.categories):
+    def removeListItem(self, item_index: QModelIndex):
+        row = item_index.row()
+        if row < 0 or row >= len(self.item_list):
             return
 
         self.beginRemoveRows(QModelIndex(), row, row)
-        del self.categories[row]
+        del self.item_list[row]
         self.endRemoveRows()
+
+    def setObjects(self, item_list):
+        self.beginResetModel()
+        self.item_list = item_list
+        self.item_list.sort(key=lambda item: item.getName())
+        self.endResetModel()
 
 
 class CategoryModel(QAbstractItemModel):
@@ -110,7 +117,7 @@ class CategoryModel(QAbstractItemModel):
 
         if role == Qt.DisplayRole:
             item = index.internalPointer()
-            return item.data()  # Return the data of the item associated with the QModelIndex
+            return item.getName()  # Return the data of the item associated with the QModelIndex
 
         return None
 

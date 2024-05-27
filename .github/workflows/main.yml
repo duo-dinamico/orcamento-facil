@@ -1,0 +1,48 @@
+name: Build Executables
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12.3'
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          poetry install
+      - name: Build executable
+        run: |
+          poetry run pyinstaller --onefile --add-data 'src/ezbudget/categories_data.toml;.' --add-data 'src/ezbudget/currencies.toml;.' src/ezbudget/main.py
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ezbudget-windows
+          path: dist/ezbudget.exe
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12.3'
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          poetry install
+      - name: Build executable
+        run: |
+          poetry run pyinstaller --onefile --add-data 'src/ezbudget/categories_data.toml:.' --add-data 'src/ezbudget/currencies.toml:.' src/ezbudget/main.py
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ezbudget-linux
+          path: dist/ezbudget

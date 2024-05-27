@@ -103,7 +103,7 @@ class IncomeSources(QWidget):
         incoming_list_data = self.format_model_data(self.incoming_list)
         self.incoming_list_model = TableModel(
             incoming_list_data,
-            ["Name", "Expected Income"],
+            ["Name", "Expected Income", "Expected Day", "Recurrence"],
             self.presenter.get_income_list,
         )
         self.tbl_incomings.setModel(self.incoming_list_model)
@@ -288,5 +288,6 @@ class IncomeSources(QWidget):
         response = []
         for data in data_list:
             currency_with_value = CurrencyItem(data.currency, data.recurrence_value / 100)
-            response.append((data.name, currency_with_value.valueWithCurrency()))
+            formatted_date = data.income_date.strftime("%d")
+            response.append((data.name, currency_with_value.valueWithCurrency(), formatted_date, data.recurrence.value))
         return response

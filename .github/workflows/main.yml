@@ -8,9 +8,9 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12.3"
       - name: Install dependencies
@@ -21,7 +21,7 @@ jobs:
         run: |
           poetry run pyinstaller --onefile --add-data 'src/ezbudget/categories_data.toml;.' --add-data 'src/ezbudget/currencies.toml;.' src/ezbudget/main.py
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ezbudget-windows
           path: builds/ezbudget.exe
@@ -29,9 +29,9 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12.3"
       - name: Install dependencies
@@ -42,7 +42,7 @@ jobs:
         run: |
           poetry run pyinstaller --onefile --add-data 'src/ezbudget/categories_data.toml:.' --add-data 'src/ezbudget/currencies.toml:.' src/ezbudget/main.py
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ezbudget-linux
           path: builds/ezbudget

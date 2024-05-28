@@ -1,4 +1,4 @@
-from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt, QTimer
+from PySide6.QtCore import QAbstractTableModel, QDate, QModelIndex, Qt, QTimer
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QComboBox,
@@ -200,15 +200,8 @@ class IncomeSources(QWidget):
         if isinstance(new_income_source, str):
             self.set_error_message(new_income_source)
         else:
-            currency_amount = new_income_source.recurrence_value / 100
-            currency_with_value = CurrencyItem(new_income_source.currency, currency_amount)
             self.incoming_list.append(new_income_source)
-            self.incoming_list_model.addData(
-                [
-                    new_income_source.name,
-                    currency_with_value.valueWithCurrency(),
-                ]
-            )
+            self.incoming_list_model.addData(self.format_model_data(new_income_source))
 
     def on_incoming_table_view_selection(self, index):
         selected_row = index.row()
@@ -258,7 +251,7 @@ class IncomeSources(QWidget):
         self.cbx_incoming_account.setCurrentIndex(0)
         self.cbx_incoming_currency.setCurrentIndex(0)
         self.dsp_incoming_expected.setValue(0.00)
-        self.dte_incoming_date.clear()
+        self.dte_incoming_date.setDate(QDate.currentDate())
         self.cbx_incoming_recurrence.setCurrentIndex(0)
 
     def on_model_row_inserted(self):
@@ -284,10 +277,17 @@ class IncomeSources(QWidget):
         self.cbx_incoming_recurrence.clear()
         self.cbx_incoming_recurrence.addItems([recurrence.value for recurrence in self.recurrence_list])
 
-    def format_model_data(self, data_list: list) -> list:
+    def format_model_data(self, data) -> list:
         response = []
-        for data in data_list:
+        if isinstance(data, list):
+            for d in data:
+                currency_with_value = CurrencyItem(d.currency, d.recurrence_value / 100)
+                formatted_date = d.income_date.strftime("%d")
+                recurrence_value = d.recurrence.value if d.recurrence is not None else None
+                response.append((d.name, currency_with_value.valueWithCurrency(), formatted_date, recurrence_value))
+        else:
             currency_with_value = CurrencyItem(data.currency, data.recurrence_value / 100)
             formatted_date = data.income_date.strftime("%d")
-            response.append((data.name, currency_with_value.valueWithCurrency(), formatted_date, data.recurrence.value))
+            recurrence_value = data.recurrence.value if data.recurrence is not None else None
+            return (data.name, currency_with_value.valueWithCurrency(), formatted_date, recurrence_value)
         return response

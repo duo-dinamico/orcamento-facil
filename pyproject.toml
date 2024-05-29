@@ -10,7 +10,6 @@ include = [{ path = "tests", format = "sdist" }]
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.13"
-black = "^23.9.1"
 sqlalchemy = "^2.0.22"
 pyside6 = "^6.6.1"
 cryptography = "^42.0.5"
